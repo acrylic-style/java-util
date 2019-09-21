@@ -40,7 +40,7 @@
         <repository>
             <id>github</id>
             <name>Striker's Battlestation</name>
-            <url>https://maven.pkg.github.com/acrylic-style</url>
+            <url>https://maven.pkg.github.com/acrylic-style/java-util</url>
         </repository>
     </distributionManagement>
 </project>
