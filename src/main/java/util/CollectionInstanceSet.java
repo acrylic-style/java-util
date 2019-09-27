@@ -66,7 +66,7 @@ public class CollectionInstanceSet<V> extends CollectionList<V> {
     public boolean add(V v) {
         super.filter(v1 -> {
             try {
-                return instanceOf(v1, v.getClass().getSimpleName());
+                return instanceOf(v1, v.getClass().getName());
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
                 return false;
