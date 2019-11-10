@@ -1,6 +1,8 @@
 package util;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -33,32 +35,37 @@ public class Collection<K, V> extends HashMap<K, V> {
      * @return first value
      */
     public V first() {
-        return this.valuesArray()[0];
+        return this.valuesList().first();
     }
 
     /**
      * @return first key
      */
     public K firstKey() {
-        return this.keys()[0];
+        return this.keysList().first();
     }
 
     /**
      * @return last value
      */
-    public V last() { return this.valuesArray()[this.size()-1]; }
+    public V last() { return this.valuesList().last(); }
 
     /**
      * @return last key
      */
-    public K lastKey() { return this.keys()[this.size()-1]; }
+    public K lastKey() { return this.keysList().last(); }
 
     /**
+     * <b>Note: Unchecked Type Casting</b>
      * @return keys as Array.
      */
     @SuppressWarnings("unchecked")
     public K[] keys() {
-        return (K[]) this.keySet().toArray();
+        final Object[] a = this.keySet().toArray();
+        List<Object> keysObj = Arrays.asList(a);
+        CollectionList<K> keys = new CollectionList<>();
+        keysObj.forEach(k -> keys.add((K) k));
+        return keys.valuesArray();
     }
 
     /**
