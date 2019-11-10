@@ -32,15 +32,14 @@ public class CollectionList<V> extends ArrayList<V> {
         this.addAll(list);
     }
 
-    @SuppressWarnings("unchecked")
-    public V first() {
-        return (V) this.toArray()[0];
-    }
+    public V first() { return this.valuesArray()[0]; }
 
     @SuppressWarnings("unchecked")
     public V[] valuesArray() {
         return (V[]) this.toArray();
     }
+
+    public V last() { return this.valuesArray()[0]; }
 
     /**
      * @param action it passes value, index.

@@ -49,6 +49,24 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
     }
 
     /**
+     * @return last value
+     */
+    public V last() {
+        synchronized (StrictLock.LOCK) {
+            return this.valuesArray()[this.size()-1];
+        }
+    }
+
+    /**
+     * @return last key
+     */
+    public K lastKey() {
+        synchronized (StrictLock.LOCK) {
+            return this.keys()[this.size()-1];
+        }
+    }
+
+    /**
      * @return keys as Array.
      */
     @Override

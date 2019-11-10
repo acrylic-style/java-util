@@ -45,6 +45,16 @@ public class CollectionSync<K, V> extends Collection<K, V> {
     }
 
     /**
+     * @return last value
+     */
+    public synchronized V last() { return this.valuesArray()[this.size()-1]; }
+
+    /**
+     * @return last key
+     */
+    public synchronized K lastKey() { return this.keys()[this.size()-1]; }
+
+    /**
      * @return keys as Array.
      */
     @Override

@@ -44,6 +44,16 @@ public class Collection<K, V> extends HashMap<K, V> {
     }
 
     /**
+     * @return last value
+     */
+    public V last() { return this.valuesArray()[this.size()-1]; }
+
+    /**
+     * @return last key
+     */
+    public K lastKey() { return this.keys()[this.size()-1]; }
+
+    /**
      * @return keys as Array.
      */
     @SuppressWarnings("unchecked")
