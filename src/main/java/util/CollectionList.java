@@ -1,9 +1,6 @@
 package util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -55,6 +52,22 @@ public class CollectionList<V> extends ArrayList<V> {
     public V put(V value) {
         super.add(value);
         return value;
+    }
+
+    public CollectionList<V> reverse() {
+        CollectionList<V> target = this.clone();
+        Collections.reverse(target);
+        return target;
+    }
+
+    /**
+     * Shuffles all entries in list.
+     * @return shuffled new list
+     */
+    public CollectionList<V> shuffle() {
+        CollectionList<V> target = this.clone();
+        Collections.shuffle(target);
+        return target;
     }
 
     public <ListLike extends List<? extends V>> void putAll(ListLike list) {
