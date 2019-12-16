@@ -23,7 +23,7 @@ public interface ICollection<K, V> {
     Collection<K, V> filterKeys(Function<K, Boolean> filter);
     Collection<K, V> removeThenReturnCollection(K k);
     Collection<K, V> clone();
-    <T> Collection<K, T> cast(Class<T> newType) throws ClassCastException;
+    <T> Collection<K, T> cast(Class<T> newType);
     Collection<K, V> values(V v);
 
     static <K, V> Collection<K, V> asCollection(Map<? extends K, ? extends V> map) {

@@ -4,27 +4,17 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class CollectionList<V> extends ArrayList<V> {
+public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V> {
     public CollectionList() {
         super();
     }
 
-    public CollectionList(ArrayList<? extends V> list) {
+    public CollectionList(List<? extends V> list) {
         super();
         this.addAll(list);
     }
 
     public CollectionList(java.util.Collection<? extends V> list) {
-        super();
-        this.addAll(list);
-    }
-
-    public CollectionList(CollectionList<? extends V> list) {
-        super();
-        this.addAll(list);
-    }
-
-    public CollectionList(Set<? extends V> list) {
         super();
         this.addAll(list);
     }
@@ -101,16 +91,20 @@ public class CollectionList<V> extends ArrayList<V> {
         return newList;
     }
 
-    public CollectionList<V> removeReturnCollection(V v) {
+    public CollectionList<V> removeThenReturnCollection(V v) {
         this.remove(v);
         return this;
     }
 
-    public static <T> CollectionList<T> fromValues(HashMap<?, ? extends T> map) {
-        return new CollectionList<>(map.values());
-    }
-
-    public static <T> CollectionList<T> fromKeys(HashMap<? extends T, ?> map) {
-        return new CollectionList<>(map.keySet());
+    /**
+     * Casts type to another. Exactly same method as ICollectionList.cast().
+     * @param <T> New value type, if it was impossible to cast, ClassCastException will be thrown.
+     * @return New collection
+     * @throws ClassCastException Thrown when impossible to cast
+     */
+    public <T> CollectionList<T> cast(Class<T> t) {
+        CollectionList<T> list = new CollectionList<>();
+        this.forEach(v -> list.add(t.cast(v)));
+        return list;
     }
 }

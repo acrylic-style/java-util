@@ -208,7 +208,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @return New collection
      * @throws ClassCastException Thrown when impossible to cast.
      */
-    public <T> Collection<K, T> cast(Class<T> newType) throws ClassCastException {
+    public <T> Collection<K, T> cast(Class<T> newType) {
         Collection<K, T> collection = new Collection<>();
         this.forEach((k, v) -> collection.add(k, newType.cast(v)));
         return collection;
