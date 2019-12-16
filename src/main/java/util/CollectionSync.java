@@ -7,7 +7,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * Collection but all methods(including constructor) are synchronized.
+ * Collection but all methods(including constructor) are synchronized.<br>
+ * It may cause small lags when doing large operations.
+ * @see CollectionStrictSync
  * @see Collection
  * @see HashMap
  * @see Map
@@ -187,7 +189,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
      * @return this collection
      */
     @Override
-    public synchronized CollectionSync<K, V> removeReturnCollection(K k) {
+    public synchronized CollectionSync<K, V> removeThenReturnCollection(K k) {
         this.remove(k);
         return this;
     }
@@ -202,6 +204,13 @@ public class CollectionSync<K, V> extends Collection<K, V> {
         CollectionSync<K, V> newList = new CollectionSync<>();
         newList.addAll(this);
         return newList;
+    }
+
+    @Override
+    public synchronized <T> Collection<K, T> cast(Class<T> newType) throws ClassCastException {
+        Collection<K, T> collection = new Collection<>();
+        this.forEach((k, v) -> collection.add(k, newType.cast(v)));
+        return collection;
     }
 
     /**

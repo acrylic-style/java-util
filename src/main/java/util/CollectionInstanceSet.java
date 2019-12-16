@@ -65,7 +65,6 @@ public class CollectionInstanceSet<V> extends CollectionList<V> {
             try {
                 return instanceOf(v1, v.getClass().getName());
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
                 return false;
             }
         }).forEach(this::remove);

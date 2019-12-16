@@ -7,7 +7,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * CollectionSync but all methods are synchronized. The lock is shared across all methods.
+ * CollectionSync but all methods are synchronized. The lock is shared across all methods.<br>
+ * It may cause huge lags when doing large operations.
+ * @see CollectionSync
  * @see Collection
  * @see HashMap
  * @see Map
@@ -221,7 +223,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      * @return this collection
      */
     @Override
-    public synchronized CollectionStrictSync<K, V> removeReturnCollection(K k) {
+    public synchronized CollectionStrictSync<K, V> removeThenReturnCollection(K k) {
         synchronized (StrictLock.LOCK) {
             this.remove(k);
             return this;
@@ -239,6 +241,15 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
             CollectionStrictSync<K, V> newList = new CollectionStrictSync<>();
             newList.addAll(this);
             return newList;
+        }
+    }
+
+    @Override
+    public <T> Collection<K, T> cast(Class<T> newType) throws ClassCastException {
+        synchronized (StrictLock.LOCK) {
+            Collection<K, T> collection = new Collection<>();
+            this.forEach((k, v) -> collection.add(k, newType.cast(v)));
+            return collection;
         }
     }
 

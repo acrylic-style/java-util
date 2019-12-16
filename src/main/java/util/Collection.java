@@ -10,11 +10,12 @@ import java.util.function.Function;
 
 /**
  * The Great HashMap
- * @see HashMap
- * @see Map
+ * @see HashMap The old HashMap (impl)
+ * @see Map The old map (interface)
  * @see CollectionSync - for synchronized Collection
+ * @see CollectionStrictSync - for strictly synchronized Collection
  */
-public class Collection<K, V> extends HashMap<K, V> {
+public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V> {
     /**
      * Constructs an empty Collection with the default initial capacity (16) and the default load factor (0.75).
      */
@@ -123,11 +124,13 @@ public class Collection<K, V> extends HashMap<K, V> {
     }
 
     /**
-     * Adds multiple entry by function.<br>
+     * Adds entry by function.<br>
      * When the function returned true, V(v for value) will be added.
+     * @deprecated I have no idea why did I add this
      * @param function passes Key, Value. Must return boolean.
      * @return all entries that added from this method
      */
+    @Deprecated
     public Collection<K, V> add(BiFunction<K, V, Boolean> function, V v) {
         this.forEach(((k, v2) -> {
             if (function.apply(k, v2)) {
@@ -181,7 +184,7 @@ public class Collection<K, V> extends HashMap<K, V> {
      * @param k will be removed
      * @return this collection
      */
-    public Collection<K, V> removeReturnCollection(K k) {
+    public Collection<K, V> removeThenReturnCollection(K k) {
         this.remove(k);
         return this;
     }
@@ -189,13 +192,26 @@ public class Collection<K, V> extends HashMap<K, V> {
     /**
      * Clones this collection and returns new collection.
      * @see HashMap#clone()
-     * @return new collection
+     * @return New collection
      */
     @Override
     public Collection<K, V> clone() {
         Collection<K, V> newList = new Collection<>();
         newList.addAll(this);
         return newList;
+    }
+
+    /**
+     * Cast V type to the another type and returns new Collection.
+     * @param newType New value type in Class.
+     * @param <T> New value type, if it was impossible to cast, ClassCastException will be thrown.
+     * @return New collection
+     * @throws ClassCastException Thrown when impossible to cast.
+     */
+    public <T> Collection<K, T> cast(Class<T> newType) throws ClassCastException {
+        Collection<K, T> collection = new Collection<>();
+        this.forEach((k, v) -> collection.add(k, newType.cast(v)));
+        return collection;
     }
 
     /**
