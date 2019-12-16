@@ -1,5 +1,6 @@
 package util;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -31,6 +32,10 @@ public interface ICollectionList<V> {
 
     static <T> CollectionList<T> asList(List<? extends T> list) {
         return new CollectionList<>(list);
+    }
+
+    static <T> CollectionList<T> asList(T[] list) {
+        return new CollectionList<>(Arrays.asList(list));
     }
 
     /**
