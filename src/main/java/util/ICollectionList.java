@@ -35,7 +35,9 @@ public interface ICollectionList<V> {
     }
 
     static <T> CollectionList<T> asList(T[] list) {
-        return new CollectionList<>(Arrays.asList(list));
+        CollectionList<T> collectionList = new CollectionList<>();
+        collectionList.addAll(Arrays.asList(list));
+        return collectionList;
     }
 
     /**
