@@ -103,6 +103,12 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      * @throws ClassCastException Thrown when impossible to cast
      */
     public <T> CollectionList<T> cast(Class<T> t) {
+        if (t == String.class) {
+            CollectionList<String> list = new CollectionList<>();
+            this.forEach(v -> list.add(v.toString()));
+            //noinspection unchecked // <- already checked
+            return (CollectionList<T>) list;
+        }
         CollectionList<T> list = new CollectionList<>();
         this.forEach(v -> list.add(t.cast(v)));
         return list;
