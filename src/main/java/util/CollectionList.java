@@ -102,11 +102,11 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      * @return New collection
      * @throws ClassCastException Thrown when impossible to cast
      */
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public <T> CollectionList<T> cast(Class<T> t) {
         if (t == String.class) {
             CollectionList<String> list = new CollectionList<>();
-            this.forEach(v -> list.add(v.toString()));
-            //noinspection unchecked // <- already checked
+            this.forEach(v -> list.add(v instanceof Enum ? ((Enum) v).name() : v.toString()));
             return (CollectionList<T>) list;
         }
         CollectionList<T> list = new CollectionList<>();
