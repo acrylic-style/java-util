@@ -21,6 +21,7 @@ public interface ICollectionList<V> {
     CollectionList<V> clone();
     CollectionList<V> removeThenReturnCollection(V v);
     <T> CollectionList<T> cast(Class<T> t);
+    <T> CollectionList<T> map(Function<V, T> function);
 
     static <T> CollectionList<T> fromValues(Map<?, ? extends T> map) {
         return new CollectionList<>(map.values());
