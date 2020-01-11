@@ -170,6 +170,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @param filter filter function.
      * @return clone of new Collection filtered by function
      */
+    @Override
     public Collection<K, V> filterKeys(Function<K, Boolean> filter) {
         Collection<K, V> newList = new Collection<>();
         V[] values = this.valuesArray();
@@ -184,6 +185,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @param k will be removed
      * @return this collection
      */
+    @Override
     public Collection<K, V> removeThenReturnCollection(K k) {
         this.remove(k);
         return this;
@@ -208,6 +210,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @return New collection
      * @throws ClassCastException Thrown when impossible to cast.
      */
+    @Override
     public <T> Collection<K, T> cast(Class<T> newType) {
         Collection<K, T> collection = new Collection<>();
         this.forEach((k, v) -> collection.add(k, newType.cast(v)));
@@ -218,7 +221,23 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * Returns all values that matches with V.
      * @return new collection
      */
+    @Override
     public Collection<K, V> values(V v) {
         return new Collection<>(this.filter(f -> f.equals(v)));
+    }
+
+    /**
+     * The <b>map()</b> method <b>creates a new collection</b> populated with the results of calling a provided function on every element in the calling collection.
+     * @return New collection with new type.
+     */
+    @Override
+    public <A, B> Collection<A, B> map(BiFunction<K, V, A> keyFunction, BiFunction<K, V, B> valueFunction) {
+        Collection<A, B> newCollection = new Collection<>();
+        this.forEach((k, v) -> {
+            A a = keyFunction.apply(k, v);
+            B b = valueFunction.apply(k, v);
+            newCollection.add(a, b);
+        });
+        return newCollection;
     }
 }

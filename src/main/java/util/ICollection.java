@@ -25,6 +25,7 @@ public interface ICollection<K, V> {
     Collection<K, V> clone();
     <T> Collection<K, T> cast(Class<T> newType);
     Collection<K, V> values(V v);
+    <A, B> Collection<A, B> map(BiFunction<K, V, A> keyFunction, BiFunction<K, V, B> valueFunction);
 
     static <K, V> Collection<K, V> asCollection(Map<? extends K, ? extends V> map) {
         Collection<K, V> collection = new Collection<>();
