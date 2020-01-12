@@ -5,7 +5,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public interface ICollection<K, V> {
+public interface ICollection<K, V> extends Map<K, V> {
     V first();
     K firstKey();
     V last();

@@ -7,7 +7,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public interface ICollectionList<V> {
+public interface ICollectionList<V> extends List<V> {
     V first();
     V[] valuesArray();
     V last();
