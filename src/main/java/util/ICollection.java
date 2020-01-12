@@ -11,33 +11,33 @@ public interface ICollection<K, V> extends Map<K, V> {
     V last();
     K lastKey();
     K[] keys();
-    ICollectionList<K> keysList();
+    CollectionList<K> keysList();
     V[] valuesArray();
-    ICollectionList<V> valuesList();
+    CollectionList<V> valuesList();
     void foreach(BiConsumer<V, Integer> action);
     void foreachKeys(BiConsumer<K, Integer> action);
-    ICollection<K, V> addAll(Map<? extends K, ? extends V> map);
-    ICollection<K, V> filter(Function<V, Boolean> filter);
-    ICollection<K, V> filterKeys(Function<K, Boolean> filter);
-    ICollection<K, V> removeThenReturnCollection(K k);
-    ICollection<K, V> clone();
+    Collection<K, V> addAll(Map<? extends K, ? extends V> map);
+    Collection<K, V> filter(Function<V, Boolean> filter);
+    Collection<K, V> filterKeys(Function<K, Boolean> filter);
+    Collection<K, V> removeThenReturnCollection(K k);
+    Collection<K, V> clone();
     <T> ICollection<K, T> cast(Class<T> newType);
-    ICollection<K, V> values(V v);
-    <A, B> ICollection<A, B> map(BiFunction<K, V, A> keyFunction, BiFunction<K, V, B> valueFunction);
+    Collection<K, V> values(V v);
+    <A, B> Collection<A, B> map(BiFunction<K, V, A> keyFunction, BiFunction<K, V, B> valueFunction);
 
-    static <K, V> ICollection<K, V> asCollection(Map<? extends K, ? extends V> map) {
+    static <K, V> Collection<K, V> asCollection(Map<? extends K, ? extends V> map) {
         Collection<K, V> collection = new Collection<>();
         collection.addAll(map);
         return collection;
     }
 
-    static <K, V> ICollection<K, V> asCollectionSync(Map<? extends K, ? extends V> map) {
+    static <K, V> Collection<K, V> asCollectionSync(Map<? extends K, ? extends V> map) {
         CollectionSync<K, V> collection = new CollectionSync<>();
         collection.addAll(map);
         return collection;
     }
 
-    static <K, V> ICollection<K, V> asCollectionStrictSync(Map<? extends K, ? extends V> map) {
+    static <K, V> Collection<K, V> asCollectionStrictSync(Map<? extends K, ? extends V> map) {
         CollectionStrictSync<K, V> collection = new CollectionStrictSync<>();
         collection.addAll(map);
         return collection;

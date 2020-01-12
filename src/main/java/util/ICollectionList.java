@@ -13,31 +13,31 @@ public interface ICollectionList<V> extends List<V> {
     V last();
     void foreach(BiConsumer<V, Integer> action);
     V put(V v);
-    ICollectionList<V> reverse();
-    ICollectionList<V> shuffle();
+    CollectionList<V> reverse();
+    CollectionList<V> shuffle();
     <ListLike extends List<? extends V>> void putAll(ListLike list);
-    ICollectionList<V> addAll(CollectionList<V> list);
-    ICollectionList<V> putAll(CollectionList<V> list);
-    ICollectionList<V> filter(Function<V, Boolean> filter);
-    ICollectionList<V> clone();
-    ICollectionList<V> removeThenReturnCollection(V v);
-    <T> ICollectionList<T> cast(Class<T> t);
-    <T> ICollectionList<T> map(Function<V, T> function);
-    <T> ICollectionList<T> map(BiFunction<V, Integer, T> function);
+    CollectionList<V> addAll(CollectionList<V> list);
+    CollectionList<V> putAll(CollectionList<V> list);
+    CollectionList<V> filter(Function<V, Boolean> filter);
+    CollectionList<V> clone();
+    CollectionList<V> removeThenReturnCollection(V v);
+    <T> CollectionList<T> cast(Class<T> t);
+    <T> CollectionList<T> map(Function<V, T> function);
+    <T> CollectionList<T> map(BiFunction<V, Integer, T> function);
 
-    static <T> ICollectionList<T> fromValues(Map<?, ? extends T> map) {
+    static <T> CollectionList<T> fromValues(Map<?, ? extends T> map) {
         return new CollectionList<>(map.values());
     }
 
-    static <T> ICollectionList<T> fromKeys(Map<? extends T, ?> map) {
+    static <T> CollectionList<T> fromKeys(Map<? extends T, ?> map) {
         return new CollectionList<>(map.keySet());
     }
 
-    static <T> ICollectionList<T> asList(List<? extends T> list) {
+    static <T> CollectionList<T> asList(List<? extends T> list) {
         return new CollectionList<>(list);
     }
 
-    static <T> ICollectionList<T> asList(T[] list) {
+    static <T> CollectionList<T> asList(T[] list) {
         CollectionList<T> collectionList = new CollectionList<>();
         collectionList.addAll(Arrays.asList(list));
         return collectionList;
@@ -49,7 +49,7 @@ public interface ICollectionList<V> extends List<V> {
      * @return New collection
      * @throws ClassCastException Thrown when impossible to cast
      */
-    static <T> ICollectionList<T> cast(CollectionList<?> l, Class<T> t) {
+    static <T> CollectionList<T> cast(CollectionList<?> l, Class<T> t) {
         CollectionList<T> list = new CollectionList<>();
         l.forEach(v -> list.add(t.cast(v)));
         return list;
