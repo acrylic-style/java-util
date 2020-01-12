@@ -2,6 +2,7 @@ package util;
 
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V> {
@@ -119,9 +120,13 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      * @param function Function that will run to create a new array.
      * @return New array with new type.
      */
-    public <T> CollectionList<T> map(Function<V, T> function) {
+    public <T> CollectionList<T> map(BiFunction<V, Integer, T> function) {
         CollectionList<T> newList = new CollectionList<>();
-        this.forEach(v -> newList.add(function.apply(v)));
+        final int[] index = {0};
+        this.forEach(v -> {
+            newList.add(function.apply(v, index[0]));
+            index[0]++;
+        });
         return newList;
     }
 }

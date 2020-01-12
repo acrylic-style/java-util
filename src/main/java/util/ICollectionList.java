@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public interface ICollectionList<V> {
@@ -21,7 +22,7 @@ public interface ICollectionList<V> {
     CollectionList<V> clone();
     CollectionList<V> removeThenReturnCollection(V v);
     <T> CollectionList<T> cast(Class<T> t);
-    <T> CollectionList<T> map(Function<V, T> function);
+    <T> CollectionList<T> map(BiFunction<V, Integer, T> function);
 
     static <T> CollectionList<T> fromValues(Map<?, ? extends T> map) {
         return new CollectionList<>(map.values());
