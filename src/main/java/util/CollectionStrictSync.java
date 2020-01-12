@@ -152,24 +152,6 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
     }
 
     /**
-     * Adds multiple entry by function.<br>
-     * When the function returned true, V(v for value) will be added.
-     * @param function passes Key, Value. Must return boolean.
-     * @return all entries that added from this method
-     */
-    @Override
-    public synchronized CollectionStrictSync<K, V> add(BiFunction<K, V, Boolean> function, V v) {
-        synchronized (StrictLock.LOCK) {
-            this.forEach(((k, v2) -> {
-                if (function.apply(k, v2)) {
-                    this.add(k, v);
-                }
-            }));
-            return this;
-        }
-    }
-
-    /**
      * Adds all entries from provided map.
      * @return this
      */

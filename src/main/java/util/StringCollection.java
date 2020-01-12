@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -15,11 +14,11 @@ import java.util.function.Function;
  * @see CollectionSync - for synchronized Collection
  * @see CollectionStrictSync - for strictly synchronized Collection
  */
-public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V> {
+public class StringCollection<V> extends Collection<String, V> implements ICollection<String, V> {
     /**
      * Constructs an empty Collection with the default initial capacity (16) and the default load factor (0.75).
      */
-    public Collection() {
+    public StringCollection() {
         super();
     }
 
@@ -27,7 +26,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * Constructs this Collection with values.
      * @param map will be added with this constructor
      */
-    public Collection(Map<? extends K, ? extends V> map) {
+    public StringCollection(Map<? extends String, ? extends V> map) {
         super();
         this.addAll(map);
     }
@@ -35,6 +34,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     /**
      * @return first value
      */
+    @Override
     public V first() {
         return this.valuesList().first();
     }
@@ -42,43 +42,47 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     /**
      * @return first key
      */
-    public K firstKey() {
+    @Override
+    public String firstKey() {
         return this.keysList().first();
     }
 
     /**
      * @return last value
      */
+    @Override
     public V last() { return this.valuesList().last(); }
 
     /**
      * @return last key
      */
-    public K lastKey() { return this.keysList().last(); }
+    @Override
+    public String lastKey() { return this.keysList().last(); }
 
     /**
-     * <b>Note: Unchecked Type Casting</b>
      * @return keys as Array.
      */
-    @SuppressWarnings("unchecked")
-    public K[] keys() {
+    @Override
+    public String[] keys() {
         final Object[] a = this.keySet().toArray();
         List<Object> keysObj = Arrays.asList(a);
-        CollectionList<K> keys = new CollectionList<>();
-        keysObj.forEach(k -> keys.add((K) k));
+        CollectionList<String> keys = new CollectionList<>();
+        keysObj.forEach(k -> keys.add((String) k));
         return keys.valuesArray();
     }
 
     /**
      * @return all keys as CollectionList
      */
-    public CollectionList<K> keysList() {
+    @Override
+    public CollectionList<String> keysList() {
         return new CollectionList<>(this.keySet());
     }
 
     /**
      * @return values as Array.
      */
+    @Override
     @SuppressWarnings("unchecked")
     public V[] valuesArray() {
         return (V[]) this.values().toArray();
@@ -87,6 +91,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     /**
      * @return values as CollectionList.
      */
+    @Override
     public CollectionList<V> valuesList() {
         return new CollectionList<>(this.values());
     }
@@ -95,6 +100,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @param action it passes value, index.
      * @see Collection#foreachKeys(BiConsumer)
      */
+    @Override
     public void foreach(BiConsumer<V, Integer> action) {
         final int[] index = {0};
         this.values().forEach(v -> {
@@ -107,7 +113,8 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @param action it passes key, index.
      * @see Collection#foreach(BiConsumer)
      */
-    public void foreachKeys(BiConsumer<K, Integer> action) {
+    @Override
+    public void foreachKeys(BiConsumer<String, Integer> action) {
         final int[] index = {0};
         this.keySet().forEach(k -> {
             action.accept(k, index[0]);
@@ -119,28 +126,44 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * Adds key-value to the Collection.
      * @return added value
      */
-    public V add(K key, V value) {
+    @Override
+    public V add(String key, V value) {
         return super.put(key, value);
+    }
+
+    private V find(String key) {
+        CollectionList<String> list = this.keysList().filter(str -> str.equals(key));
+        if (list == null) return null;
+        return super.get(list.first());
+    }
+
+    @Override
+    public V get(Object key) {
+        V v = super.get(key);
+        if (v != null) return v;
+        return this.find(key.toString());
     }
 
     /**
      * Adds all entries from provided map.
      * @return this
      */
-    public Collection<K, V> addAll(Map<? extends K, ? extends V> map) {
+    @Override
+    public StringCollection<V> addAll(Map<? extends String, ? extends V> map) {
         super.putAll(map);
         return this;
     }
 
     /**
      * Filters values. If returned true, value will be added to the new Collection. Returns new Collection of filtered values.
-     * @see Collection#filterKeys(Function) 
+     * @see Collection#filterKeys(Function)
      * @param filter filter function.
      * @return clone of new Collection filtered by function
      */
-    public Collection<K, V> filter(Function<V, Boolean> filter) {
-        Collection<K, V> newList = new Collection<>();
-        K[] keys = this.keys();
+    @Override
+    public StringCollection<V> filter(Function<V, Boolean> filter) {
+        StringCollection<V> newList = new StringCollection<>();
+        String[] keys = this.keys();
         this.foreach((v, i) -> {
             if (filter.apply(v)) newList.put(keys[i], v);
         });
@@ -154,8 +177,8 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @return clone of new Collection filtered by function
      */
     @Override
-    public Collection<K, V> filterKeys(Function<K, Boolean> filter) {
-        Collection<K, V> newList = new Collection<>();
+    public StringCollection<V> filterKeys(Function<String, Boolean> filter) {
+        StringCollection<V> newList = new StringCollection<>();
         V[] values = this.valuesArray();
         this.foreachKeys((k, i) -> {
             if (filter.apply(k)) newList.put(k, values[i]);
@@ -169,7 +192,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @return this collection
      */
     @Override
-    public Collection<K, V> removeThenReturnCollection(K k) {
+    public StringCollection<V> removeThenReturnCollection(String k) {
         this.remove(k);
         return this;
     }
@@ -180,8 +203,8 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @return New collection
      */
     @Override
-    public Collection<K, V> clone() {
-        Collection<K, V> newList = new Collection<>();
+    public StringCollection<V> clone() {
+        StringCollection<V> newList = new StringCollection<>();
         newList.addAll(this);
         return newList;
     }
@@ -194,8 +217,8 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @throws ClassCastException Thrown when impossible to cast.
      */
     @Override
-    public <T> Collection<K, T> cast(Class<T> newType) {
-        Collection<K, T> collection = new Collection<>();
+    public <T> Collection<String, T> cast(Class<T> newType) {
+        Collection<String, T> collection = new Collection<>();
         this.forEach((k, v) -> collection.add(k, newType.cast(v)));
         return collection;
     }
@@ -205,22 +228,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * @return new collection
      */
     @Override
-    public Collection<K, V> values(V v) {
+    public Collection<String, V> values(V v) {
         return new Collection<>(this.filter(f -> f.equals(v)));
-    }
-
-    /**
-     * The <b>map()</b> method <b>creates a new collection</b> populated with the results of calling a provided function on every element in the calling collection.
-     * @return New collection with new type.
-     */
-    @Override
-    public <A, B> Collection<A, B> map(BiFunction<K, V, A> keyFunction, BiFunction<K, V, B> valueFunction) {
-        Collection<A, B> newCollection = new Collection<>();
-        this.forEach((k, v) -> {
-            A a = keyFunction.apply(k, v);
-            B b = valueFunction.apply(k, v);
-            newCollection.add(a, b);
-        });
-        return newCollection;
     }
 }
