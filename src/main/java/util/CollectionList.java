@@ -120,6 +120,17 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      * @param function Function that will run to create a new array.
      * @return New array with new type.
      */
+    public <T> CollectionList<T> map(Function<V, T> function) {
+        CollectionList<T> newList = new CollectionList<>();
+        this.forEach(v -> newList.add(function.apply(v)));
+        return newList;
+    }
+
+    /**
+     * The <b>map()</b> method <b>creates a new array</b> populated with the results of calling a provided function on every element in the calling array.
+     * @param function Function that will run to create a new array.
+     * @return New array with new type.
+     */
     public <T> CollectionList<T> map(BiFunction<V, Integer, T> function) {
         CollectionList<T> newList = new CollectionList<>();
         final int[] index = {0};
