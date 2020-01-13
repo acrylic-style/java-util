@@ -84,7 +84,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         this.foreach((v, i) -> {
             if (filter.apply(v)) newList.add(v);
         });
-        return newList.size() == 0 ? null : newList;
+        return newList;
     }
 
     /**
@@ -92,12 +92,12 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      * @param filter filter function.
      * @return New list
      */
-    public CollectionList<V> filterNonNull(Function<V, Boolean> filter) {
+    public CollectionList<V> filterNullable(Function<V, Boolean> filter) {
         CollectionList<V> newList = new CollectionList<>();
         this.foreach((v, i) -> {
             if (filter.apply(v)) newList.add(v);
         });
-        return newList;
+        return newList.size() == 0 ? null : newList;
     }
 
     public CollectionList<V> clone() {
