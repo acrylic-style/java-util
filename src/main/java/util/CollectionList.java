@@ -87,6 +87,19 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         return newList.size() == 0 ? null : newList;
     }
 
+    /**
+     * Filters values. If returned true, that value will be kept. Returns new Collection of filtered values.
+     * @param filter filter function.
+     * @return New list
+     */
+    public CollectionList<V> filterNonNull(Function<V, Boolean> filter) {
+        CollectionList<V> newList = new CollectionList<>();
+        this.foreach((v, i) -> {
+            if (filter.apply(v)) newList.add(v);
+        });
+        return newList;
+    }
+
     public CollectionList<V> clone() {
         CollectionList<V> newList = new CollectionList<>();
         newList.addAll(this);
