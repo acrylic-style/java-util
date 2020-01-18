@@ -20,18 +20,19 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         this.addAll(list);
     }
 
+    @Override
     public V first() { return this.valuesArray()[0]; }
 
+    @Override
     @SuppressWarnings("unchecked")
     public V[] valuesArray() {
         return (V[]) this.toArray();
     }
 
+    @Override
     public V last() { return this.valuesArray()[0]; }
 
-    /**
-     * @param action it passes value, index.
-     */
+    @Override
     public void foreach(BiConsumer<V, Integer> action) {
         final int[] index = {0};
         this.forEach(v -> {
@@ -40,45 +41,43 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         });
     }
 
+    @Override
     public V put(V value) {
         super.add(value);
         return value;
     }
 
+    @Override
     public CollectionList<V> reverse() {
         CollectionList<V> target = this.clone();
         Collections.reverse(target);
         return target;
     }
 
-    /**
-     * Shuffles all entries in list.
-     * @return shuffled new list
-     */
+    @Override
     public CollectionList<V> shuffle() {
         CollectionList<V> target = this.clone();
         Collections.shuffle(target);
         return target;
     }
 
+    @Override
     public <ListLike extends List<? extends V>> void putAll(ListLike list) {
         super.addAll(list);
     }
 
+    @Override
     public CollectionList<V> addAll(CollectionList<V> list) {
         list.forEach(this::add);
         return this;
     }
 
+    @Override
     public CollectionList<V> putAll(CollectionList<V> list) {
         return this.addAll(list);
     }
 
-    /**
-     * Filters values. If returned true, that value will be kept. Returns new Collection of filtered values.
-     * @param filter filter function.
-     * @return New list if matches, null otherwise
-     */
+    @Override
     public CollectionList<V> filter(Function<V, Boolean> filter) {
         CollectionList<V> newList = new CollectionList<>();
         this.foreach((v, i) -> {
@@ -87,11 +86,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         return newList;
     }
 
-    /**
-     * Filters values. If returned true, that value will be kept. Returns new Collection of filtered values.
-     * @param filter filter function.
-     * @return New list
-     */
+    @Override
     public CollectionList<V> filterNullable(Function<V, Boolean> filter) {
         CollectionList<V> newList = new CollectionList<>();
         this.foreach((v, i) -> {
@@ -100,51 +95,27 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         return newList.size() == 0 ? null : newList;
     }
 
+    @Override
     public CollectionList<V> clone() {
         CollectionList<V> newList = new CollectionList<>();
         newList.addAll(this);
         return newList;
     }
 
+    @Override
     public CollectionList<V> removeThenReturnCollection(V v) {
         this.remove(v);
         return this;
     }
 
-    /**
-     * Casts type to another. Exactly same method as ICollectionList.cast().
-     * @param <T> New value type, if it was impossible to cast, ClassCastException will be thrown.
-     * @return New collection
-     * @throws ClassCastException Thrown when impossible to cast
-     */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public <T> CollectionList<T> cast(Class<T> t) {
-        if (t == String.class) {
-            CollectionList<String> list = new CollectionList<>();
-            this.forEach(v -> list.add(v instanceof Enum ? ((Enum) v).name() : v.toString()));
-            return (CollectionList<T>) list;
-        }
-        CollectionList<T> list = new CollectionList<>();
-        this.forEach(v -> list.add(t.cast(v)));
-        return list;
-    }
-
-    /**
-     * The <b>map()</b> method <b>creates a new array</b> populated with the results of calling a provided function on every element in the calling array.
-     * @param function Function that will run to create a new array.
-     * @return New array with new type.
-     */
+    @Override
     public <T> CollectionList<T> map(Function<V, T> function) {
         CollectionList<T> newList = new CollectionList<>();
         this.forEach(v -> newList.add(function.apply(v)));
         return newList;
     }
 
-    /**
-     * The <b>map()</b> method <b>creates a new array</b> populated with the results of calling a provided function on every element in the calling array.
-     * @param function Function that will run to create a new array.
-     * @return New array with new type.
-     */
+    @Override
     public <T> CollectionList<T> map(BiFunction<V, Integer, T> function) {
         CollectionList<T> newList = new CollectionList<>();
         final int[] index = {0};
@@ -153,5 +124,16 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
             index[0]++;
         });
         return newList;
+    }
+
+    @Override
+    public String join(String s) {
+        if (this.isEmpty()) return "";
+        StringBuilder str = new StringBuilder();
+        this.foreach((a, i) -> {
+            str.append(a);
+            if (i != 0) str.append(s);
+        });
+        return str.toString();
     }
 }
