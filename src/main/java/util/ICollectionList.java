@@ -125,6 +125,8 @@ public interface ICollectionList<V> extends List<V> {
     @SuppressWarnings("unchecked")
     CollectionList<V> concat(CollectionList<V>... lists);
 
+    List<V> toList();
+
     static <T> CollectionList<T> fromValues(Map<?, ? extends T> map) {
         return new CollectionList<>(map.values());
     }

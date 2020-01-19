@@ -195,4 +195,8 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     public static <T> CollectionList<T> of(T... t) {
         return new CollectionList<>(t);
     }
+
+    public List<V> toList() {
+        return this;
+    }
 }
