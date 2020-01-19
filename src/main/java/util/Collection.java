@@ -223,4 +223,11 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         });
         return newCollection;
     }
+
+    @Override
+    public CollectionList<Entry<K, V>> toEntryList() {
+        CollectionList<Entry<K, V>> entries = new CollectionList<>();
+        this.forEach((k, v) -> entries.add(new HashMap.SimpleEntry<>(k, v)));
+        return entries;
+    }
 }

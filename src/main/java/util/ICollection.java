@@ -24,6 +24,7 @@ public interface ICollection<K, V> extends Map<K, V> {
     <T> ICollection<K, T> cast(Class<T> newType);
     Collection<K, V> values(V v);
     <A, B> Collection<A, B> map(BiFunction<K, V, A> keyFunction, BiFunction<K, V, B> valueFunction);
+    CollectionList<Entry<K, V>> toEntryList();
 
     static <K, V> Collection<K, V> asCollection(Map<? extends K, ? extends V> map) {
         Collection<K, V> collection = new Collection<>();
