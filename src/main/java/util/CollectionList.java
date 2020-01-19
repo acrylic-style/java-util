@@ -15,6 +15,12 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         this.addAll(list);
     }
 
+    @SafeVarargs
+    public CollectionList(V... v) {
+        super();
+        this.addAll(Arrays.asList(v));
+    }
+
     public CollectionList(java.util.Collection<? extends V> list) {
         super();
         this.addAll(list);
@@ -31,6 +37,11 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
 
     @Override
     public V last() { return this.valuesArray()[0]; }
+
+    @Override
+    public int length() {
+        return this.size();
+    }
 
     @Override
     public void foreach(BiConsumer<V, Integer> action) {
@@ -131,9 +142,57 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         if (this.isEmpty()) return "";
         StringBuilder str = new StringBuilder();
         this.foreach((a, i) -> {
+            if (i != 0) str.append(s == null ? "," : s);
             str.append(a);
-            if (i != 0) str.append(s);
         });
         return str.toString();
+    }
+
+    @Override
+    public String join() {
+        return this.join(null);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof CollectionList)) return false;
+        CollectionList<?> list = (CollectionList<?>) o;
+        return this.filter(list::contains).size() == list.size() || super.equals(o);
+    }
+
+    @Override
+    public V shift() {
+        if (this.isEmpty()) return null;
+        return this.remove(0);
+    }
+
+    @SafeVarargs
+    @Override
+    public final int unshift(V... v) {
+        if (v == null || v.length == 0) return this.size();
+        this.clone().forEach(this::add);
+        for (int i = 0; i < v.length; i++) this.set(i, v[i]);
+        return this.size();
+    }
+
+    @SafeVarargs
+    @Override
+    public final CollectionList<V> concat(CollectionList<V>... lists) {
+        if (lists == null) return this.clone();
+        CollectionList<V> list = this.clone();
+        for (CollectionList<V> vs : lists) list.addAll(vs);
+        return list;
+    }
+
+    /**
+     * The <b>CollectionList.of()</b> method creates a new
+     * CollectionList instance from a variable number of
+     * arguments, regardless of number or type of the arguments.
+     * @param t Elements of which to create the array.
+     * @return A new CollectionList instance.
+     */
+    @SafeVarargs
+    public static <T> CollectionList<T> of(T... t) {
+        return new CollectionList<>(t);
     }
 }
