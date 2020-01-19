@@ -1,9 +1,6 @@
 package util;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -228,6 +225,13 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     public CollectionList<Entry<K, V>> toEntryList() {
         CollectionList<Entry<K, V>> entries = new CollectionList<>();
         this.forEach((k, v) -> entries.add(new HashMap.SimpleEntry<>(k, v)));
+        return entries;
+    }
+
+    @Override
+    public CollectionList<Map<K, V>> toMapList() {
+        CollectionList<Map<K, V>> entries = new CollectionList<>();
+        this.forEach((k, v) -> entries.add(Collections.singletonMap(k, v)));
         return entries;
     }
 }
