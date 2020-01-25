@@ -132,7 +132,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     private V find(String key) {
-        CollectionList<String> list = this.keysList().filter(str -> str.equals(key));
+        CollectionList<String> list = this.keysList().filterNullable(str -> str.equals(key));
         if (list == null) return null;
         return super.get(list.first());
     }

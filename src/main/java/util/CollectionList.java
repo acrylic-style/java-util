@@ -175,6 +175,9 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         return this.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @SafeVarargs
     @Override
     public final CollectionList<V> concat(CollectionList<V>... lists) {
