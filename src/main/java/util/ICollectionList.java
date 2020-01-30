@@ -12,6 +12,7 @@ public interface ICollectionList<V> extends List<V> {
     V[] valuesArray();
     V last();
     void foreach(BiConsumer<V, Integer> action);
+    void foreach(BiBiConsumer<V, Integer, ICollectionList<V>> action);
     V put(V v);
     CollectionList<V> reverse();
 

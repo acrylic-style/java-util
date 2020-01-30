@@ -53,6 +53,15 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     }
 
     @Override
+    public void foreach(BiBiConsumer<V, Integer, ICollectionList<V>> action) {
+        final int[] index = {0};
+        this.forEach(v -> {
+            action.accept(v, index[0], this.clone());
+            index[0]++;
+        });
+    }
+
+    @Override
     public V put(V value) {
         super.add(value);
         return value;
@@ -166,9 +175,9 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         return this.remove(0);
     }
 
-    @SafeVarargs
+    @SuppressWarnings("unchecked")
     @Override
-    public final int unshift(V... v) {
+    public int unshift(V... v) {
         if (v == null || v.length == 0) return this.size();
         this.clone().forEach(this::add);
         for (int i = 0; i < v.length; i++) this.set(i, v[i]);
