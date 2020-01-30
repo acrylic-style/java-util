@@ -15,7 +15,9 @@ public interface ICollection<K, V> extends Map<K, V> {
     V[] valuesArray();
     CollectionList<V> valuesList();
     void foreach(BiConsumer<V, Integer> action);
+    void foreach(BiBiConsumer<V, Integer, ICollection<K, V>> action);
     void foreachKeys(BiConsumer<K, Integer> action);
+    void foreachKeys(BiBiConsumer<K, Integer, ICollection<K, V>> action);
     Collection<K, V> addAll(Map<? extends K, ? extends V> map);
     Collection<K, V> filter(Function<V, Boolean> filter);
     Collection<K, V> filterKeys(Function<K, Boolean> filter);

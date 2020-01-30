@@ -100,6 +100,14 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         });
     }
 
+    public void foreach(BiBiConsumer<V, Integer, ICollection<K, V>> action) {
+        final int[] index = {0};
+        this.values().forEach(v -> {
+            action.accept(v, index[0], this);
+            index[0]++;
+        });
+    }
+
     /**
      * @param action it passes key, index.
      * @see Collection#foreach(BiConsumer)
@@ -108,6 +116,14 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         final int[] index = {0};
         this.keySet().forEach(k -> {
             action.accept(k, index[0]);
+            index[0]++;
+        });
+    }
+
+    public void foreachKeys(BiBiConsumer<K, Integer, ICollection<K, V>> action) {
+        final int[] index = {0};
+        this.keySet().forEach(k -> {
+            action.accept(k, index[0], this);
             index[0]++;
         });
     }
