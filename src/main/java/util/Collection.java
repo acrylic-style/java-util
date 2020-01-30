@@ -128,6 +128,10 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         });
     }
 
+    public void forEach(BiBiConsumer<K, V, ICollection<K, V>> action) {
+        this.forEach((k, v) -> action.accept(k, v, this));
+    }
+
     /**
      * Adds key-value to the Collection.
      * @return added value
