@@ -183,6 +183,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
      * @see HashMap#clone()
      * @return new collection
      */
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public synchronized CollectionSync<K, V> clone() {
         CollectionSync<K, V> newList = new CollectionSync<>();
