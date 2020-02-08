@@ -1,6 +1,7 @@
 package test.util;
 
 import org.junit.Test;
+import util.RunnableFunction;
 import util.Watchdog;
 
 public class WatchdogTest {
@@ -29,6 +30,23 @@ public class WatchdogTest {
         try {
             Watchdog watchdog = new Watchdog("WatchdogTest", () -> System.out.println("It shouldn't block."), 1000*3);
             watchdog.startAwait();
+            System.out.println("WatchdogTest:startAwaitNoBlocking has ended!");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void startAwait() {
+        try {
+            Watchdog watchdog = new Watchdog("WatchdogTest", new RunnableFunction<String>() {
+                @Override
+                public String runWithType() {
+                    return "Test";
+                }
+            }, 1000*3);
+            String s = (String) watchdog.startAwait();
+            System.out.println("Output: " + s);
             System.out.println("WatchdogTest:startAwaitNoBlocking has ended!");
         } catch (InterruptedException e) {
             e.printStackTrace();

@@ -2,6 +2,7 @@ package util;
 
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Watchdog {
     private boolean started = false;
@@ -10,8 +11,10 @@ public class Watchdog {
     private Thread watchdog;
     private int timeout;
     private final Object lock = new Object();
+    private Runnable runnable;
 
     public Watchdog(String name, Runnable runnable, int timeout) {
+        this.runnable = runnable;
         Thread thread = name == null ? new Thread(runnable) : new Thread(runnable, name);
         Thread watchdog = new Thread(() -> {
             Timer timer = new Timer();
@@ -32,6 +35,7 @@ public class Watchdog {
     }
 
     public Watchdog then(Runnable runnable) {
+        if (runnable instanceof RunnableFunction) throw new UnsupportedOperationException("This method cannot be used if you're using RunnableFunction.");
         if (started) throw new IllegalStateException("Thread has already started or ended.");
         Runnable thread2 = new Thread(thread);
         thread = new Thread(() -> {
@@ -42,6 +46,7 @@ public class Watchdog {
     }
 
     public synchronized void start() {
+        if (runnable instanceof RunnableFunction) throw new UnsupportedOperationException("This method cannot be used if you're using RunnableFunction.");
         if (started) throw new IllegalStateException("Thread has already started or ended.");
         Thread thread2 = new Thread(thread);
         thread = new Thread(() -> {
@@ -56,13 +61,16 @@ public class Watchdog {
         started = true;
     }
 
-    public synchronized void startAwait() throws InterruptedException {
+    public synchronized Object startAwait() throws InterruptedException {
         if (started) throw new IllegalStateException("Thread has already started or ended.");
         Thread thread2 = new Thread(thread);
+        AtomicReference<Object> o = new AtomicReference<>();
         thread = new Thread(() -> {
             synchronized (lock) {
-                //noinspection CallToThreadRun
-                thread2.run();
+                if (runnable instanceof RunnableFunction) {
+                    o.set(((RunnableFunction<?>) runnable).runWithType());
+                } else //noinspection CallToThreadRun
+                    thread2.run();
                 terminated = true;
                 lock.notifyAll();
             }
@@ -72,5 +80,6 @@ public class Watchdog {
             watchdog.start();
             lock.wait(this.timeout);
         }
+        return o.get();
     }
 }
