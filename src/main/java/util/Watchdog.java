@@ -82,4 +82,10 @@ public class Watchdog {
         }
         return o.get();
     }
+
+    public synchronized Object startAwaitWithoutException() {
+        try {
+            return startAwait();
+        } catch (InterruptedException ignored) { return null; }
+    }
 }
