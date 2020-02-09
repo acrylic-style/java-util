@@ -8,10 +8,10 @@ public class WatchdogTest {
     @Test
     public void startAwaitBlocking() {
         try {
-            Watchdog watchdog = new Watchdog("WatchdogTest", () -> {
+            Watchdog watchdog = new Watchdog("WatchdogTest (Block)", () -> {
                 try {
                     System.out.println("Going to sleep");
-                    Thread.sleep(5000);
+                    Thread.sleep(500000);
                     System.out.println("Got up!");
                 } catch (InterruptedException e) {
                     System.out.println("Interrupted!");

@@ -24,6 +24,9 @@ public class Watchdog {
                     if (!terminated) {
                         System.out.println("Thread " + thread.getName() + " has elapsed its timeout time, interrupting!");
                         thread.interrupt();
+                        synchronized (lock) {
+                            lock.notifyAll();
+                        }
                     }
                 }
             };
@@ -66,12 +69,12 @@ public class Watchdog {
         Thread thread2 = new Thread(thread);
         AtomicReference<Object> o = new AtomicReference<>();
         thread = new Thread(() -> {
+            if (runnable instanceof RunnableFunction) {
+                o.set(((RunnableFunction<?>) runnable).runWithType());
+            } else //noinspection CallToThreadRun
+                thread2.run();
+            terminated = true;
             synchronized (lock) {
-                if (runnable instanceof RunnableFunction) {
-                    o.set(((RunnableFunction<?>) runnable).runWithType());
-                } else //noinspection CallToThreadRun
-                    thread2.run();
-                terminated = true;
                 lock.notifyAll();
             }
         });
