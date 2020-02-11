@@ -20,7 +20,7 @@ public final class ReflectionHelper {
      * @param args Class of arguments
      * @return Method if found, null otherwiwise
      */
-    public static <T> Method findMethod(Class<? super T> clazz, String methodName, Class<?>... args) {
+    public static <T> Method findMethod(Class<? extends T> clazz, String methodName, Class<?>... args) {
         try {
             Method method = clazz.getDeclaredMethod(methodName, args);
             method.setAccessible(true);
@@ -41,7 +41,7 @@ public final class ReflectionHelper {
      * @throws IllegalAccessException If invocation isn't allowed
      * @throws NoSuchMethodException If couldn't method find
      */
-    public static <T> Object invokeMethod(Class<? super T> clazz, T instance, String methodName, Object... args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public static <T> Object invokeMethod(Class<? extends T> clazz, T instance, String methodName, Object... args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         List<Class<?>> classes = new ArrayList<>();
         for (Object arg : args) classes.add(arg.getClass());
         Method method = findMethod(clazz, methodName, classes.toArray(new Class[0]));
@@ -55,7 +55,7 @@ public final class ReflectionHelper {
      * @param fieldName Field name
      * @return Field if found, null otherwise
      */
-    public static <T> Field findField(Class<? super T> clazz, String fieldName) {
+    public static <T> Field findField(Class<? extends T> clazz, String fieldName) {
         try {
             Field field = clazz.getDeclaredField(fieldName);
             field.setAccessible(true);
@@ -74,7 +74,7 @@ public final class ReflectionHelper {
      * @throws NoSuchFieldException If couldn't find field
      * @throws IllegalAccessException If the operation isn't allowed
      */
-    public static <T> Object getField(Class<? super T> clazz, T instance, String fieldName) throws NoSuchFieldException, IllegalAccessException {
+    public static <T> Object getField(Class<? extends T> clazz, T instance, String fieldName) throws NoSuchFieldException, IllegalAccessException {
         Field field = findField(clazz, fieldName);
         if (field == null) throw new NoSuchFieldException();
         field.setAccessible(true);
@@ -88,7 +88,7 @@ public final class ReflectionHelper {
      * @param fieldName Field name
      * @return Value of field if success, null otherwise
      */
-    public static <T> Object getFieldWithoutException(Class<? super T> clazz, T instance, String fieldName) {
+    public static <T> Object getFieldWithoutException(Class<? extends T> clazz, T instance, String fieldName) {
         try {
             return getField(clazz, instance, fieldName);
         } catch (NoSuchFieldException | IllegalAccessException ignored) {
@@ -105,7 +105,7 @@ public final class ReflectionHelper {
      * @throws NoSuchFieldException If couldn't find field
      * @throws IllegalAccessException If the operation isn't allowed
      */
-    public static <T> void setField(Class<? super T> clazz, T instance, String fieldName, Object value) throws NoSuchFieldException, IllegalAccessException {
+    public static <T> void setField(Class<? extends T> clazz, T instance, String fieldName, Object value) throws NoSuchFieldException, IllegalAccessException {
         Field field = findField(clazz, fieldName);
         if (field == null) throw new NoSuchFieldException();
         field.setAccessible(true);
@@ -120,7 +120,7 @@ public final class ReflectionHelper {
      * @param value Value
      * @return True if success, false otherwise
      */
-    public static <T> boolean setFieldWithoutException(Class<? super T> clazz, T instance, String fieldName, Object value) {
+    public static <T> boolean setFieldWithoutException(Class<? extends T> clazz, T instance, String fieldName, Object value) {
         try {
             setField(clazz, instance, fieldName, value);
             return true;
@@ -135,7 +135,7 @@ public final class ReflectionHelper {
      * @param types Parameter Types
      * @return Constructor if found, null otherwise
      */
-    public static <T> Constructor<? super T> findConstructor(Class<? super T> clazz, Class<?>... types) {
+    public static <T> Constructor<? super T> findConstructor(Class<T> clazz, Class<?>... types) {
         try {
             Constructor<? super T> constructor = clazz.getConstructor(types);
             constructor.setAccessible(true);
@@ -154,7 +154,7 @@ public final class ReflectionHelper {
      * @throws IllegalAccessException If invocation isn't allowed
      * @throws InstantiationException If can't be initialized
      */
-    public static <T> Object invokeConstructor(Class<? super T> clazz, Object... args) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static <T> Object invokeConstructor(Class<T> clazz, Object... args) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         List<Class<?>> classes = new ArrayList<>();
         for (Object arg : args) classes.add(arg.getClass());
         Constructor<? super T> constructor = findConstructor(clazz, classes.toArray(new Class[0]));
@@ -168,7 +168,7 @@ public final class ReflectionHelper {
      * @param args Arguments for invoke constructor
      * @return Result of constructor if success, null otherwise
      */
-    public static <T> Object invokeConstructorWithoutException(Class<? super T> clazz, Object... args) {
+    public static <T> Object invokeConstructorWithoutException(Class<? extends T> clazz, Object... args) {
         try {
             return invokeConstructor(clazz, args);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException ignored) {
