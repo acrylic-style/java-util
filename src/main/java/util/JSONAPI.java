@@ -29,20 +29,37 @@ public class JSONAPI {
         this.requestBody = requestBody;
     }
 
-    public JSONObject call() {
+    public Response call() {
         try {
             HttpURLConnection conn = (HttpURLConnection) this.url.openConnection();
             conn.setRequestMethod(this.method);
             if (requestBody != null) requestBody.getMap().forEach(conn::addRequestProperty);
             conn.connect();
-            if (conn.getResponseCode() != 200) throw new RuntimeException("Http Response Code isn't 200!");
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getResponseCode() != 200 ? conn.getErrorStream() : conn.getInputStream()));
             StringBuilder sb = new StringBuilder();
             String output;
             while ((output = br.readLine()) != null) sb.append(output);
-            return new JSONObject(sb.toString());
+            return new Response(conn.getResponseCode(), new JSONObject(sb.toString()));
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static class Response {
+        private int responseCode;
+        private JSONObject response;
+
+        public Response(int responseCode, JSONObject response) {
+            this.responseCode = responseCode;
+            this.response = response;
+        }
+
+        public int getResponseCode() {
+            return responseCode;
+        }
+
+        public JSONObject getResponse() {
+            return response;
         }
     }
 
