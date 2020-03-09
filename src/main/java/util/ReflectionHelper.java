@@ -179,7 +179,7 @@ public final class ReflectionHelper {
         }
     }
 
-    public static <A extends Annotation> CollectionList<Class<?>> findAllConfigurationClassesInPackage(String packageName, Class<A> annotation) throws ClassNotFoundException {
+    public static <A extends Annotation> CollectionList<Class<?>> findAllConfigurationClassesInPackage(String packageName, Class<A> annotation) {
         CollectionList<Class<?>> classes = new CollectionList<>();
         Reflections ref = new Reflections(packageName);
         classes.addAll(ref.getTypesAnnotatedWith(annotation));
