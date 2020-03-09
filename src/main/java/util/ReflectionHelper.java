@@ -1,10 +1,17 @@
 package util;
 
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.web.context.support.StandardServletEnvironment;
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -174,5 +181,13 @@ public final class ReflectionHelper {
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException ignored) {
             return null;
         }
+    }
+
+    public static <A extends Annotation> CollectionList<Class<?>> findAllConfigurationClassesInPackage(String packageName, Class<A> annotation) throws ClassNotFoundException {
+        final CollectionList<Class<?>> result = new CollectionList<>();
+        final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(true, new StandardServletEnvironment());
+        provider.addIncludeFilter(new AnnotationTypeFilter(annotation));
+        for (BeanDefinition beanDefinition : provider.findCandidateComponents(packageName)) result.add(Class.forName(beanDefinition.getBeanClassName()));
+        return result;
     }
 }

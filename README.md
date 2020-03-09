@@ -49,7 +49,7 @@ An easy api for call RESTFul APIs or any JSON APIs.
 Thread with timeouts.
 
 #### Methods
-- `public Watchdog\(String name, Runnable runnable, int timeout\)` *\(Constructor\)*
+- `public Watchdog(String name, Runnable runnable, int timeout)` *\(Constructor\)*
 - `public Watchdog then(Runnable runnable)`
   - Run `runnable` after watchdog task is done. May not be called if interrupted.
 - `public synchronized void start()`
