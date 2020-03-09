@@ -66,7 +66,7 @@ public abstract class Promise<T> implements IPromise<T> {
                 return promise1.apply(o);
             }
         };
-        promise1.then = this.then;
+        //promise1.then = this.then;
         return promise1;
     }
 
