@@ -1,5 +1,5 @@
 package util.promise;
 
-public interface IPromise<T> {
-    T apply(Object o);
+public interface IPromise<R> {
+    R apply(Object o);
 }
