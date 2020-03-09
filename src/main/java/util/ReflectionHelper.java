@@ -1,8 +1,6 @@
 package util;
 
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.reflections.Reflections;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -182,10 +180,9 @@ public final class ReflectionHelper {
     }
 
     public static <A extends Annotation> CollectionList<Class<?>> findAllConfigurationClassesInPackage(String packageName, Class<A> annotation) throws ClassNotFoundException {
-        final CollectionList<Class<?>> result = new CollectionList<>();
-        final ClassPathScanningCandidateComponentProvider provider = new ClassPathScanningCandidateComponentProvider(false);
-        provider.addIncludeFilter(new AnnotationTypeFilter(annotation));
-        for (BeanDefinition beanDefinition : provider.findCandidateComponents(packageName)) result.add(Class.forName(beanDefinition.getBeanClassName()));
-        return result;
+        CollectionList<Class<?>> classes = new CollectionList<>();
+        Reflections ref = new Reflections(packageName);
+        classes.addAll(ref.getTypesAnnotatedWith(annotation));
+        return classes;
     }
 }
