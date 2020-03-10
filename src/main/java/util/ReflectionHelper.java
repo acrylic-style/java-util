@@ -4,6 +4,9 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
+import org.reflections.util.FilterBuilder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -196,6 +199,17 @@ public final class ReflectionHelper {
     public static CollectionList<Class<?>> findAllAnnotatedClasses(@NotNull String packageName, @NotNull Class<? extends Annotation> annotation) {
         CollectionList<Class<?>> classes = new CollectionList<>();
         classes.addAll(new Reflections(packageName).getTypesAnnotatedWith(annotation));
+        return classes;
+    }
+
+    @NotNull
+    public static CollectionList<Class<?>> findAllAnnotatedClasses(@NotNull ClassLoader classLoader, @NotNull String packageName, @NotNull Class<? extends Annotation> annotation) {
+        CollectionList<Class<?>> classes = new CollectionList<>();
+        classes.addAll(new Reflections(
+                new ConfigurationBuilder()
+                        .setUrls(ClasspathHelper.forClassLoader(classLoader))
+                        .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(packageName)))
+        ).getTypesAnnotatedWith(annotation));
         return classes;
     }
 }
