@@ -4,6 +4,8 @@ public abstract class Promise<T> implements IPromise<T> {
     private Promise<Object> parent = null;
     private Promise<Object> then = null;
     private Promise<Object> catch_ = null;
+    private PromiseStatus status = PromiseStatus.PENDING;
+    private Object v = null;
 
     public static <V> Promise<V> async(IPromise<V> promise) {
         return new Promise<V>() {
@@ -27,16 +29,25 @@ public abstract class Promise<T> implements IPromise<T> {
             };
         }
         try {
+            promise.status = PromiseStatus.RESOLVED;
             if (promise.then != null) {
-                return promise.then.apply(promise.apply(o));
+                Object o2 = promise.then.apply(promise.apply(o));
+                promise.v = o2;
+                return o2;
             } else {
                 if (promise.parent != null) {
-                    return promise.apply(promise.parent.apply(o));
+                    Object o2 = promise.apply(promise.parent.apply(o));
+                    promise.v = o2;
+                    return o2;
                 } else {
-                    return promise.apply(o);
+                    Object o2 = promise.apply(o);
+                    promise.v = o2;
+                    return o2;
                 }
             }
         } catch (Throwable throwable) {
+            promise.status = PromiseStatus.REJECTED;
+            promise.v = throwable;
             if (promise.catch_ != null) {
                 promise.catch_.apply(throwable);
                 return null;
@@ -95,4 +106,9 @@ public abstract class Promise<T> implements IPromise<T> {
 
     @Override
     public abstract T apply(Object o);
+
+    @Override
+    public String toString() {
+        return "Promise{status=" + status.name().toLowerCase() + ",value=" + v + "}";
+    }
 }
