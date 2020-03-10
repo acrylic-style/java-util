@@ -3,6 +3,7 @@ package test.util;
 import org.junit.Test;
 import util.ICollectionList;
 import util.promise.Promise;
+import util.promise.UnhandledPromiseException;
 
 import static util.promise.Promise.async;
 import static util.promise.Promise.await;
@@ -51,6 +52,15 @@ public class PromiseTest {
             throwable.printStackTrace();
             return null;
         }), "no");
+        System.out.println("s: " + s);
+    }
+
+    @Test(expected = UnhandledPromiseException.class)
+    public void promiseUnhandledThrowable() {
+        Promise<String> promise = async(o -> {
+            throw new RuntimeException("???");
+        });
+        String s = (String) await(promise, "no");
         System.out.println("s: " + s);
     }
 }

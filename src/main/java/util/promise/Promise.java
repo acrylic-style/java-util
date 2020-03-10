@@ -41,7 +41,7 @@ public abstract class Promise<T> implements IPromise<T> {
                 promise.catch_.apply(throwable);
                 return null;
             } else {
-                throw new UncaughtPromiseException(throwable);
+                throw new UnhandledPromiseException(throwable);
             }
         }
     }
