@@ -1,5 +1,7 @@
 package util.promise;
 
+import org.jetbrains.annotations.Nullable;
+
 public abstract class Promise<T> implements IPromise<T> {
     private Promise<Object> parent = null;
     private Promise<Object> then = null;
@@ -16,6 +18,12 @@ public abstract class Promise<T> implements IPromise<T> {
         };
     }
 
+    @Nullable
+    public static <V> Object await(IPromise<V> iPromise) {
+        return await(iPromise, null);
+    }
+
+    @Nullable
     public static <V> Object await(IPromise<V> iPromise, Object o) {
         Promise<V> promise;
         if (iPromise instanceof Promise) {
@@ -36,11 +44,11 @@ public abstract class Promise<T> implements IPromise<T> {
                 return o2;
             } else {
                 if (promise.parent != null) {
-                    Object o2 = promise.apply(promise.parent.apply(o));
+                    V o2 = promise.apply(promise.parent.apply(o));
                     promise.v = o2;
                     return o2;
                 } else {
-                    Object o2 = promise.apply(o);
+                    V o2 = promise.apply(o);
                     promise.v = o2;
                     return o2;
                 }
