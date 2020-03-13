@@ -7,7 +7,7 @@ public class CollectionListTest {
     @SuppressWarnings("StringBufferReplaceableByString")
     public String getAssertionErrorMessage(CollectionList<?> list) {
         StringBuilder str = new StringBuilder();
-        str.append("List size: ").append(list.size()).append(", Entries").append(list.join());
+        str.append("List size: ").append(list.size()).append(", Entries: ").append(list.join());
         return str.toString();
     }
 
@@ -56,5 +56,19 @@ public class CollectionListTest {
                 && list.contains("E")
                 && list.contains("F")
                 : getAssertionErrorMessage(list);
+    }
+
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+    @Test
+    public void equals() {
+        CollectionList<String> list1 = new CollectionList<>("l", "i", "s", "t");
+        CollectionList<String> list2 = new CollectionList<>("l", "i", "s", "t");
+        assert list1.equals(list2) && list2.equals(list1);
+    }
+
+    @Test
+    public void unique() {
+        CollectionList<String> list = new CollectionList<>("u", "n", "i", "q", "u", "e");
+        assert list.unique().containsAll(new CollectionList<>("q", "u", "e", "i", "n")) : getAssertionErrorMessage(list.unique());
     }
 }

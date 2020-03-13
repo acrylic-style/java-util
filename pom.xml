@@ -6,7 +6,7 @@
 
     <groupId>xyz.acrylicstyle</groupId>
     <artifactId>Util</artifactId>
-    <version>0.8.17</version>
+    <version>0.8.18</version>
     <build>
         <plugins>
             <plugin>

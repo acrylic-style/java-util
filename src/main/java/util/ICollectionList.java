@@ -12,7 +12,7 @@ public interface ICollectionList<V> extends List<V> {
     V[] valuesArray();
     V last();
     void foreach(BiConsumer<V, Integer> action);
-    void foreach(BiBiConsumer<V, Integer, ICollectionList<V>> action);
+    void foreach(util.BiBiConsumer<V, Integer, ICollectionList<V>> action);
     V put(V v);
     CollectionList<V> reverse();
 
@@ -125,6 +125,13 @@ public interface ICollectionList<V> extends List<V> {
      */
     @SuppressWarnings("unchecked")
     CollectionList<V> concat(CollectionList<V>... lists);
+
+    /**
+     * Returns unique list. This method does not modify
+     * the original list, and returns new list.
+     * @return New list that contains only unique values
+     */
+    CollectionList<V> unique();
 
     List<V> toList();
 

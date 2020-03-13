@@ -1,5 +1,8 @@
 package util;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -53,7 +56,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     }
 
     @Override
-    public void foreach(BiBiConsumer<V, Integer, ICollectionList<V>> action) {
+    public void foreach(util.BiBiConsumer<V, Integer, ICollectionList<V>> action) {
         final int[] index = {0};
         this.forEach(v -> {
             action.accept(v, index[0], this.clone());
@@ -166,7 +169,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     public boolean equals(Object o) {
         if (!(o instanceof CollectionList)) return false;
         CollectionList<?> list = (CollectionList<?>) o;
-        return this.filter(list::contains).size() == list.size() || super.equals(o);
+        return super.equals(list);
     }
 
     @Override
@@ -196,6 +199,11 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         return list;
     }
 
+    @Override
+    public CollectionList<V> unique() {
+        return new CollectionList<>(new HashSet<>(this.clone()));
+    }
+
     /**
      * The <b>CollectionList.of()</b> method creates a new
      * CollectionList instance from a variable number of
@@ -203,6 +211,8 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      * @param t Elements of which to create the array.
      * @return A new CollectionList instance.
      */
+    @NotNull
+    @Contract("_ -> new")
     @SafeVarargs
     public static <T> CollectionList<T> of(T... t) {
         return new CollectionList<>(t);
