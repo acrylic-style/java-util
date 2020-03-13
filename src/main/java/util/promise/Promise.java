@@ -1,5 +1,7 @@
 package util.promise;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class Promise<T> implements IPromise<T> {
@@ -9,6 +11,8 @@ public abstract class Promise<T> implements IPromise<T> {
     private PromiseStatus status = PromiseStatus.PENDING;
     private Object v = null;
 
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
     public static <V> Promise<V> async(IPromise<V> promise) {
         return new Promise<V>() {
             @Override
@@ -16,6 +20,19 @@ public abstract class Promise<T> implements IPromise<T> {
                 return promise.apply(o);
             }
         };
+    }
+
+    @Nullable
+    public static <V> V awaitT(IPromise<V> iPromise) throws ClassCastException {
+        return awaitT(iPromise, null);
+    }
+
+    @Nullable
+    @SuppressWarnings("unchecked")
+    public static <V> V awaitT(IPromise<V> iPromise, Object o) throws ClassCastException {
+        Object obj = await(iPromise, o);
+        if (obj == null) return null;
+        return (V) obj;
     }
 
     @Nullable
