@@ -14,11 +14,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.function.Consumer;
 
-public class JSONAPI {
+public class JSONAPI extends EventEmitter {
     private URL url;
     private String method = "GET";
     private RequestBody requestBody = null;
+    private Consumer<HttpURLConnection> postConnection = c -> {};
 
     public JSONAPI(@NotNull String url) {
         this.url = RuntimeExceptionThrower.invoke(() -> new URL(url));
@@ -38,10 +40,24 @@ public class JSONAPI {
         this(url, method, bodyBuilder.build());
     }
 
+    public JSONAPI setPostConnection(@NotNull Consumer<HttpURLConnection> consumer) {
+        postConnection = consumer;
+        return this;
+    }
+
+    /**
+     * Following events will be emitted during this call:<br />
+     * <ul>
+     *     <li>postConnection - before connect</li>
+     *     <li>connection - after connection</li>
+     * </ul>
+     */
     public Response call() {
         try {
             HttpURLConnection conn = (HttpURLConnection) this.url.openConnection();
             conn.setRequestMethod(this.method);
+            postConnection.accept(conn);
+            this.emit("postConnection", conn);
             if (requestBody != null && requestBody.getMap().size() != 0) requestBody.getMap().forEach(conn::addRequestProperty);
             if (requestBody != null && requestBody.getRawBody() != null) {
                 byte[] bytes = requestBody.getRawBody().getBytes(StandardCharsets.UTF_8);
@@ -50,6 +66,7 @@ public class JSONAPI {
                 os.close();
             }
             conn.connect();
+            this.emit("connection", conn);
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getResponseCode() != 200 ? conn.getErrorStream() : conn.getInputStream()));
             StringBuilder sb = new StringBuilder();
             String output;
