@@ -72,7 +72,7 @@ public class EventEmitter {
         return this;
     }
 
-    private void checkListeners(String event) throws UnsupportedOperationException {
+    private void checkListeners(String event) {
         if (maxListeners <= listeners(event).size()) throw new UnsupportedOperationException("Possible EventEmitter memory leak detected. " + maxListeners + " " + event + " listeners added.\nUse emitter.setMaxListeners() to increase limit");
     }
 
