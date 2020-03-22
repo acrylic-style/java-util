@@ -1,12 +1,14 @@
 package test.util;
 
 import org.junit.Test;
+import util.CollectionList;
 import util.ICollectionList;
 import util.promise.Promise;
 import util.promise.UnhandledPromiseException;
 
-import static util.promise.Promise.async;
-import static util.promise.Promise.await;
+import java.util.Objects;
+
+import static util.promise.Promise.*;
 
 public class PromiseTest {
     @Test
@@ -29,6 +31,24 @@ public class PromiseTest {
         });
         String string = (String) await(promise, "Test");
         System.out.println(string);
+    }
+
+    @Test
+    public void all() {
+        Promise<String> promise = async(o -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return "A";
+        });
+        long start = System.currentTimeMillis();
+        CollectionList<String> result = Objects.requireNonNull(awaitT(Promise.all(promise, promise, promise, promise, promise))).map(o -> (String) o);
+        long end = System.currentTimeMillis();
+        if (end-start > 1500) throw new AssertionError("Took " + (end - start) + " to complete (expected <= 1500ms)");
+        System.out.println(result.join(", "));
+        assert result.size() == 5;
     }
 
     @Test

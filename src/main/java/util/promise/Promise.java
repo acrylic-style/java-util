@@ -3,6 +3,10 @@ package util.promise;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import util.CollectionList;
+import util.ICollectionList;
+
+import java.util.stream.Collectors;
 
 public abstract class Promise<T> implements IPromise<T> {
     private Promise<Object> parent = null;
@@ -80,6 +84,15 @@ public abstract class Promise<T> implements IPromise<T> {
                 throw new UnhandledPromiseException(throwable);
             }
         }
+    }
+
+    public static Promise<CollectionList<Object>> all(Promise<?>... promises) {
+        return new Promise<CollectionList<Object>>() {
+            @Override
+            public CollectionList<Object> apply(Object o) {
+                return ICollectionList.asList(ICollectionList.asList(promises).parallelStream().map(Promise::await).collect(Collectors.toList()));
+            }
+        };
     }
 
     public <V> Promise<V> then(IPromise<V> promise) {
