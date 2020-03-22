@@ -49,7 +49,7 @@ public interface ICollection<K, V> extends Map<K, V> {
         return collection;
     }
 
-    static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Collection<K, V> map) {
+    static <K, V extends Comparable<? super V>> Collection<K, V> sortByValue(Collection<K, V> map) {
         CollectionList<Entry<K, V>> list = map.toEntryList();
         list.sort(Entry.comparingByValue());
         Collection<K, V> result = new Collection<>();
@@ -57,7 +57,7 @@ public interface ICollection<K, V> extends Map<K, V> {
         return result;
     }
 
-    static <K extends Comparable<? super K>, V> Map<K, V> sortByKey(Collection<K, V> map) {
+    static <K extends Comparable<? super K>, V> Collection<K, V> sortByKey(Collection<K, V> map) {
         CollectionList<Entry<K, V>> list = map.toEntryList();
         list.sort(Entry.comparingByKey());
         Collection<K, V> result = new Collection<>();
