@@ -48,4 +48,20 @@ public interface ICollection<K, V> extends Map<K, V> {
         collection.addAll(map);
         return collection;
     }
+
+    static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Collection<K, V> map) {
+        CollectionList<Entry<K, V>> list = map.toEntryList();
+        list.sort(Entry.comparingByValue());
+        Collection<K, V> result = new Collection<>();
+        for (Entry<K, V> entry : list) result.put(entry.getKey(), entry.getValue());
+        return result;
+    }
+
+    static <K extends Comparable<? super K>, V> Map<K, V> sortByKey(Collection<K, V> map) {
+        CollectionList<Entry<K, V>> list = map.toEntryList();
+        list.sort(Entry.comparingByKey());
+        Collection<K, V> result = new Collection<>();
+        for (Entry<K, V> entry : list) result.put(entry.getKey(), entry.getValue());
+        return result;
+    }
 }
