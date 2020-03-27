@@ -60,7 +60,7 @@ public abstract class Promise<T> implements IPromise<T> {
         try {
             promise.status = PromiseStatus.RESOLVED;
             if (promise.then != null) {
-                Object o2 = promise.then.apply(promise.apply(o));
+                Object o2 = await(promise.then, promise.apply(o));
                 promise.v = o2;
                 return o2;
             } else {
@@ -85,6 +85,34 @@ public abstract class Promise<T> implements IPromise<T> {
             }
         }
     }
+
+    public static void queue(IPromise<?> iPromise, Object o) {
+        new Thread(() -> {
+            Promise<?> promise;
+            if (iPromise instanceof Promise) {
+                promise = (Promise<?>) iPromise;
+            } else {
+                promise = new Promise<Object>() {
+                    @Override
+                    public Object apply(Object o) {
+                        return iPromise.apply(o);
+                    }
+                };
+            }
+            Object r = promise.apply(o);
+            if (promise.then != null) {
+                queue(promise.then, r);
+            }
+        }).start();
+    }
+
+    public void queue() { queue(null); }
+
+    public void queue(Object o) { queue(this, o); }
+
+    public T complete(Object o) { return awaitT(this, o); }
+
+    public T complete() { return awaitT(this, null); }
 
     public static Promise<CollectionList<Object>> all(Promise<?>... promises) {
         return new Promise<CollectionList<Object>>() {
@@ -115,7 +143,6 @@ public abstract class Promise<T> implements IPromise<T> {
                 return promise1.apply(o);
             }
         };
-        //promise1.then = this.then;
         return promise1;
     }
 

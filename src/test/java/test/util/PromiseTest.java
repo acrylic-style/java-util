@@ -43,8 +43,40 @@ public class PromiseTest {
             }
             return "A";
         });
+        Promise<String> promise2 = async(o -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return "B";
+        });
+        Promise<String> promise3 = async(o -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return "C";
+        });
+        Promise<String> promise4 = async(o -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return "D";
+        });
+        Promise<String> promise5 = async(o -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return "E";
+        });
         long start = System.currentTimeMillis();
-        CollectionList<String> result = Objects.requireNonNull(awaitT(Promise.all(promise, promise, promise, promise, promise))).map(o -> (String) o);
+        CollectionList<String> result = Objects.requireNonNull(awaitT(Promise.all(promise, promise2, promise3, promise4, promise5))).map(o -> (String) o);
         long end = System.currentTimeMillis();
         if (end-start > 1500) throw new AssertionError("Took " + (end - start) + " to complete (expected <= 1500ms)");
         System.out.println(result.join(", "));
@@ -54,17 +86,17 @@ public class PromiseTest {
     @Test
     public void promiseThen() {
         Promise<String> promise = async(o -> "J,u,s,t,," + o);
-        String[] string = (String[]) await(promise.then(o -> {
+        String[] string = promise.then(o -> {
             String s = (String) o;
             return s.split(",");
-        }), "B,u,r,n,,C,o,o,k,i,e");
+        }).complete("B,u,r,n,,C,o,o,k,i,e");
         System.out.println(ICollectionList.asList(string).join(""));
     }
 
     @Test
     public void promiseThrowable() {
         Promise<String> promise = async(o -> {
-            throw new RuntimeException("???");
+            throw new RuntimeException("??? (Test exception, please ignore this)");
         });
         String s = (String) await(promise.catch_(e -> {
             System.out.println("An error occurred inside the Promise: " + e);
@@ -82,5 +114,16 @@ public class PromiseTest {
         });
         String s = (String) await(promise, "no");
         System.out.println("s: " + s);
+    }
+
+    @Test
+    public void queue() {
+        new Promise<Object>() {
+            @Override
+            public Object apply(Object o) {
+                System.out.println("AAAAA");
+                return null;
+            }
+        }.queue();
     }
 }
