@@ -27,4 +27,7 @@ public class Serializer {
     }
 
     public Object getObject() { return object; }
+
+    @SuppressWarnings("unchecked")
+    public <T> T get() { return (T) object; }
 }

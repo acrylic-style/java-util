@@ -1,5 +1,9 @@
 package util;
 
+/**
+ * Defines static method/interface that will throw RuntimeException when
+ * the method thrown the any exception.
+ */
 public class RuntimeExceptionThrower {
     public static <T> T invoke(ThrowableConsumer<T> t) {
         try {

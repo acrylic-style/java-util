@@ -13,7 +13,14 @@ public class Watchdog {
     private final Object lock = new Object();
     private Runnable runnable;
 
-    public Watchdog(String name, Runnable runnable, int timeout) {
+    /**
+     * Initializes new watchdog instance.
+     * @param name Thread name
+     * @param runnable Runnable run as asynchronously
+     * @param timeout timeout value in ms
+     * @param timedOutFunction Runnable that will be run when timed out. (asynchronously)
+     */
+    public Watchdog(String name, Runnable runnable, int timeout, Runnable timedOutFunction) {
         this.runnable = runnable;
         Thread thread = name == null ? new Thread(runnable) : new Thread(runnable, name);
         Thread watchdog = new Thread(() -> {
@@ -23,6 +30,7 @@ public class Watchdog {
                 public void run() {
                     if (!terminated) {
                         System.out.println("Thread " + thread.getName() + " has elapsed its timeout time, interrupting!");
+                        new Thread(timedOutFunction).start();
                         thread.interrupt();
                         synchronized (lock) {
                             lock.notifyAll();
@@ -35,6 +43,10 @@ public class Watchdog {
         this.thread = thread;
         this.watchdog = watchdog;
         this.timeout = timeout;
+    }
+
+    public Watchdog(String name, Runnable runnable, int timeout) {
+        this(name, runnable, timeout, new Thread());
     }
 
     public Watchdog then(Runnable runnable) {
@@ -64,7 +76,7 @@ public class Watchdog {
         started = true;
     }
 
-    public synchronized Object startAwait() throws InterruptedException {
+    public synchronized Object startAwait() {
         if (started) throw new IllegalStateException("Thread has already started or ended.");
         Thread thread2 = new Thread(thread);
         AtomicReference<Object> o = new AtomicReference<>();
@@ -81,14 +93,22 @@ public class Watchdog {
         synchronized (lock) {
             thread.start();
             watchdog.start();
-            lock.wait(this.timeout);
+            try {
+                lock.wait(this.timeout);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
         return o.get();
     }
 
+    // remove of this method causes dependencies to stop working, marking as @Deprecated instead.
+
+    /**
+     * @deprecated This method does exactly same as {@link #startAwait()} and does not throw InterruptedException, so use {@link #startAwait()} instead.
+     */
+    @Deprecated
     public synchronized Object startAwaitWithoutException() {
-        try {
-            return startAwait();
-        } catch (InterruptedException ignored) { return null; }
+        return startAwait();
     }
 }

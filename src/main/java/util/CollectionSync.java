@@ -1,5 +1,7 @@
 package util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -59,6 +61,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
     /**
      * @return keys as Array.
      */
+    @NotNull
     @Override
     @SuppressWarnings("unchecked")
     public synchronized K[] keys() {
@@ -68,6 +71,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
     /**
      * @return all keys as CollectionList. <b>CollectionList isn't synchronized!</b>
      */
+    @NotNull
     @Override
     public synchronized CollectionList<K> keysList() {
         return new CollectionList<>(this.keySet());
@@ -76,6 +80,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
     /**
      * @return values as Array.
      */
+    @NotNull
     @Override
     @SuppressWarnings("unchecked")
     public synchronized V[] valuesArray() {
@@ -130,7 +135,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
      * @return this
      */
     @Override
-    public synchronized CollectionSync<K, V> addAll(Map<? extends K, ? extends V> map) {
+    public synchronized CollectionSync<K, V> addAll(@NotNull Map<? extends K, ? extends V> map) {
         super.putAll(map);
         return this;
     }
@@ -183,19 +188,11 @@ public class CollectionSync<K, V> extends Collection<K, V> {
      * @see HashMap#clone()
      * @return new collection
      */
-    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public synchronized CollectionSync<K, V> clone() {
         CollectionSync<K, V> newList = new CollectionSync<>();
         newList.addAll(this);
         return newList;
-    }
-
-    @Override
-    public synchronized <T> Collection<K, T> cast(Class<T> newType) throws ClassCastException {
-        Collection<K, T> collection = new Collection<>();
-        this.forEach((k, v) -> collection.add(k, newType.cast(v)));
-        return collection;
     }
 
     /**

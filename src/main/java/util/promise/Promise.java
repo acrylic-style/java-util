@@ -8,6 +8,10 @@ import util.ICollectionList;
 
 import java.util.stream.Collectors;
 
+/**
+ * Represents partial implementation of JavaScript Promise.
+ * @param <T> Promise return type
+ */
 public abstract class Promise<T> implements IPromise<T> {
     private Promise<Object> parent = null;
     private Promise<Object> then = null;
@@ -106,14 +110,36 @@ public abstract class Promise<T> implements IPromise<T> {
         }).start();
     }
 
+    /**
+     * Queue running the promise.<br />
+     * It'll just run at the Thread and then runs Thread#start. There are no way to stop it when you've started.
+     */
     public void queue() { queue(null); }
 
+    /**
+     * Queue running the promise with object.
+     * @param o Object that will be provided to promise.
+     */
     public void queue(Object o) { queue(this, o); }
 
+    /**
+     * Non-static awaitT.
+     * @param o Object that will be provided to promise.
+     * @return Result of the promise.
+     */
     public T complete(Object o) { return awaitT(this, o); }
 
+    /**
+     * Non-static awaitT. Null will be provided to promise instead of the object.
+     * @return Result of the promise.
+     */
     public T complete() { return awaitT(this, null); }
 
+    /**
+     * Run all promises at parallel then return.
+     * @param promises List of the promises.
+     * @return List of the resolved result of the promises.
+     */
     public static Promise<CollectionList<Object>> all(Promise<?>... promises) {
         return new Promise<CollectionList<Object>>() {
             @Override

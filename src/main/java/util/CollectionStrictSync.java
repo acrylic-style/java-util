@@ -1,5 +1,7 @@
 package util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -70,6 +72,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
     /**
      * @return keys as Array.
      */
+    @NotNull
     @Override
     @SuppressWarnings("unchecked")
     public synchronized K[] keys() {
@@ -81,6 +84,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
     /**
      * @return all keys as CollectionList. <b>CollectionList isn't synchronized!</b>
      */
+    @NotNull
     @Override
     public synchronized CollectionList<K> keysList() {
         synchronized (StrictLock.LOCK) {
@@ -91,6 +95,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
     /**
      * @return values as Array.
      */
+    @NotNull
     @Override
     @SuppressWarnings("unchecked")
     public synchronized V[] valuesArray() {
@@ -155,7 +160,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      * @return this
      */
     @Override
-    public synchronized CollectionStrictSync<K, V> addAll(Map<? extends K, ? extends V> map) {
+    public synchronized CollectionStrictSync<K, V> addAll(@NotNull Map<? extends K, ? extends V> map) {
         synchronized (StrictLock.LOCK) {
             super.putAll(map);
             return this;
@@ -216,21 +221,13 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      * @see HashMap#clone()
      * @return new collection
      */
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     public synchronized CollectionStrictSync<K, V> clone() {
         synchronized (StrictLock.LOCK) {
             CollectionStrictSync<K, V> newList = new CollectionStrictSync<>();
             newList.addAll(this);
             return newList;
-        }
-    }
-
-    @Override
-    public <T> Collection<K, T> cast(Class<T> newType) throws ClassCastException {
-        synchronized (StrictLock.LOCK) {
-            Collection<K, T> collection = new Collection<>();
-            this.forEach((k, v) -> collection.add(k, newType.cast(v)));
-            return collection;
         }
     }
 

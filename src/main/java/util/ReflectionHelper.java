@@ -28,7 +28,7 @@ public final class ReflectionHelper {
      * @param clazz Class that will find method on
      * @param methodName Method name
      * @param args Class of arguments
-     * @return Method if found, null otherwiwise
+     * @return Method if found, null otherwise
      */
     @Nullable
     public static <T> Method findMethod(@NotNull Class<? extends T> clazz, @NotNull String methodName, @Nullable Class<?>... args) {
@@ -52,13 +52,29 @@ public final class ReflectionHelper {
      * @throws IllegalAccessException If invocation isn't allowed
      * @throws NoSuchMethodException If couldn't method find
      */
-    @NotNull
     public static <T> Object invokeMethod(@NotNull Class<? extends T> clazz, @Nullable T instance, @NotNull String methodName, @NotNull Object... args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         List<Class<?>> classes = new ArrayList<>();
         for (Object arg : args) classes.add(arg.getClass());
         Method method = findMethod(clazz, methodName, classes.toArray(new Class[0]));
         if (method == null) throw new NoSuchMethodException();
         return method.invoke(instance, args);
+    }
+
+    /**
+     * Invokes method.
+     * @param clazz Class that will invoke method on
+     * @param instance Can be empty if static method
+     * @param methodName Method name
+     * @param args Arguments
+     * @return Result of method, null if invoked method returned null or thrown error
+     */
+    public static <T> Object invokeMethodWithoutException(@NotNull Class<? extends T> clazz, @Nullable T instance, @NotNull String methodName, @NotNull Object... args) {
+        try {
+            return invokeMethod(clazz, instance, methodName, args);
+        } catch (ReflectiveOperationException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -170,13 +186,14 @@ public final class ReflectionHelper {
      * @throws IllegalAccessException If invocation isn't allowed
      * @throws InstantiationException If can't be initialized
      */
+    @SuppressWarnings("unchecked")
     @NotNull
-    public static <T> Object invokeConstructor(@NotNull Class<T> clazz, @NotNull Object... args) throws IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static <T> T invokeConstructor(@NotNull Class<T> clazz, @NotNull Object... args) throws IllegalAccessException, InvocationTargetException, InstantiationException {
         List<Class<?>> classes = new ArrayList<>();
         for (Object arg : args) classes.add(arg.getClass());
         Constructor<? super T> constructor = findConstructor(clazz, classes.toArray(new Class[0]));
         if (constructor == null) throw new NoSuchMethodError();
-        return constructor.newInstance(args);
+        return (T) constructor.newInstance(args);
     }
 
     /**

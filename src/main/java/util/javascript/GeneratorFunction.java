@@ -1,5 +1,7 @@
 package util.javascript;
 
+import com.google.common.annotations.Beta;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.function.Consumer;
  *     <li>yield is actually a Consumer and you must call {@link Consumer#accept(Object)}.</li>
  * </ul>
  */
+@Beta
 public abstract class GeneratorFunction {
     public final Iterator<Object> values;
 

@@ -1,5 +1,7 @@
 package util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -32,7 +34,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * @return first value
+     * {@inheritDoc}
      */
     @Override
     public V first() {
@@ -40,7 +42,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * @return first key
+     * {@inheritDoc}
      */
     @Override
     public String firstKey() {
@@ -48,20 +50,21 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * @return last value
+     * {@inheritDoc}
      */
     @Override
     public V last() { return this.valuesList().last(); }
 
     /**
-     * @return last key
+     * {@inheritDoc}
      */
     @Override
     public String lastKey() { return this.keysList().last(); }
 
     /**
-     * @return keys as Array.
+     * {@inheritDoc}
      */
+    @NotNull
     @Override
     public String[] keys() {
         final Object[] a = this.keySet().toArray();
@@ -72,16 +75,18 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * @return all keys as CollectionList
+     * {@inheritDoc}
      */
+    @NotNull
     @Override
     public CollectionList<String> keysList() {
         return new CollectionList<>(this.keySet());
     }
 
     /**
-     * @return values as Array.
+     * {@inheritDoc}
      */
+    @NotNull
     @Override
     @SuppressWarnings("unchecked")
     public V[] valuesArray() {
@@ -89,7 +94,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * @return values as CollectionList.
+     * {@inheritDoc}
      */
     @Override
     public CollectionList<V> valuesList() {
@@ -97,8 +102,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * @param action it passes value, index.
-     * @see Collection#foreachKeys(BiConsumer)
+     * {@inheritDoc}
      */
     @Override
     public void foreach(BiConsumer<V, Integer> action) {
@@ -110,8 +114,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * @param action it passes key, index.
-     * @see Collection#foreach(BiConsumer)
+     * {@inheritDoc}
      */
     @Override
     public void foreachKeys(BiConsumer<String, Integer> action) {
@@ -123,8 +126,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * Adds key-value to the Collection.
-     * @return added value
+     * {@inheritDoc}
      */
     @Override
     public V add(String key, V value) {
@@ -145,20 +147,16 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * Adds all entries from provided map.
-     * @return this
+     * {@inheritDoc}
      */
     @Override
-    public StringCollection<V> addAll(Map<? extends String, ? extends V> map) {
+    public StringCollection<V> addAll(@NotNull Map<? extends String, ? extends V> map) {
         super.putAll(map);
         return this;
     }
 
     /**
-     * Filters values. If returned true, value will be added to the new Collection. Returns new Collection of filtered values.
-     * @see Collection#filterKeys(Function)
-     * @param filter filter function.
-     * @return clone of new Collection filtered by function
+     * {@inheritDoc}
      */
     @Override
     public StringCollection<V> filter(Function<V, Boolean> filter) {
@@ -171,10 +169,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * Filters keys. If returned true, value will be added to the new Collection. Returns new Collection of filtered values.
-     * @see Collection#filter(Function)
-     * @param filter filter function.
-     * @return clone of new Collection filtered by function
+     * {@inheritDoc}
      */
     @Override
     public StringCollection<V> filterKeys(Function<String, Boolean> filter) {
@@ -187,9 +182,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * Removes entry but it returns this collection.
-     * @param k will be removed
-     * @return this collection
+     * {@inheritDoc}
      */
     @Override
     public StringCollection<V> removeThenReturnCollection(String k) {
@@ -198,9 +191,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * Clones this collection and returns new collection.
-     * @see HashMap#clone()
-     * @return New collection
+     * {@inheritDoc}
      */
     @Override
     public StringCollection<V> clone() {
@@ -210,22 +201,7 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     }
 
     /**
-     * Cast V type to the another type and returns new Collection.
-     * @param newType New value type in Class.
-     * @param <T> New value type, if it was impossible to cast, ClassCastException will be thrown.
-     * @return New collection
-     * @throws ClassCastException Thrown when impossible to cast.
-     */
-    @Override
-    public <T> Collection<String, T> cast(Class<T> newType) {
-        Collection<String, T> collection = new Collection<>();
-        this.forEach((k, v) -> collection.add(k, newType.cast(v)));
-        return collection;
-    }
-
-    /**
-     * Returns all values that matches with V.
-     * @return new collection
+     * {@inheritDoc}
      */
     @Override
     public Collection<String, V> values(V v) {

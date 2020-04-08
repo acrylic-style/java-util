@@ -1,5 +1,9 @@
 package util;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -21,76 +25,101 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     }
 
     /**
+     * Constructs an empty Collection with the specified initial capacity and the default load factor (0.75).
+     */
+    public Collection(int size) {
+        super(size);
+    }
+
+    /**
+     * Constructs an empty Collection with the specified initial capacity and the specified load factor.
+     */
+    public Collection(int size, int loadFactor) {
+        super(size, loadFactor);
+    }
+
+    /**
+     * Constructs a collection and add all entries in the specified list.
+     * @param entries Entry list
+     */
+    public Collection(@NotNull java.util.Collection<Entry<? extends K, ? extends V>> entries) {
+        super();
+        entries.forEach(entry -> this.add(entry.getKey(), entry.getValue()));
+    }
+
+    /**
      * Constructs this Collection with values.
      * @param map will be added with this constructor
      */
-    public Collection(Map<? extends K, ? extends V> map) {
+    public Collection(@NotNull Map<? extends K, ? extends V> map) {
         super();
         this.addAll(map);
     }
 
     /**
-     * @return first value
+     * {@inheritDoc}
      */
+    @Nullable
     public V first() {
         return this.valuesList().first();
     }
 
     /**
-     * @return first key
+     * {@inheritDoc}
      */
+    @Nullable
     public K firstKey() {
         return this.keysList().first();
     }
 
     /**
-     * @return last value
+     * {@inheritDoc}
      */
+    @Nullable
     public V last() { return this.valuesList().last(); }
 
     /**
-     * @return last key
+     * {@inheritDoc}
      */
+    @Nullable
     public K lastKey() { return this.keysList().last(); }
 
     /**
-     * <b>Note: Unchecked Type Casting</b>
-     * @return keys as Array.
+     * {@inheritDoc}
      */
+    @NotNull
     @SuppressWarnings("unchecked")
     public K[] keys() {
-        final Object[] a = this.keySet().toArray();
-        List<Object> keysObj = Arrays.asList(a);
-        CollectionList<K> keys = new CollectionList<>();
-        keysObj.forEach(k -> keys.add((K) k));
-        return keys.valuesArray();
+        return ICollectionList.asList(this.keySet().toArray()).map(o -> (K) o).valuesArray();
     }
 
     /**
-     * @return all keys as CollectionList
+     * {@inheritDoc}
      */
+    @NotNull
+    @Contract("-> new")
     public CollectionList<K> keysList() {
         return new CollectionList<>(this.keySet());
     }
 
     /**
-     * @return values as Array.
+     * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
+    @NotNull
+    @Contract(value = "-> new", pure = true)
     public V[] valuesArray() {
-        return (V[]) this.values().toArray();
+        return this.valuesList().valuesArray();
     }
 
     /**
-     * @return values as CollectionList.
+     * {@inheritDoc}
      */
     public CollectionList<V> valuesList() {
         return new CollectionList<>(this.values());
     }
 
     /**
-     * @param action it passes value, index.
-     * @see Collection#foreachKeys(BiConsumer)
+     * {@inheritDoc}
      */
     public void foreach(BiConsumer<V, Integer> action) {
         final int[] index = {0};
@@ -100,6 +129,9 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void foreach(BiBiConsumer<V, Integer, ICollection<K, V>> action) {
         final int[] index = {0};
         this.values().forEach(v -> {
@@ -109,8 +141,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     }
 
     /**
-     * @param action it passes key, index.
-     * @see Collection#foreach(BiConsumer)
+     * {@inheritDoc}
      */
     public void foreachKeys(BiConsumer<K, Integer> action) {
         final int[] index = {0};
@@ -120,6 +151,9 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void foreachKeys(BiBiConsumer<K, Integer, ICollection<K, V>> action) {
         final int[] index = {0};
         this.keySet().forEach(k -> {
@@ -128,37 +162,39 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void forEach(BiBiConsumer<K, V, ICollection<K, V>> action) {
         this.forEach((k, v) -> action.accept(k, v, this));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public void forEach(BiBiBiConsumer<K, V, Integer, ICollection<K, V>> action) {
         final int[] index = {0};
         this.forEach((k, v) -> action.accept(k, v, index[0]++, this));
     }
 
     /**
-     * Adds key-value to the Collection.
-     * @return added value
+     * {@inheritDoc}
      */
     public V add(K key, V value) {
         return super.put(key, value);
     }
 
     /**
-     * Adds all entries from provided map.
-     * @return this
+     * {@inheritDoc}
      */
-    public Collection<K, V> addAll(Map<? extends K, ? extends V> map) {
+    @Contract("!null -> this")
+    public Collection<K, V> addAll(@NotNull Map<? extends K, ? extends V> map) {
         super.putAll(map);
         return this;
     }
 
     /**
-     * Filters values. If returned true, value will be added to the new Collection. Returns new Collection of filtered values.
-     * @see Collection#filterKeys(Function) 
-     * @param filter filter function.
-     * @return clone of new Collection filtered by function
+     * {@inheritDoc}
      */
     public Collection<K, V> filter(Function<V, Boolean> filter) {
         Collection<K, V> newList = new Collection<>();
@@ -170,10 +206,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     }
 
     /**
-     * Filters keys. If returned true, value will be added to the new Collection. Returns new Collection of filtered values.
-     * @see Collection#filter(Function)
-     * @param filter filter function.
-     * @return clone of new Collection filtered by function
+     * {@inheritDoc}
      */
     @Override
     public Collection<K, V> filterKeys(Function<K, Boolean> filter) {
@@ -186,9 +219,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     }
 
     /**
-     * Removes entry but it returns this collection.
-     * @param k will be removed
-     * @return this collection
+     * {@inheritDoc}
      */
     @Override
     public Collection<K, V> removeThenReturnCollection(K k) {
@@ -197,25 +228,20 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     }
 
     /**
-     * Clones this collection and returns new collection.
-     * @see HashMap#clone()
-     * @return New collection
+     * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("unchecked")
     public Collection<K, V> clone() {
-        Collection<K, V> newList = new Collection<>();
-        newList.addAll(this);
-        return newList;
+        return (Collection<K, V>) super.clone();
     }
 
     /**
-     * Cast V type to the another type and returns new Collection.
-     * @param newType New value type in Class.
-     * @param <T> New value type, if it was impossible to cast, ClassCastException will be thrown.
-     * @return New collection
-     * @throws ClassCastException Thrown when impossible to cast.
+     * {@inheritDoc}
+     * @deprecated Use {@link Collection#map(BiFunction, BiFunction)} instead.
      */
     @Override
+    @Deprecated
     public <T> Collection<K, T> cast(Class<T> newType) {
         Collection<K, T> collection = new Collection<>();
         this.forEach((k, v) -> collection.add(k, newType.cast(v)));
@@ -223,8 +249,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     }
 
     /**
-     * Returns all values that matches with V.
-     * @return new collection
+     * {@inheritDoc}
      */
     @Override
     public Collection<K, V> values(V v) {
@@ -232,8 +257,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
     }
 
     /**
-     * The <b>map()</b> method <b>creates a new collection</b> populated with the results of calling a provided function on every element in the calling collection.
-     * @return New collection with new type.
+     * {@inheritDoc}
      */
     @Override
     public <A, B> Collection<A, B> map(BiFunction<K, V, A> keyFunction, BiFunction<K, V, B> valueFunction) {
@@ -246,6 +270,9 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         return newCollection;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CollectionList<Entry<K, V>> toEntryList() {
         CollectionList<Entry<K, V>> entries = new CollectionList<>();
@@ -253,6 +280,9 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         return entries;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public CollectionList<Map<K, V>> toMapList() {
         CollectionList<Map<K, V>> entries = new CollectionList<>();

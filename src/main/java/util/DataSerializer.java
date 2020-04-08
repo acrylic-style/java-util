@@ -1,11 +1,12 @@
 package util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.util.HashMap;
 
 public class DataSerializer {
     private HashMap<String, Object> data = new HashMap<>();
-    private DataSerializer() {}
 
     public Object get(String key) {
         return data.get(key);
@@ -20,12 +21,10 @@ public class DataSerializer {
         return serializer.asString();
     }
 
-    @SuppressWarnings("unchecked")
+    @NotNull
     public static DataSerializer fromString(String s) throws IOException, ClassNotFoundException {
         DataSerializer dataSerializer = new DataSerializer();
-        dataSerializer.data = (HashMap<String, Object>) Serializer.fromString(s).getObject();
+        dataSerializer.data = Serializer.fromString(s).get();
         return dataSerializer;
     }
-
-    public static DataSerializer newInstance() { return new DataSerializer(); }
 }

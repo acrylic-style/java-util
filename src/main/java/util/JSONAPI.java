@@ -81,6 +81,22 @@ public class JSONAPI extends EventEmitter {
         }
     }
 
+    /**
+     * Following events will be emitted during this call:<br />
+     * <ul>
+     *     <li>postConnection - before connect</li>
+     *     <li>connection - after connection</li>
+     * </ul>
+     */
+    public Response callWithoutException() {
+        try {
+            return call();
+        } catch (RuntimeException e) { // shouldn't happen...
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public static class Response {
         private int responseCode;
         private JSONObject response;

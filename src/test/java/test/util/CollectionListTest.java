@@ -29,7 +29,7 @@ public class CollectionListTest {
         CollectionList<String> list2 = new CollectionList<>("Fire");
         CollectionList<String> list3 = new CollectionList<>("Wind");
         CollectionList<String> list4 = list1.concat(list2, list3);
-        assert list4.size() == 3 : getAssertionErrorMessage(list4);
+        assert list4.size() == 3 : "Expected size 3, but got " + getAssertionErrorMessage(list4);
     }
 
     @Test

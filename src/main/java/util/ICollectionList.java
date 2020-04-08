@@ -1,5 +1,9 @@
 package util;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -8,50 +12,151 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public interface ICollectionList<V> extends List<V> {
+    /**
+     * Adds entry into list but it returns list so it can be chained.
+     * @param v Value
+     * @return This list.
+     */
+    @NotNull
+    @Contract("!null -> this")
+    ICollectionList<V> addChain(@NotNull V v);
+
+    /**
+     * Returns first value of list.
+     * @return First value of list. Null if size is 0.
+     */
+    @Nullable
     V first();
+
+    /**
+     * Returns values as array.
+     * @return Values as array.
+     */
+    @NotNull
+    @Contract(value = "-> new", pure = true)
     V[] valuesArray();
+
+    /**
+     * Returns last value of list.
+     * @return Last value of list. Null if size is 0.
+     */
+    @Nullable
     V last();
-    void foreach(BiConsumer<V, Integer> action);
-    void foreach(util.BiBiConsumer<V, Integer, ICollectionList<V>> action);
-    V put(V v);
+
+    /**
+     * Foreach all values.
+     * @param action Passes Value and Index.
+     */
+    void foreach(@NotNull BiConsumer<V, Integer> action);
+
+    /**
+     * Foreach all values.
+     * @param action Passes Value, Index and cloned list.
+     */
+    void foreach(@NotNull util.BiBiConsumer<V, Integer, ICollectionList<V>> action);
+
+    /**
+     * Put value into list.
+     * @param v Value
+     * @return Returns added value
+     */
+    @NotNull
+    @Contract("!null -> param1")
+    V put(@NotNull V v);
+
+    /**
+     * Returns flipped list.<br />
+     * This method does not modify current list, it just returns new flipped list.
+     * @return Flipped list
+     */
+    @NotNull
+    @Contract(value = "-> new", pure = true)
     CollectionList<V> reverse();
 
     /**
      * Shuffles all entries in list.
      * @return shuffled new list
      */
+    @NotNull
+    @Contract(value = "-> new", pure = true)
     CollectionList<V> shuffle();
-    <ListLike extends List<? extends V>> void putAll(ListLike list);
-    CollectionList<V> addAll(CollectionList<V> list);
-    CollectionList<V> putAll(CollectionList<V> list);
+
+    /**
+     * Add all values from list into this list.
+     * @param list Another list
+     * @param <ListLike> Another list type
+     */
+    <ListLike extends List<? extends V>> void putAll(@NotNull ListLike list);
+
+    /**
+     * Add all values from list into this list.
+     * @param list Another list
+     * @return This list, so it can be chained.
+     */
+    @NotNull
+    @Contract("_ -> this")
+    CollectionList<V> addAll(@Nullable CollectionList<V> list);
+
+    /**
+     * Add all values from list into this list.
+     * @param list Another list
+     * @return This list, so it can be chained.
+     */
+    @NotNull
+    @Contract("_ -> this")
+    CollectionList<V> putAll(@Nullable CollectionList<V> list);
+
     /**
      * Filters values. If returned true, that value will be kept.
      * @param filter filter function.
      * @return New filtered list
      */
-    CollectionList<V> filter(Function<V, Boolean> filter);
+    @NotNull
+    @Contract(value = "!null -> new", pure = true)
+    CollectionList<V> filter(@NotNull Function<V, Boolean> filter);
+
     /**
      * Filters values. If returned true, that value will be kept.
      * @param filter filter function.
      * @return New filtered list if not empty, null otherwise.
      */
-    CollectionList<V> filterNullable(Function<V, Boolean> filter);
+    @Nullable
+    CollectionList<V> filterNullable(@NotNull Function<V, Boolean> filter);
+
+    /**
+     * Creates shallow copy of this list.
+     * @return Shallow copy of this list.
+     */
+    @NotNull
+    @Contract("-> new")
     CollectionList<V> clone();
-    CollectionList<V> removeThenReturnCollection(V v);
+
+    /**
+     * Remove then return collection.
+     * @param v Value
+     * @return This list, so it can be chained.
+     */
+    @NotNull
+    @Contract("!null -> this")
+    CollectionList<V> removeThenReturnCollection(@NotNull V v);
 
     /**
      * The <b>map()</b> method <b>creates a new array</b> populated with the results of calling a provided function on every element in the calling array.
      * @param function Function that will run to create a new array.
      * @return New array with new type.
      */
-    <T> CollectionList<T> map(Function<V, T> function);
+    @NotNull
+    @Contract(value = "!null -> new", pure = true)
+    <T> CollectionList<T> map(@NotNull Function<V, T> function);
 
     /**
      * The <b>map()</b> method <b>creates a new array</b> populated with the results of calling a provided function on every element in the calling array.
      * @param function Function that will run to create a new array.
      * @return New array with new type.
      */
-    <T> CollectionList<T> map(BiFunction<V, Integer, T> function);
+    @NotNull
+    @Contract(value = "!null -> new", pure = true)
+    <T> CollectionList<T> map(@NotNull BiFunction<V, Integer, T> function);
 
     /**
      * The <b>join()</b> method creates
@@ -72,7 +177,27 @@ public interface ICollectionList<V> extends List<V> {
      * <b>If an element is null or an empty array [], it is converted to an empty string.</b>
      * @see CollectionList#join()
      */
-    String join(String s);
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    String join(@Nullable String s);
+
+    /**
+     * The <b>join()</b> method creates and returns a new list by concatenating all of the elements in an array,
+     * separated by V. If the array has only one item, then that item will be returned without using the V.
+     * @param v The object
+     * @return New list
+     */
+    @NotNull
+    @Contract(value = "!null -> new", pure = true)
+    CollectionList<V> joinObject(@NotNull V v);
+
+    /**
+     * Simply creates new list with same type and return it.
+     * @return New list with the same type
+     */
+    @NotNull
+    @Contract(value = "-> new", pure = true)
+    CollectionList<V> newList();
 
     /**
      * The <b>join()</b> method creates
@@ -87,6 +212,8 @@ public interface ICollectionList<V> extends List<V> {
      * <b>If an element is null or an empty array [], it is converted to an empty string.</b>
      * @see CollectionList#join(String)
      */
+    @NotNull
+    @Contract(value = "-> new", pure = true)
     String join();
 
     /**
@@ -96,8 +223,13 @@ public interface ICollectionList<V> extends List<V> {
      * <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift">https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift</a>
      * @return The removed element from the array; null if the array is empty.
      */
+    @Nullable
     V shift();
 
+    /**
+     * Returns length(size) of this list.
+     * @return Size of this list
+     */
     int length();
 
     /**
@@ -109,7 +241,7 @@ public interface ICollectionList<V> extends List<V> {
      * @return The new size of the object upon which the method was called.
      */
     @SuppressWarnings("unchecked")
-    int unshift(V... v);
+    int unshift(@Nullable V... v);
 
     /**
      * The concat() method is used to merge two or more arrays.
@@ -124,30 +256,76 @@ public interface ICollectionList<V> extends List<V> {
      * @return A new CollectionList instance.
      */
     @SuppressWarnings("unchecked")
-    CollectionList<V> concat(CollectionList<V>... lists);
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    CollectionList<V> concat(@Nullable CollectionList<V>... lists);
 
     /**
      * Returns unique list. This method does not modify
      * the original list, and returns new list.
      * @return New list that contains only unique values
      */
+    @NotNull
+    @Contract(value = "-> new", pure = true)
     CollectionList<V> unique();
 
+    /**
+     * Just returns list.
+     * @return Returns java.util.List so it can be used to something you want to use list for any reason you specify.
+     */
+    @NotNull
+    @Contract("-> this")
     List<V> toList();
 
-    static <T> CollectionList<T> fromValues(Map<?, ? extends T> map) {
+    /**
+     * Converts list into map.
+     * @param function Function that will be used to generate map.
+     * @param <A> Key type
+     * @param <B> Value type
+     * @return New collection
+     */
+    @NotNull
+    @Contract(value = "!null -> new", pure = true)
+    <A, B> Collection<A, B> toMap(@NotNull Function<V, Map.Entry<A, B>> function);
+
+    /**
+     * Creates list from map values.
+     * @param map Map
+     * @param <T> Type that list will create with
+     * @return New list
+     */
+    @NotNull
+    static <T> CollectionList<T> fromValues(@NotNull Map<?, ? extends T> map) {
         return new CollectionList<>(map.values());
     }
 
-    static <T> CollectionList<T> fromKeys(Map<? extends T, ?> map) {
+    /**
+     * Creates list from map keys.
+     * @param map Map
+     * @param <T> Type that list will create with
+     * @return New list
+     */
+    @NotNull
+    static <T> CollectionList<T> fromKeys(@NotNull Map<? extends T, ?> map) {
         return new CollectionList<>(map.keySet());
     }
 
-    static <T> CollectionList<T> asList(List<? extends T> list) {
+    /**
+     * Wrap list with CollectionList.
+     * @return New list
+     */
+    @NotNull
+    static <T> CollectionList<T> asList(@NotNull List<? extends T> list) {
         return new CollectionList<>(list);
     }
 
-    static <T> CollectionList<T> asList(T[] list) {
+    /**
+     * Turn array into list.
+     * @param list Array
+     * @return New list
+     */
+    @NotNull
+    static <T> CollectionList<T> asList(@NotNull T[] list) {
         CollectionList<T> collectionList = new CollectionList<>();
         collectionList.addAll(Arrays.asList(list));
         return collectionList;
@@ -161,7 +339,8 @@ public interface ICollectionList<V> extends List<V> {
      * @return A new CollectionList instance.
      */
     @SafeVarargs
-    static <T> CollectionList<T> ArrayOf(T... t) {
+    @NotNull
+    static <T> CollectionList<T> ArrayOf(@NotNull T... t) {
         return new CollectionList<>(t);
     }
 }

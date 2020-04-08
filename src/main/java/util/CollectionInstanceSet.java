@@ -1,5 +1,8 @@
 package util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,15 +42,17 @@ public class CollectionInstanceSet<V> extends CollectionList<V> {
 
     public V first() { return this.valuesArray()[0]; }
 
+    @NotNull
     @SuppressWarnings("unchecked")
     public V[] valuesArray() { return (V[]) this.toArray(); }
 
-    public V last() { return this.valuesArray()[0]; }
+    // @Nullable
+    // public V last() { return this.valuesArray()[0]; }
 
     /**
      * @param action it passes value, index.
      */
-    public void foreach(BiConsumer<V, Integer> action) {
+    public void foreach(@NotNull BiConsumer<V, Integer> action) {
         final int[] index = {0};
         this.forEach(v -> {
             action.accept(v, index[0]);
@@ -55,7 +60,8 @@ public class CollectionInstanceSet<V> extends CollectionList<V> {
         });
     }
 
-    public V put(V v) {
+    @NotNull
+    public V put(@NotNull V v) {
         this.add(v);
         return v;
     }
@@ -71,7 +77,7 @@ public class CollectionInstanceSet<V> extends CollectionList<V> {
         return super.add(v);
     }
 
-    public <ListLike extends List<? extends V>> void putAll(ListLike list) {
+    public <ListLike extends List<? extends V>> void putAll(@NotNull ListLike list) {
         list.forEach(this::add);
     }
 
@@ -88,7 +94,8 @@ public class CollectionInstanceSet<V> extends CollectionList<V> {
      * Filters values. If returned true, that value will be kept. Returns new Collection of filtered values.
      * @param filter filter function.
      */
-    public CollectionInstanceSet<V> filter(Function<V, Boolean> filter) {
+    @NotNull
+    public CollectionInstanceSet<V> filter(@NotNull Function<V, Boolean> filter) {
         CollectionInstanceSet<V> newList = new CollectionInstanceSet<>();
         this.foreach((v, i) -> {
             if (filter.apply(v)) newList.add(v);
@@ -96,6 +103,7 @@ public class CollectionInstanceSet<V> extends CollectionList<V> {
         return newList;
     }
 
+    @NotNull
     public CollectionInstanceSet<V> clone() {
         CollectionInstanceSet<V> newList = new CollectionInstanceSet<>();
         newList.addAll(this);

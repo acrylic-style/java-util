@@ -1,58 +1,64 @@
 package util;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * Java implementation of EventEmitter from node.js.
+ */
 @SuppressWarnings("unused")
 public class EventEmitter {
-    private StringCollection<CollectionList<AConsumer>> consumers = new StringCollection<>();
-    private StringCollection<CollectionList<AConsumer>> onceConsumers = new StringCollection<>();
-    private int maxListeners = 10;
+    protected final StringCollection<CollectionList<AConsumer>> consumers = new StringCollection<>();
+    protected final StringCollection<CollectionList<AConsumer>> onceConsumers = new StringCollection<>();
+    protected int maxListeners = 10;
 
-    private CollectionList<AConsumer> getConsumers(String event) {
+    protected CollectionList<AConsumer> getConsumers(String event) {
         return consumers.containsKey(event) ? consumers.get(event) : new CollectionList<>();
     }
 
-    private CollectionList<AConsumer> getOnceConsumers(String event) {
+    protected CollectionList<AConsumer> getOnceConsumers(String event) {
         return onceConsumers.containsKey(event) ? onceConsumers.get(event) : new CollectionList<>();
     }
 
-    private void addConsumer(String event, AConsumer consumer) {
+    protected void addConsumer(String event, AConsumer consumer) {
         checkListeners(event);
         CollectionList<AConsumer> consumers2 = getConsumers(event);
         consumers2.add(consumer);
-        consumers.add(event, consumers2);
+        consumers.removeThenReturnCollection(event).add(event, consumers2);
     }
 
-    private void unshiftConsumer(String event, AConsumer consumer) {
+    protected void unshiftConsumer(String event, AConsumer consumer) {
         CollectionList<AConsumer> consumers2 = getConsumers(event);
         consumers2.unshift(consumer);
         consumers.add(event, consumers2);
     }
 
-    private void addConsumerOnce(String event, AConsumer consumer) {
+    protected void addConsumerOnce(String event, AConsumer consumer) {
         checkListeners(event);
         CollectionList<AConsumer> consumers2 = getOnceConsumers(event);
         consumers2.add(consumer);
         onceConsumers.add(event, consumers2);
     }
 
-    private void unshiftConsumerOnce(String event, AConsumer consumer) {
+    protected void unshiftConsumerOnce(String event, AConsumer consumer) {
         CollectionList<AConsumer> consumers2 = getOnceConsumers(event);
         consumers2.unshift(consumer);
         onceConsumers.add(event, consumers2);
     }
 
-    private void removeConsumer(String event, AConsumer consumer) {
+    protected void removeConsumer(String event, AConsumer consumer) {
         CollectionList<AConsumer> consumers2 = getConsumers(event);
         consumers2.remove(consumer);
         consumers.add(event, consumers2);
     }
 
-    private void removeConsumerOnce(String event, AConsumer consumer) {
+    protected void removeConsumerOnce(String event, AConsumer consumer) {
         CollectionList<AConsumer> consumers2 = getOnceConsumers(event);
         consumers2.remove(consumer);
         onceConsumers.add(event, consumers2);
     }
 
-    public final void addListener(String event, AConsumer consumer) {
+    public void addListener(String event, AConsumer consumer) {
         checkListeners(event);
         addConsumer(event, consumer);
     }
@@ -67,12 +73,14 @@ public class EventEmitter {
      * Returns a reference to the EventEmitter, so that calls can be chained.
      */
     @SuppressWarnings("JavaDoc")
-    public final EventEmitter setMaxListeners(int n) {
+    @NotNull
+    @Contract("_ -> this")
+    public EventEmitter setMaxListeners(int n) {
         maxListeners = n;
         return this;
     }
 
-    private void checkListeners(String event) {
+    protected void checkListeners(String event) {
         if (maxListeners <= listeners(event).size()) throw new UnsupportedOperationException("Possible EventEmitter memory leak detected. " + maxListeners + " " + event + " listeners added.\nUse emitter.setMaxListeners() to increase limit");
     }
 
@@ -80,9 +88,9 @@ public class EventEmitter {
      * @param event The name of event
      * @param consumer The callback function
      */
-    public final void on(String event, AConsumer consumer) {
+    public void on(String event, AConsumer consumer) {
         checkListeners(event);
-        addListener(event, consumer);
+        addConsumer(event, consumer);
     }
 
     /**
@@ -97,7 +105,7 @@ public class EventEmitter {
      * @param event The name of the event.
      * @param consumer The callback function
      */
-    public final EventEmitter prependListener(String event, AConsumer consumer) {
+    public EventEmitter prependListener(String event, AConsumer consumer) {
         checkListeners(event);
         unshiftConsumer(event, consumer);
         return this;
@@ -118,7 +126,7 @@ public class EventEmitter {
      * @param event The name of the event.
      * @param consumer The callback function
      */
-    public final EventEmitter once(String event, AConsumer consumer) {
+    public EventEmitter once(String event, AConsumer consumer) {
         checkListeners(event);
         addConsumerOnce(event, consumer);
         return this;
@@ -132,7 +140,7 @@ public class EventEmitter {
      * @param event The name of event
      * @param consumer The callback function
      */
-    public final EventEmitter prependOnceListener(String event, AConsumer consumer) {
+    public EventEmitter prependOnceListener(String event, AConsumer consumer) {
         checkListeners(event);
         unshiftConsumerOnce(event, consumer);
         return this;
@@ -157,7 +165,7 @@ public class EventEmitter {
      * @param consumer The callback function
      */
     @SuppressWarnings("JavaDoc")
-    public final EventEmitter removeListener(String event, AConsumer consumer) {
+    public EventEmitter removeListener(String event, AConsumer consumer) {
         removeConsumer(event, consumer);
         return this;
     }
@@ -170,7 +178,7 @@ public class EventEmitter {
      * Returns a reference to the EventEmitter, so that calls can be chained.
      * @param event The name of event
      */
-    public final EventEmitter removeAllListeners(String event) {
+    public EventEmitter removeAllListeners(String event) {
         if (consumers.containsKey(event)) consumers.get(event).forEach(a -> {
             removeConsumer(event, a);
             removeConsumerOnce(event, a);
@@ -185,7 +193,7 @@ public class EventEmitter {
      * component or module (e.g. sockets or file streams).<br>
      * Returns a reference to the EventEmitter, so that calls can be chained.
      */
-    public final EventEmitter removeAllListeners() {
+    public EventEmitter removeAllListeners() {
         consumers.clear();
         onceConsumers.clear();
         return this;
@@ -194,11 +202,11 @@ public class EventEmitter {
     /**
      * Alias for {@link EventEmitter#removeListener(String, AConsumer)}.
      */
-    public final EventEmitter off(String event, AConsumer consumer) {
+    public EventEmitter off(String event, AConsumer consumer) {
         return removeListener(event, consumer);
     }
 
-    public final void dispatchEvent(String event, Object... o) {
+    public void dispatchEvent(String event, Object... o) {
         getConsumers(event).clone().forEach(a -> a.done(o));
         getOnceConsumers(event).clone().forEach(a -> {
             a.done(o);
@@ -206,11 +214,16 @@ public class EventEmitter {
         });
     }
 
-    public final void emit(String event, Object... o) {
+    /**
+     * Emits a event.
+     * @param event Event name
+     * @param o Object
+     */
+    public void emit(String event, Object... o) {
         dispatchEvent(event, o);
     }
 
-    public final int listenerCount(String event) {
+    public int listenerCount(String event) {
         return getConsumers(event).size() + getOnceConsumers(event).size();
     }
 
@@ -219,14 +232,14 @@ public class EventEmitter {
      * including any wrappers (such as those created by {@link EventEmitter#once(String, AConsumer)}).
      * @param event The name of event
      */
-    public final CollectionList<AConsumer> listeners(String event) {
+    public CollectionList<AConsumer> listeners(String event) {
         return getConsumers(event).concat(getOnceConsumers(event));
     }
 
     /**
      * Alias for {@link EventEmitter#listeners(String)}.
      */
-    public final CollectionList<AConsumer> rawListeners(String event) {
+    public CollectionList<AConsumer> rawListeners(String event) {
         return listeners(event);
     }
 }
