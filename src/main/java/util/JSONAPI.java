@@ -16,6 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
+@SuppressWarnings("unused")
 public class JSONAPI extends EventEmitter {
     private URL url;
     private String method = "GET";
@@ -46,13 +47,27 @@ public class JSONAPI extends EventEmitter {
     }
 
     /**
+     * This method will try to cast to JSONObject.<br />
      * Following events will be emitted during this call:<br />
      * <ul>
      *     <li>postConnection - before connect</li>
      *     <li>connection - after connection</li>
      * </ul>
+     * @see #call(Class)
      */
     public Response call() {
+        return call(JSONObject.class);
+    }
+
+    /**
+     * Following events will be emitted during this call:<br />
+     * <ul>
+     *     <li>postConnection - before connect</li>
+     *     <li>connection - after connection</li>
+     * </ul>
+     * @see #call()
+     */
+    public Response call(Class<?> jsonClass) {
         try {
             HttpURLConnection conn = (HttpURLConnection) this.url.openConnection();
             conn.setRequestMethod(this.method);
@@ -72,8 +87,8 @@ public class JSONAPI extends EventEmitter {
             String output;
             while ((output = br.readLine()) != null) sb.append(output);
             try {
-                return new Response(conn.getResponseCode(), new JSONObject(sb.toString()), sb.toString());
-            } catch (JSONException ignored) {
+                return new Response(conn.getResponseCode(), jsonClass.getConstructor(String.class).newInstance(sb.toString()), sb.toString());
+            } catch (JSONException | ReflectiveOperationException ignored) {
                 return new Response(conn.getResponseCode(), null, sb.toString());
             }
         } catch (IOException e) {
@@ -88,10 +103,10 @@ public class JSONAPI extends EventEmitter {
      *     <li>connection - after connection</li>
      * </ul>
      */
-    public Response callWithoutException() {
+    public Response callWithoutException(Class<?> jsonClass) {
         try {
-            return call();
-        } catch (RuntimeException e) { // shouldn't happen...
+            return call(jsonClass);
+        } catch (RuntimeException e) { // may happen if json is written in invalid format
             e.printStackTrace();
             return null;
         }
@@ -99,10 +114,10 @@ public class JSONAPI extends EventEmitter {
 
     public static class Response {
         private int responseCode;
-        private JSONObject response;
+        private Object response;
         private String rawResponse;
 
-        public Response(int responseCode, JSONObject response, String rawResponse) {
+        public Response(int responseCode, Object response, String rawResponse) {
             this.responseCode = responseCode;
             this.response = response;
             this.rawResponse = rawResponse;
@@ -112,7 +127,7 @@ public class JSONAPI extends EventEmitter {
             return responseCode;
         }
 
-        public JSONObject getResponse() {
+        public Object getResponse() {
             return response;
         }
 
