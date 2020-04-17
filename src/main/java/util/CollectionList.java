@@ -64,7 +64,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      */
     @Nullable
     @Override
-    public V last() { return this.length() == 0 ? null : this.valuesArray()[0]; }
+    public V last() { return this.length() == 0 ? null : this.valuesArray()[this.length()-1]; }
 
     /**
      * {@inheritDoc}

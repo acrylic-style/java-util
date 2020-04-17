@@ -3,6 +3,8 @@ package test.util;
 import org.junit.Test;
 import util.CollectionList;
 
+import java.util.Objects;
+
 public class CollectionListTest {
     @SuppressWarnings("StringBufferReplaceableByString")
     public String getAssertionErrorMessage(CollectionList<?> list) {
@@ -70,5 +72,15 @@ public class CollectionListTest {
     public void unique() {
         CollectionList<String> list = new CollectionList<>("u", "n", "i", "q", "u", "e");
         assert list.unique().containsAll(new CollectionList<>("q", "u", "e", "i", "n")) : getAssertionErrorMessage(list.unique());
+    }
+
+    @Test
+    public void first() {
+        assert Objects.equals(new CollectionList<>("a", "b", "c").first(), "a");
+    }
+
+    @Test
+    public void last() {
+        assert Objects.equals(new CollectionList<>("a", "b", "c").last(), "c");
     }
 }
