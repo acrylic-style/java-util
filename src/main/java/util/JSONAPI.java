@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public class JSONAPI extends EventEmitter {
-    private URL url;
+    private final URL url;
     private String method = "GET";
     private RequestBody requestBody = null;
     private Consumer<HttpURLConnection> postConnection = c -> {};
@@ -113,9 +113,9 @@ public class JSONAPI extends EventEmitter {
     }
 
     public static class Response {
-        private int responseCode;
-        private Object response;
-        private String rawResponse;
+        private final int responseCode;
+        private final Object response;
+        private final String rawResponse;
 
         public Response(int responseCode, Object response, String rawResponse) {
             this.responseCode = responseCode;
@@ -137,7 +137,7 @@ public class JSONAPI extends EventEmitter {
     }
 
     public static class BodyBuilder {
-        private HashMap<String, String> properties = new HashMap<>();
+        private final HashMap<String, String> properties = new HashMap<>();
         private String rawBody = null;
 
         public BodyBuilder addRequestProperty(String key, String value) {
@@ -178,8 +178,8 @@ public class JSONAPI extends EventEmitter {
     }
 
     public static class RequestBody {
-        private HashMap<String, String> map;
-        private String rawBody;
+        private final HashMap<String, String> map;
+        private final String rawBody;
 
         private RequestBody(@NotNull HashMap<String, String> map, @Nullable String rawBody) {
             this.map = map;

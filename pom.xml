@@ -6,7 +6,10 @@
 
     <groupId>xyz.acrylicstyle</groupId>
     <artifactId>Util</artifactId>
-    <version>0.10.0</version>
+    <version>0.10.1</version>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
     <build>
         <plugins>
             <plugin>

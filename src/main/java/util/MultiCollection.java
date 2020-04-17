@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
 
 @SuppressWarnings("unused")
 public class MultiCollection<K, V> {
-    private Collection<K, CollectionList<V>> map = new Collection<>();
+    private final Collection<K, CollectionList<V>> map = new Collection<>();
 
     @Contract("!null, !null -> param2")
     public V add(@NotNull K key, @NotNull V value) {
@@ -155,7 +155,7 @@ public class MultiCollection<K, V> {
     }
 
     public void putAll(MultiCollection<? extends K, V> map) {
-        map.forEach((k, v) -> this.map.add(k, v));
+        map.forEach(this.map::add);
     }
 
     public MultiCollection<K, V> concat(MultiCollection<? extends K, V> map) {
