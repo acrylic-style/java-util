@@ -289,4 +289,11 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         this.forEach((k, v) -> entries.add(Collections.singletonMap(k, v)));
         return entries;
     }
+
+    @Override
+    public <S> CollectionList<S> toList(BiFunction<K, V, S> function) {
+        CollectionList<S> list = new CollectionList<>();
+        this.forEach((k, v) -> list.add(function.apply(k, v)));
+        return list;
+    }
 }

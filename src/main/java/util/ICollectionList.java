@@ -71,7 +71,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    CollectionList<V> reverse();
+    ICollectionList<V> reverse();
 
     /**
      * Shuffles all entries in list.
@@ -79,7 +79,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    CollectionList<V> shuffle();
+    ICollectionList<V> shuffle();
 
     /**
      * Add all values from list into this list.
@@ -95,7 +95,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract("_ -> this")
-    CollectionList<V> addAll(@Nullable CollectionList<V> list);
+    ICollectionList<V> addAll(@Nullable ICollectionList<V> list);
 
     /**
      * Add all values from list into this list.
@@ -104,7 +104,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract("_ -> this")
-    CollectionList<V> putAll(@Nullable CollectionList<V> list);
+    ICollectionList<V> putAll(@Nullable ICollectionList<V> list);
 
     /**
      * Filters values. If returned true, that value will be kept.
@@ -113,7 +113,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract(value = "!null -> new", pure = true)
-    CollectionList<V> filter(@NotNull Function<V, Boolean> filter);
+    ICollectionList<V> filter(@NotNull Function<V, Boolean> filter);
 
     /**
      * Filters values. If returned true, that value will be kept.
@@ -121,7 +121,7 @@ public interface ICollectionList<V> extends List<V> {
      * @return New filtered list if not empty, null otherwise.
      */
     @Nullable
-    CollectionList<V> filterNullable(@NotNull Function<V, Boolean> filter);
+    ICollectionList<V> filterNullable(@NotNull Function<V, Boolean> filter);
 
     /**
      * Creates shallow copy of this list.
@@ -129,7 +129,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract("-> new")
-    CollectionList<V> clone();
+    ICollectionList<V> clone();
 
     /**
      * Remove then return collection.
@@ -138,7 +138,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract("!null -> this")
-    CollectionList<V> removeThenReturnCollection(@NotNull V v);
+    ICollectionList<V> removeThenReturnCollection(@NotNull V v);
 
     /**
      * The <b>map()</b> method <b>creates a new array</b> populated with the results of calling a provided function on every element in the calling array.
@@ -147,7 +147,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract(value = "!null -> new", pure = true)
-    <T> CollectionList<T> map(@NotNull Function<V, T> function);
+    <T> ICollectionList<T> map(@NotNull Function<V, T> function);
 
     /**
      * The <b>map()</b> method <b>creates a new array</b> populated with the results of calling a provided function on every element in the calling array.
@@ -156,7 +156,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract(value = "!null -> new", pure = true)
-    <T> CollectionList<T> map(@NotNull BiFunction<V, Integer, T> function);
+    <T> ICollectionList<T> map(@NotNull BiFunction<V, Integer, T> function);
 
     /**
      * The <b>join()</b> method creates
@@ -189,7 +189,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract(value = "!null -> new", pure = true)
-    CollectionList<V> joinObject(@NotNull V v);
+    ICollectionList<V> joinObject(@NotNull V v);
 
     /**
      * Simply creates new list with same type and return it.
@@ -197,7 +197,7 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    CollectionList<V> newList();
+    ICollectionList<V> newList();
 
     /**
      * The <b>join()</b> method creates
@@ -258,7 +258,7 @@ public interface ICollectionList<V> extends List<V> {
     @SuppressWarnings("unchecked")
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    CollectionList<V> concat(@Nullable CollectionList<V>... lists);
+    ICollectionList<V> concat(@Nullable ICollectionList<V>... lists);
 
     /**
      * Returns unique list. This method does not modify
@@ -267,7 +267,16 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    CollectionList<V> unique();
+    ICollectionList<V> unique();
+
+    /**
+     * Returns non-null list. This method does not modify
+     * the original list, and returns new list.
+     * @return New list that contains only non-null values
+     */
+    @NotNull
+    @Contract(value = "-> new", pure = true)
+    ICollectionList<V> nonNull();
 
     /**
      * Just returns list.
@@ -286,7 +295,19 @@ public interface ICollectionList<V> extends List<V> {
      */
     @NotNull
     @Contract(value = "!null -> new", pure = true)
-    <A, B> Collection<A, B> toMap(@NotNull Function<V, Map.Entry<A, B>> function);
+    <A, B> ICollection<A, B> toMap(@NotNull Function<V, Map.Entry<A, B>> function);
+
+    /**
+     * Converts list into map.
+     * @param function1 Function that will be used to generate key of the map.
+     * @param function2 Function that will be used to generate value of the map.
+     * @param <A> Key type
+     * @param <B> Value type
+     * @return New collection
+     */
+    @NotNull
+    @Contract(value = "!null, !null -> new", pure = true)
+    <A, B> ICollection<A, B> toMap(@NotNull Function<V, A> function1, @NotNull Function<V, B> function2);
 
     /**
      * Creates list from map values.

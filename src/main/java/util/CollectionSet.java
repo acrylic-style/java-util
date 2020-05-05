@@ -9,23 +9,23 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V>, Cloneable {
-    public CollectionList() {
+public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, Cloneable {
+    public CollectionSet() {
         super();
     }
 
-    public CollectionList(List<? extends V> list) {
+    public CollectionSet(List<? extends V> list) {
         super();
         this.addAll(list);
     }
 
     @SafeVarargs
-    public CollectionList(V... v) {
+    public CollectionSet(V... v) {
         super();
         this.addAll(Arrays.asList(v));
     }
 
-    public CollectionList(java.util.Collection<? extends V> list) {
+    public CollectionSet(java.util.Collection<? extends V> list) {
         super();
         this.addAll(list);
     }
@@ -36,9 +36,9 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Contract("!null -> this")
     @Override
-    public CollectionList<V> addChain(@NotNull V v) {
+    public CollectionSet<V> addChain(@NotNull V v) {
         super.add(v);
-        return this;
+        return this.unique();
     }
 
     /**
@@ -46,7 +46,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      */
     @Nullable
     @Override
-    public V first() { return this.length() == 0 ? null : this.valuesArray()[0]; }
+    public V first() { return this.unique().length() == 0 ? null : this.unique().valuesArray()[0]; }
 
     /**
      * {@inheritDoc}
@@ -56,7 +56,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @SuppressWarnings("unchecked")
     @Contract(value = "-> new", pure = true)
     public V[] valuesArray() {
-        return (V[]) this.toArray();
+        return (V[]) this.unique().toArray();
     }
 
     /**
@@ -64,14 +64,14 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      */
     @Nullable
     @Override
-    public V last() { return this.length() == 0 ? null : this.valuesArray()[this.length()-1]; }
+    public V last() { return this.unique().length() == 0 ? null : this.unique().valuesArray()[this.unique().length()-1]; }
 
     /**
      * {@inheritDoc}
      */
     @Override
     public int length() {
-        return this.size();
+        return this.unique().size();
     }
 
     /**
@@ -80,7 +80,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @Override
     public void foreach(@NotNull BiConsumer<V, Integer> action) {
         final int[] index = {0};
-        this.forEach(v -> {
+        this.unique().forEach(v -> {
             action.accept(v, index[0]);
             index[0]++;
         });
@@ -90,9 +90,9 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      * {@inheritDoc}
      */
     @Override
-    public void foreach(@NotNull util.BiBiConsumer<V, Integer, ICollectionList<V>> action) {
+    public void foreach(@NotNull BiBiConsumer<V, Integer, ICollectionList<V>> action) {
         final int[] index = {0};
-        this.forEach(v -> {
+        this.unique().forEach(v -> {
             action.accept(v, index[0], this.clone());
             index[0]++;
         });
@@ -115,10 +115,10 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Override
     @Contract(value = "-> new", pure = true)
-    public CollectionList<V> reverse() {
-        CollectionList<V> target = this.clone();
+    public CollectionSet<V> reverse() {
+        CollectionSet<V> target = this.clone();
         Collections.reverse(target);
-        return target;
+        return target.unique();
     }
 
     /**
@@ -127,10 +127,10 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Override
     @Contract(value = "-> new", pure = true)
-    public CollectionList<V> shuffle() {
-        CollectionList<V> target = this.clone();
+    public CollectionSet<V> shuffle() {
+        CollectionSet<V> target = this.clone();
         Collections.shuffle(target);
-        return target;
+        return target.unique();
     }
 
     /**
@@ -147,10 +147,10 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Override
     @Contract("_ -> this")
-    public CollectionList<V> addAll(@Nullable ICollectionList<V> list) {
+    public CollectionSet<V> addAll(@Nullable ICollectionList<V> list) {
         if (list == null) return this;
         super.addAll(list);
-        return this;
+        return this.unique();
     }
 
     /**
@@ -159,8 +159,8 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Override
     @Contract("_ -> this")
-    public CollectionList<V> putAll(@Nullable ICollectionList<V> list) {
-        return this.addAll(list);
+    public CollectionSet<V> putAll(@Nullable ICollectionList<V> list) {
+        return this.addAll(list).unique();
     }
 
     /**
@@ -169,12 +169,12 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Override
     @Contract(value = "!null -> new", pure = true)
-    public CollectionList<V> filter(@NotNull Function<V, Boolean> filter) {
-        CollectionList<V> newList = new CollectionList<>();
+    public CollectionSet<V> filter(@NotNull Function<V, Boolean> filter) {
+        CollectionSet<V> newList = new CollectionSet<>();
         this.foreach((v, i) -> {
             if (filter.apply(v)) newList.add(v);
         });
-        return newList;
+        return newList.unique();
     }
 
     /**
@@ -182,12 +182,12 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      */
     @Nullable
     @Override
-    public CollectionList<V> filterNullable(@NotNull Function<V, Boolean> filter) {
-        CollectionList<V> newList = new CollectionList<>();
+    public CollectionSet<V> filterNullable(@NotNull Function<V, Boolean> filter) {
+        CollectionSet<V> newList = new CollectionSet<>();
         this.foreach((v, i) -> {
             if (filter.apply(v)) newList.add(v);
         });
-        return newList.size() == 0 ? null : newList;
+        return newList.size() == 0 ? null : newList.unique();
     }
 
     /**
@@ -197,8 +197,8 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @Override
     @Contract("-> new")
     @SuppressWarnings("unchecked")
-    public CollectionList<V> clone() {
-        return (CollectionList<V>) super.clone();
+    public CollectionSet<V> clone() {
+        return ((CollectionSet<V>) super.clone());
     }
 
     /**
@@ -206,10 +206,10 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      */
     @NotNull
     @Override
-    @Contract("!null -> this")
-    public CollectionList<V> removeThenReturnCollection(@NotNull V v) {
+    @Contract(value = "!null -> this")
+    public CollectionSet<V> removeThenReturnCollection(@NotNull V v) {
         this.remove(v);
-        return this;
+        return this.unique();
     }
 
     /**
@@ -218,10 +218,10 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Override
     @Contract(value = "!null -> new", pure = true)
-    public <T> CollectionList<T> map(@NotNull Function<V, T> function) {
-        CollectionList<T> newList = new CollectionList<>();
+    public <T> CollectionSet<T> map(@NotNull Function<V, T> function) {
+        CollectionSet<T> newList = new CollectionSet<>();
         this.forEach(v -> newList.add(function.apply(v)));
-        return newList;
+        return newList.unique();
     }
 
     /**
@@ -230,14 +230,14 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Override
     @Contract(value = "!null -> new", pure = true)
-    public <T> CollectionList<T> map(@NotNull BiFunction<V, Integer, T> function) {
-        CollectionList<T> newList = new CollectionList<>();
+    public <T> CollectionSet<T> map(@NotNull BiFunction<V, Integer, T> function) {
+        CollectionSet<T> newList = new CollectionSet<>();
         final int[] index = {0};
         this.forEach(v -> {
             newList.add(function.apply(v, index[0]));
             index[0]++;
         });
-        return newList;
+        return newList.unique();
     }
 
     /**
@@ -249,7 +249,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     public String join(String s) {
         if (this.isEmpty()) return "";
         StringBuilder str = new StringBuilder();
-        this.foreach((a, i) -> {
+        this.unique().foreach((a, i) -> {
             if (i != 0) str.append(s == null ? "," : s);
             str.append(a);
         });
@@ -262,21 +262,21 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public CollectionList<V> joinObject(@NotNull V v) {
+    public CollectionSet<V> joinObject(@NotNull V v) {
         if (this.isEmpty()) return this.clone();
-        CollectionList<V> list = this.newList();
+        CollectionSet<V> list = this.newList();
         this.foreach((a, i) -> {
             if (i != 0) list.add(v);
             list.add(a);
         });
-        return list;
+        return list.unique();
     }
 
     @NotNull
     @Override
     @Contract(value = "-> new", pure = true)
-    public CollectionList<V> newList() {
-        return new CollectionList<>();
+    public CollectionSet<V> newList() {
+        return new CollectionSet<>();
     }
 
     /**
@@ -286,7 +286,13 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @Override
     @Contract(value = "-> new", pure = true)
     public String join() {
-        return this.join(null);
+        return this.unique().join(null);
+    }
+
+    @Contract("_, _ -> fail")
+    @Override
+    public boolean addAll(int index, @NotNull java.util.Collection<? extends V> c) {
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -294,31 +300,86 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      */
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof CollectionList)) return false;
-        CollectionList<?> list = (CollectionList<?>) o;
-        return super.equals(list);
+        if (!(o instanceof CollectionSet)) return false;
+        CollectionSet<?> list = (CollectionSet<?>) o;
+        return super.equals(list.unique());
+    }
+
+    @Contract("_ -> fail")
+    @Override
+    public V get(int index) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Contract("_, _ -> fail")
+    @Override
+    public V set(int index, V element) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Contract("_, _ -> fail")
+    @Override
+    public void add(int index, V element) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Contract("_ -> fail")
+    @Override
+    public V remove(int index) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Contract("_ -> fail")
+    @Override
+    public int indexOf(Object o) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Contract("_ -> fail")
+    @Override
+    public int lastIndexOf(Object o) {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    @Contract("-> fail")
+    public ListIterator<V> listIterator() {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    @Contract("_ -> fail")
+    public ListIterator<V> listIterator(int index) {
+        throw new UnsupportedOperationException();
+    }
+
+    @NotNull
+    @Override
+    @Contract("_, _ -> fail")
+    public List<V> subList(int fromIndex, int toIndex) {
+        throw new UnsupportedOperationException();
     }
 
     /**
      * {@inheritDoc}
      */
+    @Contract("-> fail")
     @Override
     @Nullable
     public V shift() {
-        if (this.isEmpty()) return null;
-        return this.remove(0);
+        throw new UnsupportedOperationException();
     }
 
     /**
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
+    @Contract("_ -> fail")
     @Override
     public int unshift(@Nullable V... v) {
-        if (v == null || v.length == 0) return this.size();
-        this.clone().forEach(this::add);
-        for (int i = 0; i < v.length; i++) this.set(i, v[i]);
-        return this.size();
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -328,12 +389,12 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @Override
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    public final CollectionList<V> concat(ICollectionList<V>... lists) {
+    public final CollectionSet<V> concat(ICollectionList<V>... lists) {
         if (lists == null) return this.clone();
-        CollectionList<V> list = newList();
+        CollectionSet<V> list = newList();
         list.addAll(this);
         for (ICollectionList<V> vs : lists) list.addAll(vs);
-        return list;
+        return list.unique();
     }
 
     /**
@@ -342,8 +403,8 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @Override
     @NotNull
     @Contract(value = "-> new", pure = true)
-    public CollectionList<V> unique() {
-        return new CollectionList<>(new HashSet<>(this.clone()));
+    public CollectionSet<V> unique() {
+        return new CollectionSet<>(new HashSet<>(this.clone()));
     }
 
     /**
@@ -352,8 +413,8 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @Override
     @NotNull
     @Contract(value = "-> new", pure = true)
-    public CollectionList<V> nonNull() {
-        return new CollectionList<>(this.clone().filter(Objects::nonNull));
+    public CollectionSet<V> nonNull() {
+        return new CollectionSet<>(this.clone().unique().filter(Objects::nonNull));
     }
 
     /**
@@ -364,10 +425,10 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
      * @return A new CollectionList instance.
      */
     @NotNull
-    @Contract(value = "_ -> new", pure = true)
+    @Contract("_ -> new")
     @SafeVarargs
-    public static <T> CollectionList<T> of(T... t) {
-        return new CollectionList<>(t);
+    public static <T> CollectionSet<T> of(T... t) {
+        return new CollectionSet<>(t).unique();
     }
 
     /**
@@ -376,7 +437,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Contract("-> this")
     public List<V> toList() {
-        return this;
+        return this.unique();
     }
 
     /**
@@ -387,7 +448,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @Contract(value = "!null -> new", pure = true)
     public <A, B> Collection<A, B> toMap(@NotNull Function<V, Map.Entry<A, B>> function) {
         Collection<A, B> collection = new Collection<>();
-        this.forEach(v -> {
+        this.unique().forEach(v -> {
             Map.Entry<A, B> entry = function.apply(v);
             collection.add(entry.getKey(), entry.getValue());
         });
@@ -400,9 +461,9 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @NotNull
     @Override
     @Contract(value = "!null, !null -> new", pure = true)
-    public <A, B> Collection<A, B> toMap(@NotNull Function<V, A> function1, @NotNull Function<V, B> function2) {
+    public <A, B> ICollection<A, B> toMap(@NotNull Function<V, A> function1, @NotNull Function<V, B> function2) {
         Collection<A, B> collection = new Collection<>();
-        this.forEach(v -> collection.add(function1.apply(v), function2.apply(v)));
+        this.unique().forEach(v -> collection.add(function1.apply(v), function2.apply(v)));
         return collection;
     }
 }

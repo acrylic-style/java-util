@@ -6,7 +6,7 @@
 
     <groupId>xyz.acrylicstyle</groupId>
     <artifactId>Util</artifactId>
-    <version>0.10.2</version>
+    <version>0.11.0</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -76,16 +76,4 @@
             <version>0.9.10</version>
         </dependency>
     </dependencies>
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>Striker's Battleship</name>
-            <url>https://maven.pkg.github.com/acrylic-style/java-util</url>
-        </repository>
-        <snapshotRepository>
-            <id>p</id>
-            <name>Striker's Battleground</name>
-            <url>https://repo.acrylicstyle.xyz</url>
-        </snapshotRepository>
-    </distributionManagement>
 </project>

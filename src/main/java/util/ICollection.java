@@ -200,6 +200,8 @@ public interface ICollection<K, V> extends Map<K, V> {
      */
     CollectionList<Map<K, V>> toMapList();
 
+    <S> CollectionList<S> toList(BiFunction<K, V, S> function);
+
     static <K, V> Collection<K, V> asCollection(Map<? extends K, ? extends V> map) {
         Collection<K, V> collection = new Collection<>();
         collection.addAll(map);
