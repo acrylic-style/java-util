@@ -16,6 +16,8 @@ java-util includes Collection(not java.util.Collection!), CollectionList and som
 - ReflectionHelper - Helps you using reflection.
 - Watchdog - Thread with timeout, to prevent application crash due to a timeout.
 - StringCollection - HashMap dedicated for string key.
+- CollectionSet - HashSet implementation, with ICollectionList methods (Some methods are not supported)
+- MathUtils - Provides some Math methods + methods
 
 ### public class CollectionList\<V\>
 
