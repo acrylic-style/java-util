@@ -12,6 +12,17 @@ public class RefMethod<T> extends RefExecutable {
     @NotNull
     private final Method method;
 
+    @NotNull
+    public Method getMethod() { return method; }
+
+    public Object invokeObj(Object obj, Object... args) {
+        try {
+            return this.method.invoke(obj, args);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            return SneakyThrow.sneaky(e);
+        }
+    }
+
     public RefMethod(@NotNull Method method) {
         super(method);
         this.method = method;
