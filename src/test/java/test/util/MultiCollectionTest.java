@@ -4,7 +4,7 @@ import org.junit.Test;
 import util.MultiCollection;
 
 public class MultiCollectionTest {
-    public static MultiCollection<String, String> map = new MultiCollection<>();
+    public static final MultiCollection<String, String> map = new MultiCollection<>();
 
     @Test
     public void addAndGet() {

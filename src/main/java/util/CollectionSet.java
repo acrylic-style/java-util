@@ -9,6 +9,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+@SuppressWarnings("NullableProblems")
 public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, Cloneable {
     public CollectionSet() {
         super();

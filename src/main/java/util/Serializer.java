@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.Base64;
 
 public class Serializer {
-    private Object object;
+    private final Object object;
 
     public Serializer(Object o) {
         this.object = o;

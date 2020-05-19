@@ -18,6 +18,7 @@ java-util includes Collection(not java.util.Collection!), CollectionList and som
 - StringCollection - HashMap dedicated for string key.
 - CollectionSet - HashSet implementation, with ICollectionList methods (Some methods are not supported)
 - MathUtils - Provides some Math methods + methods
+- reflect.Ref - helps you using reflection (unlike ReflectionHelper, it has more methods)
 
 ### public class CollectionList\<V\>
 

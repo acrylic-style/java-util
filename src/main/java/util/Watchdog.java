@@ -8,10 +8,10 @@ public class Watchdog {
     private boolean started = false;
     private boolean terminated = false;
     private Thread thread;
-    private Thread watchdog;
-    private int timeout;
+    private final Thread watchdog;
+    private final int timeout;
     private final Object lock = new Object();
-    private Runnable runnable;
+    private final Runnable runnable;
 
     /**
      * Initializes new watchdog instance.

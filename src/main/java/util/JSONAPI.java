@@ -24,7 +24,7 @@ public class JSONAPI extends EventEmitter {
     private Consumer<HttpURLConnection> postConnection = c -> {};
 
     public JSONAPI(@NotNull String url) {
-        this.url = RuntimeExceptionThrower.invoke(() -> new URL(url));
+        this.url = Thrower.invoke(() -> new URL(url));
     }
 
     public JSONAPI(@NotNull String url, @NotNull String method) {

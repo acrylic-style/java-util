@@ -4,8 +4,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ArgumentParser {
-    public CollectionList<String> arguments = new CollectionList<>();
-    public StringCollection<Object> parsedOptions = new StringCollection<>();
+    public final CollectionList<String> arguments = new CollectionList<>();
+    public final StringCollection<Object> parsedOptions = new StringCollection<>();
 
     /**
      * Parses arguments.<br />
@@ -22,9 +22,9 @@ public class ArgumentParser {
      * @param args Arguments
      */
     public ArgumentParser(String args) {
-        Matcher matcher = Pattern.compile("\".*?\"").matcher(args);
+        Matcher matcher = Pattern.compile("\"(.*?)\"").matcher(args);
         while (matcher.find()) {
-            args = args.replaceAll(matcher.group(), matcher.group().replaceAll(" ", "　"));
+            args = args.replaceFirst(Pattern.quote(matcher.group()), matcher.group().replaceAll(" ", "　"));
         }
         for (String s : args.split("[ ]+")) {
             s = s.replaceAll("　", " ");
@@ -50,6 +50,12 @@ public class ArgumentParser {
         if (s.equals("false")) return false;
         try {
             return Integer.parseInt(s);
+        } catch (NumberFormatException ignore) {}
+        try {
+            return Double.parseDouble(s);
+        } catch (NumberFormatException ignore) {}
+        try {
+            return Float.parseFloat(s);
         } catch (NumberFormatException ignore) {}
         return s;
     }
@@ -80,13 +86,31 @@ public class ArgumentParser {
     }
 
     /**
-     * Get string option with key.
+     * Get string option with key.<br />
+     * This method never throws ClassCastException.
      * @param key Key
      * @return {@link String}, null if not found
-     * @throws ClassCastException If {@link Object} is other than {@link String}.
      */
     public String getString(String key) {
-        return (String) parsedOptions.get(key);
+        return parsedOptions.containsKey(key) ? parsedOptions.get(key).toString() : null;
+    }
+
+    /**
+     * Get value by key.
+     * @param key Key
+     * @return {@link Double}, 0 if not found
+     */
+    public double getDouble(String key) {
+        return parsedOptions.containsKey(key) ? (double) parsedOptions.get(key) : 0;
+    }
+
+    /**
+     * Get value by key.
+     * @param key Key
+     * @return {@link Float}, 0 if not found
+     */
+    public float getFloat(String key) {
+        return parsedOptions.containsKey(key) ? (float) parsedOptions.get(key) : 0F;
     }
 
     /**
