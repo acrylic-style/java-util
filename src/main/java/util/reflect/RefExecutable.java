@@ -40,4 +40,8 @@ public class RefExecutable {
     public AnnotatedType getAnnotatedReturnType() {
         return executable.getAnnotatedReturnType();
     }
+
+    public void setAccessible(boolean flag) {
+        executable.setAccessible(flag);
+    }
 }

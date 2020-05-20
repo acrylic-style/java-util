@@ -44,4 +44,8 @@ public class RefMethod<T> extends RefExecutable {
     public String toString() {
         return this.method.toString();
     }
+
+    @Contract("_ -> this")
+    @NotNull
+    public RefMethod<T> accessible(boolean flag) { setAccessible(flag); return this; }
 }
