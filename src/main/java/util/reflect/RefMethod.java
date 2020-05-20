@@ -6,7 +6,6 @@ import util.SneakyThrow;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.RefExecutable;
 
 public class RefMethod<T> extends RefExecutable {
     @NotNull
