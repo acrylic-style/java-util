@@ -1,5 +1,6 @@
 package util;
 
+import com.google.common.reflect.ClassPath;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -7,7 +8,9 @@ import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
+import util.reflect.Ref;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -212,7 +215,7 @@ public final class ReflectionHelper {
     }
 
     @NotNull
-    @Contract("_,_->new")
+    @Contract("_, _ -> new")
     public static CollectionList<Class<?>> findAllAnnotatedClasses(@NotNull String packageName, @NotNull Class<? extends Annotation> annotation) {
         CollectionList<Class<?>> classes = new CollectionList<>();
         classes.addAll(new Reflections(packageName).getTypesAnnotatedWith(annotation));
@@ -220,7 +223,7 @@ public final class ReflectionHelper {
     }
 
     @NotNull
-    public static CollectionList<Class<?>> findAllAnnotatedClasses(@NotNull ClassLoader classLoader, @NotNull String packageName, @NotNull Class<? extends Annotation> annotation) {
+    public static CollectionList<Class<?>> findAllAnnotatedClasses(@Nullable ClassLoader classLoader, @NotNull String packageName, @NotNull Class<? extends Annotation> annotation) {
         CollectionList<Class<?>> classes = new CollectionList<>();
         classes.addAll(new Reflections(
                 new ConfigurationBuilder()
@@ -228,5 +231,67 @@ public final class ReflectionHelper {
                         .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(packageName)))
         ).getTypesAnnotatedWith(annotation));
         return classes;
+    }
+
+    @NotNull
+    public static CollectionList<Class<?>> findAllClasses(@Nullable ClassLoader classLoader, @NotNull String packageName, boolean recursive) {
+        if (recursive) return findAllClassesRecursive(classLoader, packageName);
+        return findAllClasses(classLoader, packageName);
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    @NotNull
+    public static CollectionList<Class<?>> findAllClasses(@Nullable ClassLoader classLoader, @NotNull String packageName) {
+        try {
+            return new CollectionList<>(ClassPath.from(classLoader == null ? ClassLoader.getSystemClassLoader() : classLoader).getTopLevelClasses(packageName))
+                    .map(ClassPath.ClassInfo::load);
+        } catch (IOException e) {
+            SneakyThrow.sneaky(e);
+            return null;
+        }
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    @NotNull
+    public static CollectionList<Class<?>> findAllClassesRecursive(@Nullable ClassLoader classLoader, @NotNull String packageName) {
+        try {
+            return new CollectionList<>(ClassPath.from(classLoader == null ? ClassLoader.getSystemClassLoader() : classLoader).getTopLevelClassesRecursive(packageName))
+                    .map(ClassPath.ClassInfo::load);
+        } catch (IOException e) {
+            SneakyThrow.sneaky(e);
+            return null;
+        }
+    }
+
+    @NotNull
+    public static CollectionList<String> findPackages(@NotNull String prefix, boolean recursive) {
+        return ICollectionList.asList(Package.getPackages())
+                .map(Package::getName)
+                .filter(s -> {
+                    if (recursive) return s.toLowerCase().startsWith(prefix.toLowerCase());
+                    String c = s.split("\\.")[s.split("\\.").length-1];
+                    return s.equalsIgnoreCase(prefix + "." + c);
+                });
+    }
+
+    @NotNull
+    public static CollectionList<String> findPackages(@Nullable ClassLoader cl, @NotNull String prefix, boolean recursive) {
+        if (cl == null) return findPackages(prefix, recursive);
+        return ICollectionList.asList((Package[]) Ref.getDeclaredMethod(ClassLoader.class, "getPackages").accessible(true).invoke(cl))
+                .map(Package::getName)
+                .filter(s -> {
+                    if (recursive) return s.toLowerCase().startsWith(prefix.toLowerCase());
+                    String c = s.split("\\.")[s.split("\\.").length-1];
+                    return s.equalsIgnoreCase(prefix + "." + c);
+                });
+    }
+
+    public static boolean isValidPackage(@NotNull String packageName) {
+        return Package.getPackage(packageName) != null;
+    }
+
+    public static boolean isValidPackage(@Nullable ClassLoader cl, @NotNull String packageName) {
+        if (cl == null) return isValidPackage(packageName);
+        return Ref.getDeclaredMethod(ClassLoader.class, "getPackage", String.class).accessible(true).invoke(cl, packageName) != null;
     }
 }
