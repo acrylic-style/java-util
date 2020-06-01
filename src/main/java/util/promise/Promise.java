@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * Represents partial implementation of JavaScript Promise.
  * @param <T> Promise return type
  */
-public abstract class Promise<T> implements IPromise<T> {
+public abstract class Promise<T> implements IPromise<Object, T> {
     private Promise<Object> parent = null;
     private Promise<Object> then = null;
     private Promise<Object> catch_ = null;
@@ -21,7 +21,7 @@ public abstract class Promise<T> implements IPromise<T> {
 
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    public static <V> Promise<V> async(IPromise<V> promise) {
+    public static <V> Promise<V> async(IPromise<Object, V> promise) {
         return new Promise<V>() {
             @Override
             public V apply(Object o) {
@@ -31,20 +31,20 @@ public abstract class Promise<T> implements IPromise<T> {
     }
 
     @Nullable
-    public static <V> V awaitT(IPromise<V> iPromise) throws ClassCastException {
+    public static <V> V awaitT(IPromise<Object, V> iPromise) throws ClassCastException {
         return awaitT(iPromise, null);
     }
 
     @Nullable
     @SuppressWarnings("unchecked")
-    public static <V> V awaitT(IPromise<V> iPromise, Object o) throws ClassCastException {
+    public static <V> V awaitT(IPromise<Object, V> iPromise, Object o) throws ClassCastException {
         Object obj = await(iPromise, o);
         if (obj == null) return null;
         return (V) obj;
     }
 
     @Nullable
-    public static <V> Object await(IPromise<V> iPromise) {
+    public static <V> Object await(IPromise<Object, V> iPromise) {
         return await(iPromise, null);
     }
 
@@ -59,7 +59,7 @@ public abstract class Promise<T> implements IPromise<T> {
     }
 
     @Nullable
-    public static <V> Object await(IPromise<V> iPromise, Object o) {
+    public static <V> Object await(IPromise<Object, V> iPromise, Object o) {
         Promise<V> promise;
         if (iPromise instanceof Promise) {
             promise = (Promise<V>) iPromise;
@@ -105,7 +105,7 @@ public abstract class Promise<T> implements IPromise<T> {
         }
     }
 
-    public static void queue(IPromise<?> iPromise, Object o) {
+    public static void queue(IPromise<Object, ?> iPromise, Object o) {
         new Thread(() -> {
             Promise<?> promise;
             if (iPromise instanceof Promise) {
@@ -165,28 +165,28 @@ public abstract class Promise<T> implements IPromise<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <V> Promise<V> then(IPromise<V> promise) {
+    public <V> Promise<V> then(IPromise<T, V> promise) {
         Promise<V> promise1 = new Promise<V>() {
             @Override
             public V apply(Object o) {
-                return promise.apply(o);
+                return promise.apply((T) o);
             }
         };
         promise1.parent = (Promise<Object>) this;
         this.then = new Promise<Object>() {
             @Override
             public Object apply(Object o) {
-                return promise.apply(o);
+                return promise.apply((T) o);
             }
         };
         return promise1;
     }
 
-    public <V extends Throwable> Promise<V> catch_(IPromise<V> promise) {
+    public <V extends Throwable> Promise<V> catch_(IPromise<V, ? extends V> promise) {
         Promise<V> promise1 = new Promise<V>() {
             @Override
             public V apply(Object o) {
-                return promise.apply(o);
+                return promise.apply((V) o);
             }
         };
         promise1.parent = new Promise<Object>() {
