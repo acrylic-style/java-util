@@ -48,6 +48,16 @@ public abstract class Promise<T> implements IPromise<T> {
         return await(iPromise, null);
     }
 
+    public static CollectionList<Promise<?>> buildChain(Promise<?> promise) {
+        CollectionList<Promise<?>> promises = new CollectionList<>();
+        promises.add(promise);
+        while (promise.parent != null) {
+            promises.add(promise.parent);
+            promise = promise.parent;
+        }
+        return promises.reverse().clone();
+    }
+
     @Nullable
     public static <V> Object await(IPromise<V> iPromise, Object o) {
         Promise<V> promise;
@@ -61,21 +71,26 @@ public abstract class Promise<T> implements IPromise<T> {
                 }
             };
         }
+        CollectionList<Promise<?>> chain = buildChain(promise);
         try {
             promise.status = PromiseStatus.RESOLVED;
-            if (promise.then != null) {
-                Object o2 = await(promise.then, promise.apply(o));
-                promise.v = o2;
-                return o2;
-            } else {
-                if (promise.parent != null) {
-                    V o2 = promise.apply(promise.parent.apply(o));
-                    promise.v = o2;
-                    return o2;
+            if (promise.parent != null) {
+                if (promise.then != null) {
+                    chain = buildChain(promise.then);
+                    Object obj = o;
+                    for (Promise<?> p : chain) obj = p.apply(obj);
+                    return promise.v = obj;
                 } else {
-                    V o2 = promise.apply(o);
-                    promise.v = o2;
-                    return o2;
+                    Object obj = o;
+                    for (Promise<?> p : chain) obj = p.apply(obj);
+                    return promise.v = obj;
+                }
+            } else {
+                System.out.println("nul");
+                if (promise.then != null) {
+                    return promise.parent.v = await(promise.parent, promise.v = promise.apply(o));
+                } else {
+                    return promise.v = promise.apply(o);
                 }
             }
         } catch (Throwable throwable) {
@@ -149,24 +164,19 @@ public abstract class Promise<T> implements IPromise<T> {
         };
     }
 
+    @SuppressWarnings("unchecked")
     public <V> Promise<V> then(IPromise<V> promise) {
-        Promise<Object> parent = new Promise<Object>() {
-            @Override
-            public Object apply(Object o) {
-                return Promise.this.apply(o);
-            }
-        };
         Promise<V> promise1 = new Promise<V>() {
             @Override
             public V apply(Object o) {
                 return promise.apply(o);
             }
         };
-        promise1.parent = parent;
+        promise1.parent = (Promise<Object>) this;
         this.then = new Promise<Object>() {
             @Override
             public Object apply(Object o) {
-                return promise1.apply(o);
+                return promise.apply(o);
             }
         };
         return promise1;
@@ -193,6 +203,23 @@ public abstract class Promise<T> implements IPromise<T> {
         };
         this.catch_ = promise1.catch_;
         return promise1;
+    }
+
+    public static final Promise<Object> EMPTY_PROMISE = async(o -> o);
+
+    public static Promise<Object> getEmptyPromise() {
+        return EMPTY_PROMISE;
+    }
+
+    public static Promise<Object> sleepAsync(long millis) {
+        return async(o -> {
+            try {
+                Thread.sleep(millis);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            return o;
+        });
     }
 
     @Override

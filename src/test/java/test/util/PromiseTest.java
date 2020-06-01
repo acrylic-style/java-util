@@ -33,6 +33,17 @@ public class PromiseTest {
     }
 
     @Test
+    public void then() {
+        String s = async(o -> o + "A")
+                .then(o -> o + "B")
+                .then(o -> o + "C")
+                .then(o -> o + "D")
+                .then(o -> o + "E")
+                .complete("O");
+        assert s.equals("OABCDE") : "string was " + s + " (expected OABCDE)";
+    }
+
+    @Test
     public void all() {
         Promise<String> promise = async(o -> {
             try {
