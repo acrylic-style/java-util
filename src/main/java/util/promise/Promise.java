@@ -74,25 +74,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
         CollectionList<Promise<?>> chain = buildChain(promise);
         try {
             promise.status = PromiseStatus.RESOLVED;
-            if (promise.parent != null) {
-                if (promise.then != null) {
-                    chain = buildChain(promise.then);
-                    Object obj = o;
-                    for (Promise<?> p : chain) obj = p.apply(obj);
-                    return promise.v = obj;
-                } else {
-                    Object obj = o;
-                    for (Promise<?> p : chain) obj = p.apply(obj);
-                    return promise.v = obj;
-                }
-            } else {
-                System.out.println("nul");
-                if (promise.then != null) {
-                    return promise.parent.v = await(promise.parent, promise.v = promise.apply(o));
-                } else {
-                    return promise.v = promise.apply(o);
-                }
-            }
+            return call(o, promise, chain);
         } catch (Throwable throwable) {
             promise.status = PromiseStatus.REJECTED;
             promise.v = throwable;
@@ -102,6 +84,20 @@ public abstract class Promise<T> implements IPromise<Object, T> {
             } else {
                 throw new UnhandledPromiseException(throwable);
             }
+        }
+    }
+
+    @Nullable
+    private static <V> Object call(Object o, Promise<V> promise, CollectionList<Promise<?>> chain) {
+        if (promise.then != null) {
+            chain = buildChain(promise.then);
+            Object obj = o;
+            for (Promise<?> p : chain) obj = p.apply(obj);
+            return promise.v = obj;
+        } else {
+            Object obj = o;
+            for (Promise<?> p : chain) obj = p.apply(obj);
+            return promise.v = obj;
         }
     }
 
@@ -182,6 +178,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
         return promise1;
     }
 
+    @SuppressWarnings("unchecked")
     public <V extends Throwable> Promise<V> catch_(IPromise<V, ? extends V> promise) {
         Promise<V> promise1 = new Promise<V>() {
             @Override
