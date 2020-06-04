@@ -25,7 +25,7 @@ public class JavaScript {
             return (double) o == 0.0F;
         }
         if (o instanceof String) {
-            return !o.equals("");
+            return !((String) o).isEmpty();
         }
         return true;
     }
