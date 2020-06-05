@@ -1,29 +1,45 @@
 package util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.Base64;
 
-public class Serializer {
+public class Serializer implements Serializable {
+    public static final long serialVersionUID = 2L;
+
     private final Object object;
 
     public Serializer(Object o) {
         this.object = o;
     }
 
-    public static Serializer fromString(String s) throws IOException, ClassNotFoundException {
-        byte[] data = Base64.getDecoder().decode(s);
-        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-        Object o = ois.readObject();
-        ois.close();
-        return new Serializer(o);
+    @NotNull
+    public static Serializer fromString(String s) {
+        try {
+            byte[] data = Base64.getDecoder().decode(s);
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
+            Object o = ois.readObject();
+            ois.close();
+            return new Serializer(o);
+        } catch (IOException | ClassNotFoundException e) {
+            SneakyThrow.sneaky(e);
+            return null;
+        }
     }
 
-    public String asString() throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(this.object);
-        oos.close();
-        return Base64.getEncoder().encodeToString(baos.toByteArray());
+    @NotNull
+    public String asString() {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(this.object);
+            oos.close();
+            return Base64.getEncoder().encodeToString(baos.toByteArray());
+        } catch (IOException e) {
+            SneakyThrow.sneaky(e);
+            return null;
+        }
     }
 
     public Object getObject() { return object; }

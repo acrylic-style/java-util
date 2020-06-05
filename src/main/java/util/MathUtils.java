@@ -2019,15 +2019,34 @@ public final class MathUtils {
      * @param i Number. If provided negative, will be converted to positive.
      *          If provided positive number, nothing will happen.
      */
-    public static int negativeToPositive(int i) {
-        if (i >= 0) return i;
-        return -i;
-    }
+    public static int negativeToPositive(int i) { return i >= 0 ? i : -i; }
+
+    /**
+     * Always returns a positive number.
+     * @param i double number. If provided negative, will be converted to positive.
+     *          If provided positive number, nothing will happen.
+     */
+    public static double negativeToPositive(double i) { return i >= 0 ? i : -i; }
+
+    /**
+     * Always returns a positive number.
+     * @param i float number. If provided negative, will be converted to positive.
+     *          If provided positive number, nothing will happen.
+     */
+    public static float negativeToPositive(float i) { return i >= 0 ? i : -i; }
 
     /**
      * Returns difference between x and y.
      */
-    public static int diff(int x, int y) {
-        return negativeToPositive(x - y);
-    }
+    public static int diff(int x, int y) { return negativeToPositive(x - y); }
+
+    /**
+     * Returns difference between x and y.
+     */
+    public static double diff(double x, double y) { return negativeToPositive(x - y); }
+
+    /**
+     * Returns difference between x and y.
+     */
+    public static float diff(float x, float y) { return negativeToPositive(x - y); }
 }

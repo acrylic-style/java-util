@@ -202,9 +202,11 @@ public abstract class Promise<T> implements IPromise<Object, T> {
         return promise1;
     }
 
-    public static final Promise<Object> EMPTY_PROMISE = async(o -> o);
+    @SuppressWarnings("rawtypes")
+    public static final Promise EMPTY_PROMISE = async(o -> o);
 
-    public static Promise<Object> getEmptyPromise() {
+    @SuppressWarnings("unchecked")
+    public static <T> Promise<T> getEmptyPromise() {
         return EMPTY_PROMISE;
     }
 
