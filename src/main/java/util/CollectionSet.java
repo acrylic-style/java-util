@@ -10,7 +10,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @SuppressWarnings("NullableProblems")
-public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, Cloneable {
+public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, Cloneable, DeepCloneable {
     public CollectionSet() {
         super();
     }
@@ -57,7 +57,11 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     @SuppressWarnings("unchecked")
     @Contract(value = "-> new", pure = true)
     public V[] valuesArray() {
-        return (V[]) this.unique().toArray();
+        return (V[]) this.unique().toArray0();
+    }
+
+    private Object[] toArray0() {
+        return super.toArray();
     }
 
     /**
@@ -466,5 +470,20 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
         Collection<A, B> collection = new Collection<>();
         this.unique().forEach(v -> collection.add(function1.apply(v), function2.apply(v)));
         return collection;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    @NotNull
+    public CollectionSet<V> deepClone() {
+        CollectionSet<V> set = new CollectionSet<>();
+        this.clone().forEach(v -> set.add((V) DeepCloneable.clone(v)));
+        return set;
+    }
+
+    @NotNull
+    @Override
+    public V[] toArray() {
+        return valuesArray();
     }
 }

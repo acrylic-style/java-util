@@ -56,7 +56,7 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @SuppressWarnings("unchecked")
     @Contract(value = "-> new", pure = true)
     public V[] valuesArray() {
-        return (V[]) this.toArray();
+        return (V[]) super.toArray();
     }
 
     /**
@@ -404,5 +404,26 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
         Collection<A, B> collection = new Collection<>();
         this.forEach(v -> collection.add(function1.apply(v), function2.apply(v)));
         return collection;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    @SuppressWarnings("unchecked")
+    public Object deepClone() {
+        CollectionList<V> list = new CollectionList<>();
+        this.clone().forEach(v -> list.add((V) DeepCloneable.clone(v)));
+        return list;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @NotNull
+    @Override
+    public V[] toArray() {
+        return valuesArray();
     }
 }

@@ -4,7 +4,10 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -238,18 +241,6 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
 
     /**
      * {@inheritDoc}
-     * @deprecated Use {@link Collection#map(BiFunction, BiFunction)} instead.
-     */
-    @Override
-    @Deprecated
-    public <T> Collection<K, T> cast(Class<T> newType) {
-        Collection<K, T> collection = new Collection<>();
-        this.forEach((k, v) -> collection.add(k, newType.cast(v)));
-        return collection;
-    }
-
-    /**
-     * {@inheritDoc}
      */
     @Override
     public Collection<K, V> values(V v) {
@@ -295,5 +286,17 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
         CollectionList<S> list = new CollectionList<>();
         this.forEach((k, v) -> list.add(function.apply(k, v)));
         return list;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    @NotNull
+    public Collection<K, V> deepClone() {
+        Collection<K, V> collection = new Collection<>();
+        this.clone().forEach((k, v) -> collection.add((K) DeepCloneable.clone(k), (V) DeepCloneable.clone(v)));
+        return collection;
     }
 }

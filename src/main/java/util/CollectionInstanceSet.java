@@ -42,8 +42,7 @@ public class CollectionInstanceSet<V> extends CollectionList<V> {
     public V first() { return this.valuesArray()[0]; }
 
     @NotNull
-    @SuppressWarnings("unchecked")
-    public V[] valuesArray() { return (V[]) this.toArray(); }
+    public V[] valuesArray() { return super.toArray(); }
 
     // @Nullable
     // public V last() { return this.valuesArray()[0]; }
@@ -124,5 +123,14 @@ public class CollectionInstanceSet<V> extends CollectionList<V> {
 
     private boolean instanceOf(Object obj, String clazz) throws ClassNotFoundException {
         return Class.forName(clazz).isInstance(obj);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    @NotNull
+    public CollectionInstanceSet<V> deepClone() {
+        CollectionInstanceSet<V> set = new CollectionInstanceSet<>();
+        this.clone().forEach(v -> set.add((V) DeepCloneable.clone(v)));
+        return set;
     }
 }

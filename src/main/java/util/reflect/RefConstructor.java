@@ -27,11 +27,11 @@ public class RefConstructor<T> extends RefExecutable {
     @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(@Nullable Object o) { return this.constructor.equals(o); }
 
-    public <S> boolean equals(@NotNull RefConstructor<S> o) { return this.constructor.equals(o.constructor); }
+    public boolean equals(@NotNull RefConstructor<?> o) { return this.constructor.equals(o.constructor); }
 
     @Contract("!null -> this; null -> fail")
     @NotNull
-    public <S> RefConstructor<T> ifEquals(@NotNull RefConstructor<S> refConstructor) {
+    public RefConstructor<T> ifEquals(@NotNull RefConstructor<?> refConstructor) {
         if (!this.constructor.equals(refConstructor.constructor)) throw new IllegalStateException("Constructor isn't equals another constructor!");
         return this;
     }

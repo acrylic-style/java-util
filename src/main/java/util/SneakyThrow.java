@@ -5,7 +5,8 @@ import org.jetbrains.annotations.NotNull;
 
 public final class SneakyThrow {
     @SuppressWarnings("SameReturnValue")
-    @Contract(value = "_ -> fail", pure = true)
+    @Contract(value = "_ -> fail")
+    @NotNull
     public static <T> T sneaky(@NotNull Throwable exception) {
         SneakyThrow.throwSneaky(exception);
         return null;

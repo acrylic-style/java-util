@@ -16,7 +16,7 @@ import java.util.function.Function;
  * @see CollectionSync - for synchronized Collection
  * @see CollectionStrictSync - for strictly synchronized Collection
  */
-public class StringCollection<V> extends Collection<String, V> implements ICollection<String, V> {
+public class StringCollection<V> extends Collection<String, V> implements ICollection<String, V>, DeepCloneable {
     /**
      * Constructs an empty Collection with the default initial capacity (16) and the default load factor (0.75).
      */
@@ -206,5 +206,13 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
     @Override
     public Collection<String, V> values(V v) {
         return new Collection<>(this.filter(f -> f.equals(v)));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public @NotNull Collection<String, V> deepClone() {
+        StringCollection<V> collection = new StringCollection<>();
+        this.clone().forEach((k, v) -> collection.add((String) DeepCloneable.clone(k), (V) DeepCloneable.clone(v)));
+        return collection;
     }
 }

@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public interface ICollectionList<V> extends List<V> {
+public interface ICollectionList<V> extends List<V>, DeepCloneable {
     /**
      * Adds entry into list but it returns list so it can be chained.
      * @param v Value
@@ -308,6 +308,15 @@ public interface ICollectionList<V> extends List<V> {
     @NotNull
     @Contract(value = "!null, !null -> new", pure = true)
     <A, B> ICollection<A, B> toMap(@NotNull Function<V, A> function1, @NotNull Function<V, B> function2);
+
+    /**
+     * Converts list to the array.
+     * @return the array
+     */
+    @NotNull
+    default V[] toArray() { return valuesArray(); }
+
+    /* Static methods */
 
     /**
      * Creates list from map values.

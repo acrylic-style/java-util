@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 @SuppressWarnings("unused")
-public class MultiCollection<K, V> {
+public class MultiCollection<K, V> implements DeepCloneable {
     private final Collection<K, CollectionList<V>> map = new Collection<>();
 
     @Contract("!null, !null -> param2")
@@ -297,5 +297,16 @@ public class MultiCollection<K, V> {
     @NotNull
     public Set<Map.Entry<K, CollectionList<V>>> entrySet() {
         return new HashSet<>(entries());
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public @NotNull Object deepClone() {
+        Collection<K, V> collection = new Collection<>();
+        map.clone().forEach((k, v) -> collection.add((K) DeepCloneable.clone(k), (V) DeepCloneable.clone(v)));
+        return collection;
     }
 }

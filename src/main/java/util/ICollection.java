@@ -9,7 +9,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public interface ICollection<K, V> extends Map<K, V> {
+public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
     /**
      * Returns first value of the collection.
      * @return First value of the collection
@@ -139,17 +139,6 @@ public interface ICollection<K, V> extends Map<K, V> {
      * @return Shallow copy of this collection
      */
     Collection<K, V> clone();
-
-    /**
-     * Casts value into type T.
-     * @param newType New type
-     * @param <T> New value type
-     * @return New collection
-     * @throws ClassCastException When impossible to cast.
-     * @deprecated Use {@link ICollection#map(BiFunction, BiFunction)} instead.
-     */
-    @Deprecated
-    <T> ICollection<K, T> cast(Class<T> newType);
 
     /**
      * Filter by value(v).

@@ -28,6 +28,15 @@ public class RefField<T> {
     @Contract(pure = true)
     public Object get(@Nullable T t) { try { return this.field.get(t); } catch (IllegalAccessException e) { return SneakyThrow.sneaky(e); } }
 
+    /**
+     * @deprecated unchecked class, may throw exception at runtime.
+     * @param t the instance
+     * @return field value
+     */
+    @Contract(pure = true)
+    @Deprecated
+    public Object getObj(@Nullable Object t) { try { return this.field.get(t); } catch (IllegalAccessException e) { return SneakyThrow.sneaky(e); } }
+
     public void set(@Nullable T t, Object o) { try { this.field.set(t, o); } catch (ReflectiveOperationException e) { SneakyThrow.sneaky(e); } }
 
     public void setAccessible(boolean flag) { this.field.setAccessible(flag); }

@@ -6,6 +6,8 @@ import org.jetbrains.annotations.Nullable;
 import util.ICollectionList;
 import util.SneakyThrow;
 
+import java.util.Optional;
+
 public class Ref {
     @NotNull
     @Contract(value = "!null -> new", pure = true)
@@ -60,6 +62,16 @@ public class Ref {
         }
     }
 
+    @NotNull
+    @Contract(value = "!null, !null, _ -> new", pure = true)
+    public static <S> Optional<RefMethod<S>> getMethodOptional(@NotNull Class<S> clazz, @NotNull String methodName, @Nullable Class<?>... classes) {
+        try {
+            return Optional.of(new RefMethod<>(clazz.getMethod(methodName, classes)));
+        } catch (NoSuchMethodException e) {
+            return Optional.empty();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     @NotNull
     @Contract(value = "!null -> new", pure = true)
@@ -75,6 +87,16 @@ public class Ref {
         } catch (NoSuchMethodException e) {
             SneakyThrow.sneaky(e);
             return null;
+        }
+    }
+
+    @NotNull
+    @Contract(value = "!null, !null, _ -> new", pure = true)
+    public static <S> Optional<RefMethod<S>> getDeclaredMethodOptional(@NotNull Class<S> clazz, @NotNull String methodName, @Nullable Class<?>... classes) {
+        try {
+            return Optional.of(new RefMethod<>(clazz.getDeclaredMethod(methodName, classes)));
+        } catch (NoSuchMethodException e) {
+            return Optional.empty();
         }
     }
 

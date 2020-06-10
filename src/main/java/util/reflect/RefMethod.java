@@ -14,6 +14,13 @@ public class RefMethod<T> extends RefExecutable {
     @NotNull
     public Method getMethod() { return method; }
 
+    /**
+     * @deprecated obj is unchecked, may throw exception at runtime
+     * @param obj the object (unchecked type)
+     * @param args invoke arguments
+     * @return the return value
+     */
+    @Deprecated
     public Object invokeObj(Object obj, Object... args) {
         try {
             return this.method.invoke(obj, args);
