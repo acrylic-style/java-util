@@ -3,6 +3,7 @@ package util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -29,6 +30,24 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     public CollectionSet(java.util.Collection<? extends V> list) {
         super();
         this.addAll(list);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public @Range(from = 0, to = 1) double distribution(@NotNull V v) {
+        return filter(v2 -> v2.equals(v)).size() / (double) size();
+    }
+
+    /**
+     * {@inheritDoc}
+     * the value (count) is always 1 or 0 since this list is {@link Set}.
+     */
+    @Override
+    public Map.Entry<Double, Integer> distributionEntry(@NotNull V v) {
+        int size = filter(v2 -> v2.equals(v)).size();
+        return new AbstractMap.SimpleImmutableEntry<>(size / (double) size(), size);
     }
 
     /**

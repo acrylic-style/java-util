@@ -3,6 +3,7 @@ package util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -28,6 +29,24 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     public CollectionList(java.util.Collection<? extends V> list) {
         super();
         this.addAll(list);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Range(from = 0, to = 1)
+    @Override
+    public double distribution(@NotNull V v) {
+        return filter(v2 -> v2.equals(v)).size() / (double) size();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map.Entry<Double, Integer> distributionEntry(@NotNull V v) {
+        int size = filter(v2 -> v2.equals(v)).size();
+        return new AbstractMap.SimpleImmutableEntry<>(size / (double) size(), size);
     }
 
     /**

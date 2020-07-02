@@ -3,6 +3,7 @@ package util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +13,23 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public interface ICollectionList<V> extends List<V>, DeepCloneable {
+    /**
+     * Returns the distribution of value.<br />
+     * The implementation should use {@link Object#equals(Object)} to compare between objects.
+     * @return the distribution, returned in 0 - 1 range.
+     * @see #distributionEntry(Object)
+     */
+    @Range(from = 0, to = 1)
+    double distribution(@NotNull V v);
+
+    /**
+     * Returns the distribution of value.<br />
+     * The implementation should use {@link Object#equals(Object)} to compare between objects.
+     * @return key is the distribution, returned in 0 - 1 range. the value is the how many values found.
+     * @see #distribution(Object)
+     */
+    Map.Entry<Double, Integer> distributionEntry(@NotNull V v);
+
     /**
      * Adds entry into list but it returns list so it can be chained.
      * @param v Value
