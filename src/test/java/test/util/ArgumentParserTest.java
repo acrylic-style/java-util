@@ -21,6 +21,7 @@ public class ArgumentParserTest {
         ArgumentParser parser = new ArgumentParser("--option=true --option2=false");
         assert parser.containsKey("option") && parser.getBoolean("option");
         assert parser.containsKey("option2") && !parser.getBoolean("option2");
+        assert !parser.getBoolean("non-existent-key");
     }
 
     @Test
@@ -39,5 +40,14 @@ public class ArgumentParserTest {
     public void arguments() {
         ArgumentParser parser = new ArgumentParser("--special \"test\"");
         assert parser.contains("special") && parser.contains("test");
+    }
+
+    @Test
+    public void simpleArguments() {
+        ArgumentParser parser = new ArgumentParser("1 2 3 \"a b c\"");
+        assert parser.contains("1") : "didn't contain 1";
+        assert parser.contains("2") : "didn't contain 2";
+        assert parser.contains("3") : "didn't contain 3";
+        assert parser.contains("a b c") : "didn't contain 'a b c'";
     }
 }

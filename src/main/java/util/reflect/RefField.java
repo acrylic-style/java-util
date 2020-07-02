@@ -10,11 +10,12 @@ import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
-public class RefField<T> {
+public class RefField<T> extends ModifierEditor<Field> {
     @NotNull
     private final Field field;
 
     public RefField(@NotNull Field field) {
+        super(Field.class, field);
         this.field = field;
     }
 

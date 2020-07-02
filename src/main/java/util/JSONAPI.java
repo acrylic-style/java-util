@@ -55,7 +55,7 @@ public class JSONAPI extends EventEmitter {
      * </ul>
      * @see #call(Class)
      */
-    public Response call() {
+    public Response<JSONObject> call() {
         return call(JSONObject.class);
     }
 
@@ -65,9 +65,10 @@ public class JSONAPI extends EventEmitter {
      *     <li>postConnection - before connect</li>
      *     <li>connection - after connection</li>
      * </ul>
+     * jsonClass must have string constructor to deserialize the json.
      * @see #call()
      */
-    public Response call(Class<?> jsonClass) {
+    public <T> Response<T> call(Class<T> jsonClass) {
         try {
             HttpURLConnection conn = (HttpURLConnection) this.url.openConnection();
             conn.setRequestMethod(this.method);
@@ -87,9 +88,9 @@ public class JSONAPI extends EventEmitter {
             String output;
             while ((output = br.readLine()) != null) sb.append(output);
             try {
-                return new Response(conn.getResponseCode(), jsonClass.getConstructor(String.class).newInstance(sb.toString()), sb.toString());
+                return new Response<>(conn.getResponseCode(), jsonClass.getConstructor(String.class).newInstance(sb.toString()), sb.toString());
             } catch (JSONException | ReflectiveOperationException ignored) {
-                return new Response(conn.getResponseCode(), null, sb.toString());
+                return new Response<>(conn.getResponseCode(), null, sb.toString());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -103,7 +104,7 @@ public class JSONAPI extends EventEmitter {
      *     <li>connection - after connection</li>
      * </ul>
      */
-    public Response callWithoutException(Class<?> jsonClass) {
+    public <T> Response<T> callWithoutException(Class<T> jsonClass) {
         try {
             return call(jsonClass);
         } catch (RuntimeException e) { // may happen if json is written in invalid format
@@ -112,12 +113,12 @@ public class JSONAPI extends EventEmitter {
         }
     }
 
-    public static class Response {
+    public static class Response<T> {
         private final int responseCode;
-        private final Object response;
+        private final T response;
         private final String rawResponse;
 
-        public Response(int responseCode, Object response, String rawResponse) {
+        public Response(int responseCode, T response, String rawResponse) {
             this.responseCode = responseCode;
             this.response = response;
             this.rawResponse = rawResponse;
@@ -127,7 +128,7 @@ public class JSONAPI extends EventEmitter {
             return responseCode;
         }
 
-        public Object getResponse() {
+        public T getResponse() {
             return response;
         }
 

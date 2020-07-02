@@ -16,6 +16,12 @@ public class RefConstructor<T> extends RefExecutable {
         this.constructor = constructor;
     }
 
+    @SuppressWarnings("rawtypes")
+    @NotNull
+    public ModifierEditor<Constructor> getModifierEditor() {
+        return new ModifierEditor<>(Constructor.class, constructor);
+    }
+
     @NotNull
     public T newInstance(Object... o) {
         try {

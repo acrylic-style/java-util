@@ -27,9 +27,7 @@ public class MultiCollection<K, V> implements DeepCloneable {
     }
 
     /**
-     * Returns the number of key-value mappings in this map.  If the
-     * map contains more than <tt>Integer.MAX_VALUE</tt> elements, returns
-     * <tt>Integer.MAX_VALUE</tt>.
+     * Returns the number of key-value mappings in this map.
      *
      * @return the number of key-value mappings in this map
      */

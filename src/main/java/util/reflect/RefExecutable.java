@@ -11,7 +11,6 @@ public class RefExecutable {
     private final Executable executable;
 
     public RefExecutable(Executable executable) {
-        super();
         this.executable = executable;
     }
 

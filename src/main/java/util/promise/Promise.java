@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public abstract class Promise<T> implements IPromise<Object, T> {
     private Promise<Object> parent = null;
     private Promise<Object> then = null;
-    private Promise<Object> catch_ = null;
+    private Promise<Throwable> catch_ = null;
     private PromiseStatus status = PromiseStatus.PENDING;
     private Object v = null;
 
@@ -43,12 +43,22 @@ public abstract class Promise<T> implements IPromise<Object, T> {
         return (V) obj;
     }
 
+    public static <V> Promise<V> of(V v) {
+        return async(o -> v);
+    }
+
     @Nullable
     public static <V> Object await(IPromise<Object, V> iPromise) {
         return await(iPromise, null);
     }
 
-    public static CollectionList<Promise<?>> buildChain(Promise<?> promise) {
+    /**
+     * Builds the promise chain that will be used to resolve promise.
+     * This may take a long time if promise chain is long.
+     * @param promise the last promise that has parent, no then
+     * @return the promise chain
+     */
+    protected static CollectionList<Promise<?>> buildChain(Promise<?> promise) {
         CollectionList<Promise<?>> promises = new CollectionList<>();
         promises.add(promise);
         while (promise.parent != null) {
@@ -58,6 +68,14 @@ public abstract class Promise<T> implements IPromise<Object, T> {
         return promises.reverse().clone();
     }
 
+    /**
+     * Waits the promise to complete.
+     * Calling of this method causes thread to be blocked
+     * until the promise is resolved or rejected.
+     * @param iPromise the promise that will be run
+     * @param o the object that will be passed to the promise
+     * @return the result of the promise
+     */
     @Nullable
     public static <V> Object await(IPromise<Object, V> iPromise, Object o) {
         Promise<V> promise;
@@ -71,10 +89,12 @@ public abstract class Promise<T> implements IPromise<Object, T> {
                 }
             };
         }
+        if (promise.status == PromiseStatus.RESOLVED) return promise.v;
         CollectionList<Promise<?>> chain = buildChain(promise);
         try {
+            Object rs = call(o, promise, chain);
             promise.status = PromiseStatus.RESOLVED;
-            return call(o, promise, chain);
+            return rs;
         } catch (Throwable throwable) {
             promise.status = PromiseStatus.REJECTED;
             promise.v = throwable;
@@ -88,7 +108,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     }
 
     @Nullable
-    private static <V> Object call(Object o, Promise<V> promise, CollectionList<Promise<?>> chain) {
+    protected static <V> Object call(Object o, Promise<V> promise, CollectionList<Promise<?>> chain) {
         if (promise.then != null) {
             chain = buildChain(promise.then);
             Object obj = o;
@@ -102,23 +122,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     }
 
     public static void queue(IPromise<Object, ?> iPromise, Object o) {
-        new Thread(() -> {
-            Promise<?> promise;
-            if (iPromise instanceof Promise) {
-                promise = (Promise<?>) iPromise;
-            } else {
-                promise = new Promise<Object>() {
-                    @Override
-                    public Object apply(Object o) {
-                        return iPromise.apply(o);
-                    }
-                };
-            }
-            Object r = promise.apply(o);
-            if (promise.then != null) {
-                queue(promise.then, r);
-            }
-        }).start();
+        new Thread(() -> await(iPromise, o)).start();
     }
 
     /**
@@ -192,9 +196,9 @@ public abstract class Promise<T> implements IPromise<Object, T> {
                 return Promise.this.apply(o);
             }
         };
-        promise1.catch_ = new Promise<Object>() {
+        promise1.catch_ = new Promise<Throwable>() {
             @Override
-            public Object apply(Object o) {
+            public Throwable apply(Object o) {
                 return promise1.apply(o);
             }
         };
