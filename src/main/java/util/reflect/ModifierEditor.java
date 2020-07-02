@@ -2,15 +2,27 @@ package util.reflect;
 
 import lombok.SneakyThrows;
 import org.jetbrains.annotations.NotNull;
+import sun.reflect.Reflection;
 
 import java.lang.reflect.Modifier;
 import java.util.NoSuchElementException;
 
+/**
+ * @deprecated This API should not be used.
+ * shows warning on jdk9+, does not work on jdk12+
+ */
+@Deprecated
 public class ModifierEditor<T> {
     @NotNull private final Class<?> clazz;
     @NotNull private final T instance;
 
     ModifierEditor(@NotNull final Class<T> clazz, @NotNull T instance) {
+        System.err.println("==============================");
+        System.err.println(Reflection.getCallerClass().getCanonicalName() + " used ModifierEditor");
+        System.err.println("ModifierEditor will not be work on jdk12+");
+        System.err.println("Dumping thread dump below:");
+        Thread.dumpStack();
+        System.err.println("==============================");
         try {
             clazz.getDeclaredField("modifiers");
         } catch (NoSuchFieldException e) {
