@@ -1,6 +1,7 @@
 package util.inject;
 
 import lombok.SneakyThrows;
+import org.apache.openjpa.persistence.meta.AnnotationProcessor6;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -12,6 +13,8 @@ import java.util.TimerTask;
 public class Injector {
     static {
         new InjectorData(null, null);
+        //noinspection ResultOfMethodCallIgnored
+        AnnotationProcessor6.class.getClass();
         InterfaceAdapter.init();
     }
 
