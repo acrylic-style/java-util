@@ -5,7 +5,8 @@ import util.javascript.GeneratorFunction;
 
 import java.util.function.Consumer;
 
-import static util.javascript.JavaScript.*;
+import static util.javascript.JavaScript.If;
+import static util.javascript.JavaScript.parseInt;
 
 public class JavaScriptTest {
     @Test

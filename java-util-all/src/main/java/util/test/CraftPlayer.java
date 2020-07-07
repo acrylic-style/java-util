@@ -1,4 +1,4 @@
-package util.inject.test;
+package util.test;
 
 // org.bukkit.craftbukkit.???.entity.CraftPlayer
 class CraftPlayer implements Player {

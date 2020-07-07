@@ -3,17 +3,19 @@ package util.inject;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
-import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.bytecode.MethodInfo;
 import lombok.SneakyThrows;
-import org.apache.openjpa.enhance.InstrumentationFactory;
-import org.apache.openjpa.lib.log.NoneLogFactory;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.ProtectionDomain;
@@ -26,21 +28,96 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-class InterfaceAdapter implements ClassFileTransformer {
-    private static boolean init = false;
+import static util.inject.Injector.LOGGER;
 
-    static void init() {
+class InterfaceAdapter implements ClassFileTransformer {
+    public static final InterfaceAdapter INSTANCE = new InterfaceAdapter();
+
+    static boolean init = false;
+
+    public static void preloadClass() {
+        tryPreloadClass("java.lang.reflect.InvocationTargetException");
+        tryPreloadClass("java.lang.invoke.MethodType");
+        tryPreloadClass("java.lang.invoke.MethodHandleNatives");
+        tryPreloadClass(NoClassDefFoundError.class);
+    }
+
+    public static void tryPreloadClass(@NotNull Class<?> clazz) { tryPreloadClass(clazz.getCanonicalName()); }
+    public static void tryPreloadClass(@NotNull String clazz) {
+        try {
+            Class.forName(clazz);
+        } catch (ClassNotFoundException ignore) {}
+    }
+
+    public static void premain(String agent, Instrumentation instrumentation) {
         if (init) return;
-        Instrumentation instrumentation = InstrumentationFactory.getInstrumentation(new NoneLogFactory().getLog("InterfaceAdapter"));
-        instrumentation.addTransformer(new InterfaceAdapter());
+        preloadClass();
+        instrumentation.addTransformer(INSTANCE);
+        InterfaceAdapter.reTransformAll(instrumentation);
         init = true;
+    }
+
+    public static void agentmain(String agent, Instrumentation instrumentation) {
+        if (init) return;
+        preloadClass();
+        instrumentation.addTransformer(INSTANCE);
+        InterfaceAdapter.reTransformAll(instrumentation);
+        init = true;
+    }
+
+    private static String getPid() {
+        RuntimeMXBean bean = ManagementFactory.getRuntimeMXBean();
+        String pid = bean.getName();
+        if (pid.contains("@")) {
+            pid = pid.substring(0, pid.indexOf("@"));
+        }
+        return pid;
+    }
+
+    public static void attachAgent() {
+        if (init) return; // already added transformer
+        if (!Injector.started) {
+            System.out.println("InterfaceAdapter#attachAgent called before the tools.jar loads. (couldn't find tools.jar?)");
+            return;
+        }
+        try {
+            System.loadLibrary("attach"); // looks like it's automatically loaded and no need to be loaded in our side
+            System.out.println("Attaching into vm");
+            Object vm = Injector.virtualMachine.getMethod("attach", String.class).invoke(null, getPid());
+            System.out.println("Loading agent... (Path: " + new File("./agent.jar").getAbsolutePath() + ")"); // requires agent.jar, but agent.jar = Util.jar (jar file of this project)
+            Injector.virtualMachine
+                    .getMethod("loadAgent", String.class)
+                    .invoke(vm, new File("./agent.jar").getAbsolutePath());
+            LOGGER.info("Done! Detaching...");
+            Injector.virtualMachine.getMethod("detach").invoke(vm);
+            LOGGER.info("Detached from vm successfully.");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void reTransformAll(Instrumentation instrumentation){
+        for (Class<?> clazz : instrumentation.getAllLoadedClasses()) {
+            if (clazz != null && clazz.getPackage() != null && clazz.getSuperclass() != null) {
+                String pkg = clazz.getPackage().getName();
+                if (!clazz.isPrimitive() && !pkg.startsWith("java.lang") && !pkg.startsWith("com.sun") && !pkg.startsWith("sun")) {
+                    if (instrumentation.isModifiableClass(clazz)) {
+                        try {
+                            instrumentation.retransformClasses(clazz);
+                        } catch (UnmodifiableClassException ignore) {}
+                    }
+                }
+            }
+        }
     }
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         if (className.startsWith("java.")) return null;
         if (className.startsWith("javassist.")) return null;
+        LOGGER.info("Checking for " + className + " with cl: " + loader.getClass().getCanonicalName());
         if (filter(Injector.data, data -> className.matches(data.getBaseClass())).size() != 0) {
+            LOGGER.info("Transforming " + className);
             return transformClass(className, classfileBuffer);
         }
         return null;
@@ -52,13 +129,6 @@ class InterfaceAdapter implements ClassFileTransformer {
             if (function.apply(v)) newList.add(v);
         });
         return newList;
-    }
-
-    public static CtField findFieldByName(String name, CtField[] fields) {
-        for (CtField field : fields) {
-            if (field.getName().equals(name)) return field;
-        }
-        return null;
     }
 
     public byte[] transformClass(String className, byte[] bytecode) {

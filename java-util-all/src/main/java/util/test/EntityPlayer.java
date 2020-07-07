@@ -1,4 +1,4 @@
-package util.inject.test;
+package util.test;
 
 // nms.EntityPlayer
 class EntityPlayer {

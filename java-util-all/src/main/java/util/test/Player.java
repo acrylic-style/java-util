@@ -1,4 +1,4 @@
-package util.inject.test;
+package util.test;
 
 // org.bukkit.entity.Player
 interface Player {

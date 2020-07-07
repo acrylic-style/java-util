@@ -470,8 +470,8 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     @NotNull
     @Override
     @Contract(value = "!null -> new", pure = true)
-    public <A, B> Collection<A, B> toMap(@NotNull Function<V, Map.Entry<A, B>> function) {
-        Collection<A, B> collection = new Collection<>();
+    public <A, B> util.Collection<A, B> toMap(@NotNull Function<V, Map.Entry<A, B>> function) {
+        util.Collection<A, B> collection = new util.Collection<>();
         this.unique().forEach(v -> {
             Map.Entry<A, B> entry = function.apply(v);
             collection.add(entry.getKey(), entry.getValue());
@@ -486,7 +486,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     @Override
     @Contract(value = "!null, !null -> new", pure = true)
     public <A, B> ICollection<A, B> toMap(@NotNull Function<V, A> function1, @NotNull Function<V, B> function2) {
-        Collection<A, B> collection = new Collection<>();
+        util.Collection<A, B> collection = new util.Collection<>();
         this.unique().forEach(v -> collection.add(function1.apply(v), function2.apply(v)));
         return collection;
     }

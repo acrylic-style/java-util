@@ -4,9 +4,8 @@ import org.junit.Test;
 import util.CollectionList;
 import util.promise.Promise;
 
-import java.util.Objects;
-
-import static util.promise.Promise.*;
+import static util.promise.Promise.async;
+import static util.promise.Promise.await;
 
 public class PromiseTest {
     @Test

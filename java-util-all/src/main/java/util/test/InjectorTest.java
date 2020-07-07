@@ -1,4 +1,4 @@
-package util.inject.test;
+package util.test;
 
 import util.inject.Injector;
 import util.inject.LoadOrder;
@@ -9,7 +9,7 @@ class InjectorTest {
         Injector.inject(ITest.class, "util.inject.test.CraftPlayer"); // allows CraftPlayer to be casted to ITest and defines _getHandle() with new return type
         Player player = getPlayer();
         ITest test = (ITest) player;
-        System.out.println("Ping(ITest->CraftPlayer->#getPing): " + test.getPing()); // getPing() should return 1212
+        System.out.println("Ping (ITest->CraftPlayer->#getPing): " + test.getPing()); // getPing() should return 1212
         System.out.println("Ping (ITest#_getHandle->CraftPlayer#getHandle->#getPing): " + test._getHandle().getPing()); // also this should return 1212
         System.out.println("Ping (ITest#_getHandle->CraftPlayer#getHandle->ping field): " + test._getHandle().ping);
     }
