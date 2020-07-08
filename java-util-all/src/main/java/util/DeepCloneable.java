@@ -2,6 +2,7 @@ package util;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public interface DeepCloneable {
@@ -28,17 +29,21 @@ public interface DeepCloneable {
      * @return the cloned object if success, returns param1 if not supported.
      */
     static Object clone(Object o) {
-        if (o instanceof DeepCloneable) {
-            return ((DeepCloneable) o).deepClone();
-        } else if (o instanceof Cloneable) {
-            Method cloneMethod = ReflectionHelper.findMethod(o.getClass(), "clone");
-            if (cloneMethod != null) {
-                return ReflectionHelper.invokeMethodWithoutException(o.getClass(), o, "clone");
+        try {
+            if (o instanceof DeepCloneable) {
+                return ((DeepCloneable) o).deepClone();
+            } else if (o instanceof Cloneable) {
+                Method cloneMethod = ReflectionHelper.findMethod(o.getClass(), "clone");
+                if (cloneMethod != null) {
+                    return ReflectionHelper.invokeMethod(o.getClass(), o, "clone");
+                } else {
+                    return o; // not cloneable, does not perform clone action.
+                }
             } else {
-                return o; // not cloneable, does not perform clone action.
+                return o; // object does not inherits any cloneable interface
             }
-        } else {
-            return o; // object does not inherits any cloneable interface
+        } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException e) {
+            return o;
         }
     }
 }

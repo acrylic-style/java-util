@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public interface ICollectionList<V> extends List<V>, DeepCloneable {
     /**
@@ -260,6 +261,30 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @SuppressWarnings("unchecked")
     int unshift(@Nullable V... v);
+
+    /**
+     * Returns whether any elements of this list match the provided
+     * predicate.  May not evaluate the predicate on all elements if not
+     * necessary for determining the result.  If the list is empty then
+     * {@code false} is returned and the predicate is not evaluated.
+     *
+     * <p>This is a <a href="package-summary.html#StreamOps">short-circuiting
+     * terminal operation</a>.
+     *
+     * @apiNote
+     * This method evaluates the <em>existential quantification</em> of the
+     * predicate over the elements of the list (for some x P(x)).
+     *
+     * @param predicate a <a href="package-summary.html#NonInterference">non-interfering</a>,
+     *                  <a href="package-summary.html#Statelessness">stateless</a>
+     *                  predicate to apply to elements of this stream
+     * @return {@code true} if any elements of the list match the provided
+     * predicate, otherwise {@code false}
+     */
+    default boolean anyMatch(Predicate<V> predicate) {
+        if (isEmpty()) return false;
+        return filterNullable(predicate::test) != null;
+    }
 
     /**
      * The concat() method is used to merge two or more arrays.

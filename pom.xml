@@ -7,7 +7,7 @@
     <groupId>xyz.acrylicstyle</groupId>
     <artifactId>Util</artifactId>
     <packaging>pom</packaging>
-    <version>0.11.20c</version>
+    <version>0.11.21</version>
     <modules>
         <module>java-util-inject</module>
         <module>java-util-all</module>
