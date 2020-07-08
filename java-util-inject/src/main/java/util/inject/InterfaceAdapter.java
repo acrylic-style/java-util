@@ -53,7 +53,6 @@ class InterfaceAdapter implements ClassFileTransformer {
         if (init) return;
         preloadClass();
         instrumentation.addTransformer(INSTANCE);
-        InterfaceAdapter.reTransformAll(instrumentation);
         init = true;
     }
 
@@ -61,7 +60,6 @@ class InterfaceAdapter implements ClassFileTransformer {
         if (init) return;
         preloadClass();
         instrumentation.addTransformer(INSTANCE);
-        InterfaceAdapter.reTransformAll(instrumentation);
         init = true;
     }
 
