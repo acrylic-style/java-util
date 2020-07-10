@@ -11,10 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Logger;
 
 public class Injector {
-    static final Logger LOGGER = Logger.getLogger("Injector");
     static final Class<?> virtualMachine;
     static boolean started;
 
@@ -40,8 +38,8 @@ public class Injector {
             }
         } catch (Exception e) {
             virtualMachine1 = null;
-            LOGGER.severe("Java home points to " + System.getProperty("java.home") + " make sure it is not a JRE path");
-            LOGGER.severe("Failed to add tools.jar to classpath");
+            System.err.println("Java home points to " + System.getProperty("java.home") + " make sure it is not a JRE path");
+            System.err.println("Failed to add tools.jar to classpath");
             e.printStackTrace();
         }
         virtualMachine = virtualMachine1;
@@ -55,6 +53,12 @@ public class Injector {
     public static void tryAttachAgent() { InterfaceAdapter.attachAgent(); }
 
     public static List<InjectorData> data = new ArrayList<>();
+    static List<String> trace = new ArrayList<>();
+
+    public static void traceConstructor(String clazz) {
+        InterfaceAdapter.attachAgent();
+        trace.add(clazz.replaceAll("\\.", "/"));
+    }
 
     public static void inject(Class<?> interfaceClass, String baseClass) {
         InterfaceAdapter.attachAgent();

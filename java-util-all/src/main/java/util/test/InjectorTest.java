@@ -5,8 +5,9 @@ import util.inject.LoadOrder;
 
 class InjectorTest {
     public static void main(String[] args) {
-        Injector.inject(EntityPlayerAccessor.class, "util.inject.test.EntityPlayer"); // needs to be registered first to transform and create new method with new return type
-        Injector.inject(ITest.class, "util.inject.test.CraftPlayer"); // allows CraftPlayer to be casted to ITest and defines _getHandle() with new return type
+        Injector.traceConstructor("util.test.CraftPlayer");
+        //Injector.inject(EntityPlayerAccessor.class, "util.inject.test.EntityPlayer"); // needs to be registered first to transform and create new method with new return type
+        //Injector.inject(ITest.class, "util.inject.test.CraftPlayer"); // allows CraftPlayer to be casted to ITest and defines _getHandle() with new return type
         Player player = getPlayer();
         ITest test = (ITest) player;
         System.out.println("Ping (ITest->CraftPlayer->#getPing): " + test.getPing()); // getPing() should return 1212

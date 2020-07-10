@@ -1,5 +1,6 @@
 package util.inject;
 
+import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
@@ -28,10 +30,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
-import static util.inject.Injector.LOGGER;
-
 class InterfaceAdapter implements ClassFileTransformer {
     public static final InterfaceAdapter INSTANCE = new InterfaceAdapter();
+    public static final List<String> loadedClasses = new ArrayList<>();
 
     static boolean init = false;
 
@@ -86,11 +87,11 @@ class InterfaceAdapter implements ClassFileTransformer {
             Injector.virtualMachine
                     .getMethod("loadAgent", String.class)
                     .invoke(vm, new File("./agent.jar").getAbsolutePath());
-            LOGGER.info("Done! Detaching...");
+            System.out.println("Done! Detaching...");
             Injector.virtualMachine.getMethod("detach").invoke(vm);
-            LOGGER.info("Detached from vm successfully.");
+            System.out.println("Detached from vm successfully.");
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Could not load agent.");
         }
     }
 
@@ -111,12 +112,24 @@ class InterfaceAdapter implements ClassFileTransformer {
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+        loadedClasses.add(className);
         if (className.startsWith("java.")) return null;
         if (className.startsWith("javassist.")) return null;
-        LOGGER.info("Checking for " + className + " with cl: " + loader.getClass().getCanonicalName());
         if (filter(Injector.data, data -> className.matches(data.getBaseClass())).size() != 0) {
-            LOGGER.info("Transforming " + className);
+            System.out.println("Transforming " + className);
             return transformClass(className, classfileBuffer);
+        }
+        if (filter(Injector.trace, className::matches).size() != 0) {
+            try {
+                ClassPool pool = ClassPool.getDefault();
+                CtClass clazz = pool.makeClass(new ByteArrayInputStream(classfileBuffer));
+                for (CtConstructor constructor : clazz.getDeclaredConstructors()) {
+                    constructor.insertBefore("Thread.dumpStack();");
+                }
+                return clazz.toBytecode();
+            } catch (IOException | CannotCompileException e) {
+                e.printStackTrace();
+            }
         }
         return null;
     }
