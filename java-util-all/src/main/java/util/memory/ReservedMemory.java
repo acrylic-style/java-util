@@ -1,5 +1,8 @@
 package util.memory;
 
+import com.google.common.annotations.Beta;
+
+@Beta
 public final class ReservedMemory {
     @SuppressWarnings({ "unused", "RedundantSuppression" })
     private byte[] reserve;

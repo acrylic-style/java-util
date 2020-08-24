@@ -11,9 +11,9 @@
     <artifactId>java-util-all</artifactId>
     <dependencies>
         <dependency>
-            <groupId>xyz.acrylicstyle</groupId>
-            <artifactId>java-util-inject</artifactId>
-            <version>0.11.22</version>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>28.2-jre</version>
         </dependency>
     </dependencies>
 </project>
