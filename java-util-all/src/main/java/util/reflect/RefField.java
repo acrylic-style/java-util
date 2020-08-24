@@ -18,11 +18,6 @@ public class RefField<T> {
         this.field = field;
     }
 
-    @NotNull
-    public ModifierEditor<Field> getModifierEditor() {
-        return new ModifierEditor<>(Field.class, field);
-    }
-
     @Contract(pure = true)
     @NotNull
     public String getName() { return this.field.getName(); }

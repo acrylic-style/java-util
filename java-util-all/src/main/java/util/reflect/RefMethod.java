@@ -14,11 +14,6 @@ public class RefMethod<T> extends RefExecutable {
     @NotNull
     public Method getMethod() { return method; }
 
-    @NotNull
-    public ModifierEditor<Method> getModifierEditor() {
-        return new ModifierEditor<>(Method.class, method);
-    }
-
     /**
      * @deprecated obj is unchecked, may throw exception at runtime
      * @param obj the object (unchecked type)

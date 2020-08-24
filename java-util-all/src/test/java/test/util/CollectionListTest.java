@@ -51,12 +51,14 @@ public class CollectionListTest {
     public void unshift() {
         CollectionList<String> list = new CollectionList<>("D", "E", "F");
         list.unshift("A", "B", "C");
-        assert list.contains("A")
-                && list.contains("B")
-                && list.contains("C")
-                && list.contains("D")
-                && list.contains("E")
-                && list.contains("F")
+        list.unshift("D");
+        assert list.get(0).equals("D")
+                && list.get(1).equals("A")
+                && list.get(2).equals("B")
+                && list.get(3).equals("C")
+                && list.get(4).equals("D")
+                && list.get(5).equals("E")
+                && list.get(6).equals("F")
                 : getAssertionErrorMessage(list);
     }
 

@@ -335,8 +335,8 @@ public class CollectionList<V> extends ArrayList<V> implements ICollectionList<V
     @Override
     public int unshift(@Nullable V... v) {
         if (v == null || v.length == 0) return this.size();
-        this.clone().forEach(this::add);
-        for (int i = 0; i < v.length; i++) this.set(i, v[i]);
+        //this.clone().forEach(this::add);
+        for (int i = 0; i < v.length; i++) this.add(i, v[i]);
         return this.size();
     }
 
