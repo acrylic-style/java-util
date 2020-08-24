@@ -16,7 +16,9 @@ public class NativeCode {
     private final String name;
 
     public NativeCode(String name) {
-        if ("Mac OS X".equals( System.getProperty( "os.name" ))) name = "osx-" + name;
+        String os = System.getProperty("os.name") == null ? "" : System.getProperty("os.name");
+        if ("Mac OS X".equals(os)) name = "osx-" + name;
+        if (os.toLowerCase().startsWith("windows")) name = "windows-" + name;
         this.name = name;
     }
 
