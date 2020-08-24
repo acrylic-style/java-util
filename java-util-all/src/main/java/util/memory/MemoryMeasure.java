@@ -4,8 +4,6 @@ import com.google.common.annotations.Beta;
 import org.jetbrains.annotations.NotNull;
 import util.jni.NativeCode;
 
-import java.util.ArrayList;
-
 @Beta
 public class MemoryMeasure {
     private static final NativeCode NATIVE_CODE = new NativeCode("native-memory-measure");
