@@ -22,7 +22,6 @@ import java.util.List;
 /**
  * Helps you using reflection.
  */
-@SuppressWarnings("unused")
 public final class ReflectionHelper {
     private ReflectionHelper() {}
 

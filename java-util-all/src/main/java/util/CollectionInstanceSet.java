@@ -42,7 +42,7 @@ public class CollectionInstanceSet<V> extends CollectionList<V> {
     public V first() { return this.valuesArray()[0]; }
 
     @NotNull
-    public V[] valuesArray() { return super.toArray(); }
+    public V[] valuesArray() { return super.valuesArray(); }
 
     // @Nullable
     // public V last() { return this.valuesArray()[0]; }

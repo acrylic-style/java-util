@@ -37,7 +37,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return This list.
      */
     @NotNull
-    @Contract("!null -> this")
+    @Contract("_ -> this")
     ICollectionList<V> addChain(@NotNull V v);
 
     /**
@@ -80,7 +80,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return Returns added value
      */
     @NotNull
-    @Contract("!null -> param1")
+    @Contract("_ -> param1")
     V put(@NotNull V v);
 
     /**
@@ -131,7 +131,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return New filtered list
      */
     @NotNull
-    @Contract(value = "!null -> new", pure = true)
+    @Contract(value = "_ -> new", pure = true)
     ICollectionList<V> filter(@NotNull Function<V, Boolean> filter);
 
     /**
@@ -156,7 +156,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return This list, so it can be chained.
      */
     @NotNull
-    @Contract("!null -> this")
+    @Contract("_ -> this")
     ICollectionList<V> removeThenReturnCollection(@NotNull V v);
 
     /**
@@ -165,7 +165,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return New array with new type.
      */
     @NotNull
-    @Contract(value = "!null -> new", pure = true)
+    @Contract(value = "_ -> new", pure = true)
     <T> ICollectionList<T> map(@NotNull Function<V, T> function);
 
     /**
@@ -174,7 +174,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return New array with new type.
      */
     @NotNull
-    @Contract(value = "!null -> new", pure = true)
+    @Contract(value = "_ -> new", pure = true)
     <T> ICollectionList<T> map(@NotNull BiFunction<V, Integer, T> function);
 
     /**
@@ -207,7 +207,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return New list
      */
     @NotNull
-    @Contract(value = "!null -> new", pure = true)
+    @Contract(value = "_ -> new", pure = true)
     ICollectionList<V> joinObject(@NotNull V v);
 
     /**
@@ -217,6 +217,22 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
     @NotNull
     @Contract(value = "-> new", pure = true)
     ICollectionList<V> newList();
+
+    /**
+     * Simply creates new list with same type and return it.
+     * @return New list with the same type
+     */
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    ICollectionList<V> newList(@Nullable java.util.Collection<? extends V> list);
+
+    /**
+     * Simply creates new list with different type and return it.
+     * @return New list with the different type
+     */
+    @NotNull
+    @Contract(value = "-> new", pure = true)
+    Object createList();
 
     /**
      * The <b>join()</b> method creates
@@ -244,6 +260,16 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @Nullable
     V shift();
+
+    /**
+     * The <b>shift()</b> method removes the first element from
+     * an array and returns the list.
+     * This method changes the length of the array.<br>
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift">https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift</a>
+     * @return The list
+     */
+    @NotNull
+    ICollectionList<V> shiftChain();
 
     /**
      * Returns length(size) of this list.
@@ -337,7 +363,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return New collection
      */
     @NotNull
-    @Contract(value = "!null -> new", pure = true)
+    @Contract(value = "_ -> new", pure = true)
     <A, B> ICollection<A, B> toMap(@NotNull Function<V, Map.Entry<A, B>> function);
 
     /**
@@ -349,15 +375,8 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return New collection
      */
     @NotNull
-    @Contract(value = "!null, !null -> new", pure = true)
+    @Contract(value = "_, _ -> new", pure = true)
     <A, B> ICollection<A, B> toMap(@NotNull Function<V, A> function1, @NotNull Function<V, B> function2);
-
-    /**
-     * Converts list to the array.
-     * @return the array
-     */
-    @NotNull
-    default V[] toArray() { return valuesArray(); }
 
     /* Static methods */
 

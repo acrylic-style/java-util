@@ -54,7 +54,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
      * {@inheritDoc}
      */
     @NotNull
-    @Contract("!null -> this")
+    @Contract("_ -> this")
     @Override
     public CollectionSet<V> addChain(@NotNull V v) {
         super.add(v);
@@ -127,7 +127,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
      */
     @NotNull
     @Override
-    @Contract("!null -> param1")
+    @Contract("_ -> param1")
     public V put(@NotNull V value) {
         super.add(value);
         return value;
@@ -192,7 +192,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
      */
     @NotNull
     @Override
-    @Contract(value = "!null -> new", pure = true)
+    @Contract(value = "_ -> new", pure = true)
     public CollectionSet<V> filter(@NotNull Function<V, Boolean> filter) {
         CollectionSet<V> newList = new CollectionSet<>();
         this.foreach((v, i) -> {
@@ -230,7 +230,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
      */
     @NotNull
     @Override
-    @Contract(value = "!null -> this")
+    @Contract(value = "_ -> this")
     public CollectionSet<V> removeThenReturnCollection(@NotNull V v) {
         this.remove(v);
         return this.unique();
@@ -241,7 +241,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
      */
     @NotNull
     @Override
-    @Contract(value = "!null -> new", pure = true)
+    @Contract(value = "_ -> new", pure = true)
     public <T> CollectionSet<T> map(@NotNull Function<V, T> function) {
         CollectionSet<T> newList = new CollectionSet<>();
         this.forEach(v -> newList.add(function.apply(v)));
@@ -253,7 +253,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
      */
     @NotNull
     @Override
-    @Contract(value = "!null -> new", pure = true)
+    @Contract(value = "_ -> new", pure = true)
     public <T> CollectionSet<T> map(@NotNull BiFunction<V, Integer, T> function) {
         CollectionSet<T> newList = new CollectionSet<>();
         final int[] index = {0};
@@ -303,6 +303,16 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
         return new CollectionSet<>();
     }
 
+    @Override
+    public @NotNull ICollectionList<V> newList(java.util.@Nullable Collection<? extends V> list) {
+        return new CollectionSet<>(list);
+    }
+
+    @Override
+    public @NotNull Object createList() {
+        return new CollectionSet<>();
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -316,7 +326,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     @Contract("_, _ -> fail")
     @Override
     public boolean addAll(int index, @NotNull java.util.Collection<? extends V> c) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("CollectionSet doesn't have order");
     }
 
     /**
@@ -332,58 +342,58 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     @Contract("_ -> fail")
     @Override
     public V get(int index) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("CollectionSet doesn't have order");
     }
 
     @Contract("_, _ -> fail")
     @Override
     public V set(int index, V element) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("CollectionSet doesn't have order");
     }
 
     @Contract("_, _ -> fail")
     @Override
     public void add(int index, V element) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("CollectionSet doesn't have order");
     }
 
     @Contract("_ -> fail")
     @Override
     public V remove(int index) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("CollectionSet doesn't have order");
     }
 
     @Contract("_ -> fail")
     @Override
     public int indexOf(Object o) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("CollectionSet doesn't have order");
     }
 
     @Contract("_ -> fail")
     @Override
     public int lastIndexOf(Object o) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("CollectionSet doesn't have order");
     }
 
     @NotNull
     @Override
     @Contract("-> fail")
     public ListIterator<V> listIterator() {
-        throw new UnsupportedOperationException();
+        return toList().listIterator();
     }
 
     @NotNull
     @Override
     @Contract("_ -> fail")
     public ListIterator<V> listIterator(int index) {
-        throw new UnsupportedOperationException();
+        return toList().listIterator(index);
     }
 
     @NotNull
     @Override
     @Contract("_, _ -> fail")
     public List<V> subList(int fromIndex, int toIndex) {
-        throw new UnsupportedOperationException();
+        return toList().subList(fromIndex, toIndex);
     }
 
     /**
@@ -393,7 +403,12 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     @Override
     @Nullable
     public V shift() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("CollectionSet doesn't have order");
+    }
+
+    @Override
+    public @NotNull ICollectionList<V> shiftChain() {
+        throw new UnsupportedOperationException("CollectionSet doesn't have order");
     }
 
     /**
@@ -457,11 +472,12 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
 
     /**
      * {@inheritDoc}
+     * <b>This implementation always returns the new list of CollectionList with values.</b>
      */
     @NotNull
     @Contract("-> this")
     public List<V> toList() {
-        return this.unique();
+        return new CollectionList<>(this.unique());
     }
 
     /**
@@ -469,7 +485,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
      */
     @NotNull
     @Override
-    @Contract(value = "!null -> new", pure = true)
+    @Contract(value = "_ -> new", pure = true)
     public <A, B> util.Collection<A, B> toMap(@NotNull Function<V, Map.Entry<A, B>> function) {
         util.Collection<A, B> collection = new util.Collection<>();
         this.unique().forEach(v -> {
@@ -484,7 +500,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
      */
     @NotNull
     @Override
-    @Contract(value = "!null, !null -> new", pure = true)
+    @Contract(value = "_, _ -> new", pure = true)
     public <A, B> ICollection<A, B> toMap(@NotNull Function<V, A> function1, @NotNull Function<V, B> function2) {
         util.Collection<A, B> collection = new util.Collection<>();
         this.unique().forEach(v -> collection.add(function1.apply(v), function2.apply(v)));

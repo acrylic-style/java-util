@@ -11,11 +11,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
-@SuppressWarnings("unused")
 public class MultiCollection<K, V> implements DeepCloneable {
     private final Collection<K, CollectionList<V>> map = new Collection<>();
 
-    @Contract("!null, !null -> param2")
+    @Contract("_, _ -> param2")
     public V add(@NotNull K key, @NotNull V value) {
         map.add(key, getOrDefault(key, new CollectionList<>()).addChain(value));
         return value;
@@ -99,7 +98,7 @@ public class MultiCollection<K, V> implements DeepCloneable {
         return getOrDefault(k, new CollectionList<>()).contains(v);
     }
 
-    @Contract("!null, !null -> param2")
+    @Contract("_, _ -> param2")
     @NotNull
     public V put(@NotNull K k, @NotNull V v) {
         return add(k, v);
