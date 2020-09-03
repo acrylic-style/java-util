@@ -6,6 +6,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Simple argument parser
+ */
 public class ArgumentParser {
     public final CollectionList<String> arguments = new CollectionList<>();
     public final StringCollection<Object> parsedOptions = new StringCollection<>();
@@ -14,12 +17,12 @@ public class ArgumentParser {
      * Parses arguments.<br />
      * Arguments must be in following format:
      * <ul>
-     *     <li>'--help' will be parsed as arguments -> help</li>
-     *     <li>'--option=yes' will be parsed as parsedOptions -> option:yes (string)</li>
-     *     <li>'--option=true' will be parsed as parsedOptions -> option:true (boolean)</li>
-     *     <li>'--"help=true"' will be parsed as arguments -> 'help=true'</li>
-     *     <li>'"--"' will be parsed as arguments -> '--'</li>
-     *     <li>'--help = true' will be parsed as arguments -> help, =, yes</li>
+     *     <li><code>--help</code> will be parsed as arguments -> help</li>
+     *     <li><code>--option=yes</code> will be parsed as parsedOptions -> option:yes (string)</li>
+     *     <li><code>--option=true</code> will be parsed as parsedOptions -> option:true (boolean)</li>
+     *     <li><code>--"help=true"</code> will be parsed as arguments -> <code>help=true</code></li>
+     *     <li><code>"--"</code> will be parsed as arguments -> <code>--</code></li>
+     *     <li><code>--help = true</code> will be parsed as arguments -> <code>help, =, yes</code></li>
      * </ul>
      * Please note that multi-byte whitespace will be converted to single-byte whitespace.
      * @param args Arguments
