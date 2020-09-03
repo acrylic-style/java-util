@@ -10,7 +10,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-@SuppressWarnings("NullableProblems")
 public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, Cloneable, DeepCloneable {
     public CollectionSet() {
         super();
@@ -30,6 +29,18 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     public CollectionSet(java.util.Collection<? extends V> list) {
         super();
         this.addAll(list);
+    }
+
+    @NotNull
+    @Override
+    public Iterator<V> iterator() {
+        return super.iterator();
+    }
+
+    @NotNull
+    @Override
+    public Spliterator<V> spliterator() {
+        return super.spliterator();
     }
 
     /**
@@ -152,9 +163,9 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     @Override
     @Contract(value = "-> new", pure = true)
     public CollectionSet<V> shuffle() {
-        CollectionSet<V> target = this.clone();
+        CollectionList<V> target = this.clone().toList();
         Collections.shuffle(target);
-        return target.unique();
+        return new CollectionSet<>(target.unique());
     }
 
     /**
@@ -184,7 +195,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     @Override
     @Contract("_ -> this")
     public CollectionSet<V> putAll(@Nullable ICollectionList<V> list) {
-        return this.addAll(list).unique();
+        return this.addAll(list);
     }
 
     /**
@@ -475,8 +486,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
      * <b>This implementation always returns the new list of CollectionList with values.</b>
      */
     @NotNull
-    @Contract("-> this")
-    public List<V> toList() {
+    public CollectionList<V> toList() {
         return new CollectionList<>(this.unique());
     }
 

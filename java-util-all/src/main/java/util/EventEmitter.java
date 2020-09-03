@@ -6,7 +6,6 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Java implementation of EventEmitter from node.js.
  */
-@SuppressWarnings("unused")
 public class EventEmitter {
     protected final StringCollection<CollectionList<AConsumer>> consumers = new StringCollection<>();
     protected final StringCollection<CollectionList<AConsumer>> onceConsumers = new StringCollection<>();

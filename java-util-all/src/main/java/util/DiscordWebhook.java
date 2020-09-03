@@ -22,10 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/**
- * Class used to execute Discord Webhooks with low effort
- */
-@SuppressWarnings("unused")
 public class DiscordWebhook {
     @Getter private final String url;
     @Getter @Setter private String content;
