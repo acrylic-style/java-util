@@ -4,19 +4,26 @@ import com.google.common.annotations.Beta;
 
 @Beta
 public final class ReservedMemory {
-    @SuppressWarnings({ "unused", "RedundantSuppression" })
     private byte[] reserve;
+    private final int bytes;
 
     public ReservedMemory(int bytes) {
+        this.bytes = bytes;
         reserve = new byte[bytes];
     }
 
+    public void reallocate() {
+        this.reserve = new byte[bytes];
+    }
+
     public void free() {
+        if (reserve == null) return;
         reserve = null;
         new Thread(System::gc).start(); // run gc in other thread and reduce lags on main thread
     }
 
     public void freeImmediately() {
+        if (reserve == null) return;
         reserve = null;
         System.gc();
     }
