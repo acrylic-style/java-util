@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,9 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class CollectionList<V> extends AbstractArrayCollectionList<V> implements ICollectionList<V>, Cloneable {
+public class CollectionList<V> extends AbstractArrayCollectionList<V> implements ICollectionList<V>, Cloneable, Serializable {
+    private static final long serialVersionUID = 11_25L;
+
     public CollectionList() {
         super();
     }

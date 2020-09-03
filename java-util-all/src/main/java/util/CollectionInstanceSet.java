@@ -2,6 +2,7 @@ package util;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +10,9 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class CollectionInstanceSet<V> extends CollectionList<V> {
+public class CollectionInstanceSet<V> extends CollectionList<V> implements Serializable {
+    private static final long serialVersionUID = 11_25L;
+
     public CollectionInstanceSet() {
         super();
     }
