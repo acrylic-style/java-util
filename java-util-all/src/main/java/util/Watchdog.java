@@ -46,7 +46,7 @@ public class Watchdog {
     }
 
     public Watchdog(String name, Runnable runnable, int timeout) {
-        this(name, runnable, timeout, new Thread());
+        this(name, runnable, timeout, () -> {});
     }
 
     public Watchdog then(Runnable runnable) {
@@ -66,9 +66,12 @@ public class Watchdog {
         Thread thread2 = new Thread(thread);
         thread = new Thread(() -> {
             synchronized (lock) {
-                //noinspection CallToThreadRun
-                thread2.run();
-                terminated = true;
+                try {
+                    //noinspection CallToThreadRun
+                    thread2.run();
+                } finally {
+                    terminated = true;
+                }
             }
         });
         thread.start();
@@ -83,11 +86,15 @@ public class Watchdog {
         thread = new Thread(() -> {
             if (runnable instanceof RunnableFunction) {
                 o.set(((RunnableFunction<?>) runnable).runWithType());
-            } else //noinspection CallToThreadRun
-                thread2.run();
-            terminated = true;
-            synchronized (lock) {
-                lock.notifyAll();
+            } else {
+                try {//noinspection CallToThreadRun
+                    thread2.run();
+                } finally {
+                    terminated = true;
+                    synchronized (lock) {
+                        lock.notifyAll();
+                    }
+                }
             }
         });
         synchronized (lock) {
