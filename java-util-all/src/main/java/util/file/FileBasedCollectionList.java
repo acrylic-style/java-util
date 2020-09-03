@@ -276,32 +276,24 @@ public class FileBasedCollectionList<E extends Serializable> extends AbstractCol
     }
 
     @Override
-    public boolean addAll(int index, @NotNull Collection<? extends E> c) {
-        throw new UnsupportedOperationException();
-    }
+    public boolean addAll(int index, @NotNull Collection<? extends E> c) { throw new UnsupportedOperationException(); }
 
     @Override
-    public Object[] toArray() {
-        throw new UnsupportedOperationException("toArray");
-    }
+    public Object[] toArray() { throw new UnsupportedOperationException("toArray"); }
 
     @Override
-    public <T> T[] toArray(T[] a) {
-        throw new UnsupportedOperationException("toArray");
-    }
+    public <T> T[] toArray(T[] a) { throw new UnsupportedOperationException("toArray"); }
 
     @Override
-    public @NotNull AbstractCollectionList<E> newList() {
-        return new FileBasedCollectionList<>();
-    }
+    public @NotNull FileBasedCollectionList<E> newList() { return new FileBasedCollectionList<>(); }
 
     @Override
-    public @NotNull AbstractCollectionList<E> newList(Collection<? extends E> list) {
+    public @NotNull FileBasedCollectionList<E> newList(Collection<? extends E> list) {
         return new FileBasedCollectionList<>(list);
     }
 
     @Override
-    public @NotNull Object createList() {
+    public @NotNull FileBasedCollectionList<?> createList() {
         return new FileBasedCollectionList<>();
     }
 
