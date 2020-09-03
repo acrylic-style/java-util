@@ -1,14 +1,14 @@
 package util.javascript;
 
-import com.google.common.annotations.Beta;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents some javascript global contexts.
  */
-@Beta
-public class JavaScript {
+public final class JavaScript {
+    private JavaScript() {}
+
     @Contract(value = "null -> false", pure = true)
     public static boolean If(Object o) {
         if (o == null) return false;

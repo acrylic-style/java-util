@@ -1,6 +1,5 @@
 package util.jni;
 
-import com.google.common.annotations.Beta;
 import com.google.common.io.ByteStreams;
 
 import java.io.File;
@@ -10,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-@Beta
 public class NativeCode {
     private boolean loaded = false;
     private final String name;
