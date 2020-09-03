@@ -14,4 +14,4 @@ fi
 
 CXX="gcc -shared -fPIC -O3 -Wall -Werror"
 
-$CXX src/main/c/MemoryMeasure.cpp -o src/main/resources/${PREFIX}native-memory-measure.so $CXX_ARGS $@
+#$CXX src/main/c/MemoryMeasure.cpp -o src/main/resources/${PREFIX}native-memory-measure.so $CXX_ARGS $@
