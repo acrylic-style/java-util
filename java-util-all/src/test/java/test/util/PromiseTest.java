@@ -1,7 +1,6 @@
 package test.util;
 
 import org.junit.Test;
-import util.CollectionList;
 import util.promise.Promise;
 
 import static util.promise.Promise.async;
@@ -40,5 +39,13 @@ public class PromiseTest {
                 .then(o -> o + "E")
                 .complete("O");
         assert s.equals("OABCDE") : "string was " + s + " (expected OABCDE)";
+    }
+
+    @Test
+    public void catchTest() {
+        assert async(o -> { throw new RuntimeException("No!"); })
+                .catch_(t -> "caught exception!")
+                .complete()
+                .equals("caught exception!");
     }
 }

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public abstract class Promise<T> implements IPromise<Object, T> {
     private Promise<Object> parent = null;
     private Promise<Object> then = null;
-    private Promise<Throwable> catch_ = null;
+    private Promise<Object> catch_ = null;
     private PromiseStatus status = PromiseStatus.PENDING;
     private Object v = null;
 
@@ -69,14 +69,13 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     }
 
     /**
-     * Waits the promise to complete.
+     * Wait for the promise to complete.
      * Calling of this method causes thread to be blocked
      * until the promise is resolved or rejected.
      * @param iPromise the promise that will be run
      * @param o the object that will be passed to the promise
      * @return the result of the promise
      */
-    @Nullable
     public static <V> Object await(IPromise<Object, V> iPromise, Object o) {
         Promise<V> promise;
         if (iPromise instanceof Promise) {
@@ -99,8 +98,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
             promise.status = PromiseStatus.REJECTED;
             promise.v = throwable;
             if (promise.catch_ != null) {
-                promise.catch_.apply(throwable);
-                return null;
+                return promise.catch_.apply(throwable);
             } else {
                 throw new UnhandledPromiseException(throwable);
             }
@@ -183,10 +181,10 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <V extends Throwable> Promise<V> catch_(IPromise<V, ? extends V> promise) {
-        Promise<V> promise1 = new Promise<V>() {
+    public <V extends Throwable, E> Promise<E> catch_(IPromise<V, E> promise) {
+        Promise<E> promise1 = new Promise<E>() {
             @Override
-            public V apply(Object o) {
+            public E apply(Object o) {
                 return promise.apply((V) o);
             }
         };
@@ -196,9 +194,9 @@ public abstract class Promise<T> implements IPromise<Object, T> {
                 return Promise.this.apply(o);
             }
         };
-        promise1.catch_ = new Promise<Throwable>() {
+        promise1.catch_ = new Promise<Object>() {
             @Override
-            public Throwable apply(Object o) {
+            public Object apply(Object o) {
                 return promise1.apply(o);
             }
         };
