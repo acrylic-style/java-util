@@ -1,6 +1,7 @@
 package test.util;
 
 import org.junit.Test;
+import util.CollectionList;
 import util.promise.Promise;
 
 import static util.promise.Promise.async;
@@ -47,5 +48,38 @@ public class PromiseTest {
                 .catch_(t -> "caught exception!")
                 .complete()
                 .equals("caught exception!");
+    }
+
+    @Test
+    public void allTest() {
+        Promise<?> p1 = Promise.async(o -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return 1;
+        });
+        Promise<?> p2 = Promise.async(o -> {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return 2;
+        });
+        Promise<?> p3 = Promise.async(o -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return 3;
+        });
+        CollectionList<Object> everything = Promise.all(p1, p2, p3).complete();
+        int o1 = (int) everything.get(0);
+        int o2 = (int) everything.get(1);
+        int o3 = (int) everything.get(2);
+        assert o1 == 1 && o2 == 2 && o3 == 3;
     }
 }

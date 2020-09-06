@@ -5,7 +5,7 @@
     <parent>
         <artifactId>Util</artifactId>
         <groupId>xyz.acrylicstyle</groupId>
-        <version>0.11.25</version>
+        <version>0.11.25a</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>java-util-all</artifactId>
