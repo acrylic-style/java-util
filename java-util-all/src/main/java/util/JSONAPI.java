@@ -6,8 +6,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -82,15 +83,14 @@ public class JSONAPI extends EventEmitter {
             }
             conn.connect();
             this.emit("connection", conn);
-            InputStream inputStream = conn.getResponseCode() != 200 ? conn.getErrorStream() : conn.getInputStream();
-            byte[] b = new byte[inputStream.available()];
-            while (inputStream.available() > 0) //noinspection ResultOfMethodCallIgnored
-                inputStream.read(b);
-            String output = new String(b, StandardCharsets.UTF_8);
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getResponseCode() != 200 ? conn.getErrorStream() : conn.getInputStream()));
+            StringBuilder sb = new StringBuilder();
+            String output;
+            while ((output = br.readLine()) != null) sb.append(output);
             try {
-                return new Response<>(conn.getResponseCode(), jsonClass.getConstructor(String.class).newInstance(output), output);
+                return new Response<>(conn.getResponseCode(), jsonClass.getConstructor(String.class).newInstance(sb.toString()), sb.toString());
             } catch (JSONException | ReflectiveOperationException ignored) {
-                return new Response<>(conn.getResponseCode(), null, output);
+                return new Response<>(conn.getResponseCode(), null, sb.toString());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
