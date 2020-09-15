@@ -16,7 +16,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({ "unused", "RedundantSuppression" })
 public class JSONAPI extends EventEmitter {
     private final URL url;
     private String method = "GET";
@@ -89,7 +89,8 @@ public class JSONAPI extends EventEmitter {
             while ((output = br.readLine()) != null) sb.append(output);
             try {
                 return new Response<>(conn.getResponseCode(), jsonClass.getConstructor(String.class).newInstance(sb.toString()), sb.toString());
-            } catch (JSONException | ReflectiveOperationException ignored) {
+            } catch (JSONException | ReflectiveOperationException e) {
+                e.printStackTrace();
                 return new Response<>(conn.getResponseCode(), null, sb.toString());
             }
         } catch (IOException e) {
