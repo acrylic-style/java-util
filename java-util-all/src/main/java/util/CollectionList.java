@@ -57,7 +57,7 @@ public class CollectionList<V> extends AbstractArrayCollectionList<V> implements
     }
 
     @Override
-    public @NotNull Object createList() { return new CollectionList<>(); }
+    public @NotNull <E> CollectionList<E> createList() { return new CollectionList<>(); }
 
     @SafeVarargs
     @Override
@@ -95,9 +95,7 @@ public class CollectionList<V> extends AbstractArrayCollectionList<V> implements
     @NotNull
     @Contract(value = "_ -> new", pure = true)
     @SafeVarargs
-    public static <T> CollectionList<T> of(T... t) {
-        return new CollectionList<>(t);
-    }
+    public static <T> CollectionList<T> of(T... t) { return new CollectionList<>(t); }
 
     // fix return type
 

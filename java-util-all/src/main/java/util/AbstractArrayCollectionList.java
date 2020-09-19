@@ -247,7 +247,6 @@ public abstract class AbstractArrayCollectionList<E> extends ArrayList<E> implem
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
@@ -260,7 +259,6 @@ public abstract class AbstractArrayCollectionList<E> extends ArrayList<E> implem
     /**
      * {@inheritDoc}
      */
-    @SuppressWarnings("unchecked")
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
@@ -418,6 +416,18 @@ public abstract class AbstractArrayCollectionList<E> extends ArrayList<E> implem
     @NotNull
     @Contract(value = "-> new", pure = true)
     public AbstractArrayCollectionList<E> nonNull() { return newList(this.clone().filter(Objects::nonNull)); }
+
+    @Override
+    public boolean addAll(int index, java.util.Collection<? extends E> c) {
+        c.forEach(v -> add(index, v));
+        return true;
+    }
+
+    @Override
+    public boolean addAll(java.util.Collection<? extends E> c) {
+        c.forEach(this::add);
+        return true;
+    }
 
     @NotNull
     public Object superClone() { return super.clone(); }

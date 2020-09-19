@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Range;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -73,6 +74,14 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @param action Passes Value, Index and cloned list.
      */
     void foreach(@NotNull util.BiBiConsumer<V, Integer, ICollectionList<V>> action);
+
+    default void biForEach(@NotNull BiConsumer<V, V> action) {
+        foreach((v, i) -> {
+            if (i % 2 == 1) return;
+            V v2 = this.size() > i + 1 ? this.get(i + 1) : null;
+            action.accept(v, v2);
+        });
+    }
 
     /**
      * Put value into list.
@@ -228,11 +237,15 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
 
     /**
      * Simply creates new list with different type and return it.
+     * If the list cannot implement this method for any reason, the class must override the following methods:
+     * <ul>
+     *     <li>N/A</li>
+     * </ul>
      * @return New list with the different type
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    Object createList();
+    <E> ICollectionList<E> createList();
 
     /**
      * The <b>join()</b> method creates
@@ -377,6 +390,82 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
     @NotNull
     @Contract(value = "_, _ -> new", pure = true)
     <A, B> ICollection<A, B> toMap(@NotNull Function<V, A> function1, @NotNull Function<V, B> function2);
+
+    /**
+     * Merges 2 entries into the one.
+     * @param biFunction the function to be run, t will be the 'accumulator', the accumulated value previously returned
+     *                   in the last invocation of the callback.
+     * @throws ClassCastException When the result cannot be cast to T.
+     * @param <U> the new type of the returned list
+     */
+    @SuppressWarnings("unchecked")
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    default <U> U reduce(@NotNull BiFunction<Object, @Nullable V, U> biFunction) {
+        AtomicReference<Object> ref = new AtomicReference<>(this.get(0));
+        foreach((v, i) -> {
+            if (i > 0) ref.set(biFunction.apply(ref.get(), v));
+        });
+        return (U) ref.get();
+    }
+
+    /**
+     * Merges 2 entries into the one.
+     * @param biFunction the function to be run, t will be the 'accumulator', the accumulated value previously returned
+     *                   in the last invocation of the callback.
+     * @throws ClassCastException When the result cannot be cast to T.
+     * @param <U> the new type of the returned list
+     */
+    @SuppressWarnings("unchecked")
+    @NotNull
+    @Contract(value = "_, _ -> new", pure = true)
+    default <U> U reduce(@NotNull BiFunction<Object, @Nullable V, U> biFunction, @Nullable Object initialValue) {
+        AtomicReference<Object> ref = new AtomicReference<>(initialValue);
+        forEach((v) -> ref.set(biFunction.apply(ref.get(), v)));
+        return (U) ref.get();
+    }
+
+    /**
+     * The slice() method returns a shallow copy of a portion of an array into a new array object selected from start
+     * to end (end not included) where start and end represent the index of items in that array. The original array will
+     * not be modified. Unlike the JavaScript implementation, the start does not support the negative value.
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice">MDN Docs</a>
+     * @param start Zero-based index at which to start extraction.
+     * @return A new array containing the extracted elements.
+     */
+    @NotNull
+    default ICollectionList<V> slice(int start) {
+        ICollectionList<V> list = newList();
+        foreach((v, i) -> {
+            if (i >= start) list.add(v);
+        });
+        return list;
+    }
+
+    /**
+     * The slice() method returns a shallow copy of a portion of an array into a new array object selected from start
+     * to end (end not included) where start and end represent the index of items in that array. The original array will
+     * not be modified. Unlike the JavaScript implementation, the start and the end does not support the negative value.
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice">MDN Docs</a>
+     * @param start Zero-based index at which to start extraction.
+     * @param end Zero-based index before which to end extraction. slice extracts up to but not including end. For
+     *            example, slice(1,4) extracts the second element through the fourth element
+     *            (elements indexed 1, 2, and 3).
+     * @return A new array containing the extracted elements.
+     */
+    @NotNull
+    default ICollectionList<V> slice(int start, int end) {
+        ICollectionList<V> list = newList();
+        foreach((v, i) -> {
+            if (i >= start && i < end) list.add(v);
+        });
+        return list;
+    }
+
+    /**
+     * Simple redirection to the {@link List#contains(Object)}.
+     */
+    default boolean includes(Object o) { return contains(o); }
 
     /* Static methods */
 

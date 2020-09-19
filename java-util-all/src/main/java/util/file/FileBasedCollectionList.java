@@ -292,6 +292,7 @@ public class FileBasedCollectionList<E extends Serializable> extends AbstractCol
         return new FileBasedCollectionList<>(list);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public @NotNull FileBasedCollectionList<?> createList() {
         return new FileBasedCollectionList<>();

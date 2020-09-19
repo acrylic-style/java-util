@@ -10,6 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+@SuppressWarnings("NullableProblems")
 public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, Cloneable, DeepCloneable {
     public CollectionSet() {
         super();
@@ -320,9 +321,7 @@ public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, 
     }
 
     @Override
-    public @NotNull Object createList() {
-        return new CollectionSet<>();
-    }
+    public @NotNull <E> CollectionSet<E> createList() { return new CollectionSet<>(); }
 
     /**
      * {@inheritDoc}

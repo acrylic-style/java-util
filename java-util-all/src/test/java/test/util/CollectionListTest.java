@@ -2,12 +2,13 @@ package test.util;
 
 import org.junit.Test;
 import util.CollectionList;
+import util.ICollectionList;
 
 import java.util.Objects;
 
 public class CollectionListTest {
     @SuppressWarnings("StringBufferReplaceableByString")
-    public String getAssertionErrorMessage(CollectionList<?> list) {
+    public String getAssertionErrorMessage(ICollectionList<?> list) {
         StringBuilder str = new StringBuilder();
         str.append("List size: ").append(list.size()).append(", Entries: ").append(list.join());
         return str.toString();
@@ -84,5 +85,29 @@ public class CollectionListTest {
     @Test
     public void last() {
         assert Objects.equals(new CollectionList<>("a", "b", "c").last(), "c");
+    }
+
+    @Test
+    public void reduce() {
+        String r = CollectionList.of("A", "b", "C", "d").reduce((o, s) -> o + s);
+        assert r.equals("AbCd") : r;
+    }
+
+    @Test
+    public void reduceWithInitialValue() {
+        String r = CollectionList.of("A", "b", "C", "d").reduce((o, s) -> o + s, "u");
+        assert r.equals("uAbCd") : r;
+    }
+
+    @Test
+    public void slice() {
+        ICollectionList<String> list = CollectionList.of("ant", "bison", "camel", "duck", "elephant").slice(2);
+        assert list.size() == 3 && list.contains("camel") && list.contains("duck") && list.contains("elephant") : getAssertionErrorMessage(list);
+    }
+
+    @Test
+    public void sliceWithEnd() {
+        ICollectionList<String> list = CollectionList.of("Banana", "Orange", "Lemon", "Apple", "Mango").slice(1, 3);
+        assert list.size() == 2 && list.contains("Orange") && list.contains("Lemon") : getAssertionErrorMessage(list);
     }
 }
