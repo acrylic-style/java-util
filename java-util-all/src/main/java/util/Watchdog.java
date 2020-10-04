@@ -1,5 +1,8 @@
 package util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicReference;
@@ -12,6 +15,11 @@ public class Watchdog {
     private final int timeout;
     private final Object lock = new Object();
     private final Runnable runnable;
+    private boolean silent = false;
+
+    public Watchdog(@NotNull Runnable runnable, int timeout) { this(null, runnable, timeout, null); }
+
+    public Watchdog(@Nullable String name, @NotNull Runnable runnable, int timeout) { this(name, runnable, timeout, null); }
 
     /**
      * Initializes new watchdog instance.
@@ -20,7 +28,7 @@ public class Watchdog {
      * @param timeout timeout value in ms
      * @param timedOutFunction Runnable that will be run when timed out. (asynchronously)
      */
-    public Watchdog(String name, Runnable runnable, int timeout, Runnable timedOutFunction) {
+    public Watchdog(@Nullable String name, @NotNull Runnable runnable, int timeout, @Nullable Runnable timedOutFunction) {
         this.runnable = runnable;
         Thread thread = name == null ? new Thread(runnable) : new Thread(runnable, name);
         Thread watchdog = new Thread(() -> {
@@ -29,8 +37,8 @@ public class Watchdog {
                 @Override
                 public void run() {
                     if (!terminated) {
-                        System.out.println("Thread " + thread.getName() + " has elapsed its timeout time, interrupting!");
-                        new Thread(timedOutFunction).start();
+                        if (!silent) System.out.println("Thread " + thread.getName() + " has elapsed its timeout time, interrupting!");
+                        if (timedOutFunction != null ) new Thread(timedOutFunction).start();
                         thread.interrupt();
                         synchronized (lock) {
                             lock.notifyAll();
@@ -45,8 +53,9 @@ public class Watchdog {
         this.timeout = timeout;
     }
 
-    public Watchdog(String name, Runnable runnable, int timeout) {
-        this(name, runnable, timeout, () -> {});
+    public Watchdog silent(boolean silent) {
+        this.silent = silent;
+        return this;
     }
 
     public Watchdog then(Runnable runnable) {

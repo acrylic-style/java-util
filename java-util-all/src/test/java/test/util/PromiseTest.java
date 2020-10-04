@@ -2,6 +2,7 @@ package test.util;
 
 import org.junit.Test;
 import util.CollectionList;
+import util.promise.IPromise;
 import util.promise.Promise;
 
 import static util.promise.Promise.async;
@@ -20,7 +21,7 @@ public class PromiseTest {
     public void promiseHeavyTask() {
         Promise<String> promise = async(o -> {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(2000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -62,24 +63,67 @@ public class PromiseTest {
         });
         Promise<?> p2 = Promise.async(o -> {
             try {
-                Thread.sleep(3000);
+                Thread.sleep(1500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             return 2;
         });
-        Promise<?> p3 = Promise.async(o -> {
+        IPromise<?, ?> p3 = o -> {
             try {
-                Thread.sleep(2000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             return 3;
-        });
-        CollectionList<Object> everything = Promise.all(p1, p2, p3).complete();
+        };
+        CollectionList<Object> everything = Promise.all(p1, p2, p3.build()).complete();
         int o1 = (int) everything.get(0);
         int o2 = (int) everything.get(1);
         int o3 = (int) everything.get(2);
         assert o1 == 1 && o2 == 2 && o3 == 3;
+    }
+
+    @Test
+    public void callbackTest() {
+        Promise<String> promise = new Promise<String>() { // you need to use constructor, you can't use Promise#async(IPromise)
+            @Override
+            public String apply(Object o) {
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        throw new RuntimeException(e);
+                    }
+                    resolve("callbacks!");
+                }).start();
+                return waitUntilResolve();
+            }
+        }.then(s -> s + "!").then(s -> s + "?");
+        assert promise.complete().equals("callbacks!!?") : promise.complete();
+    }
+
+    @Test
+    public void joinTest() {
+        Promise<String> promise = new Promise<String>() {
+            @Override
+            public String apply(Object o) {
+                return "Yes";
+            }
+        };
+        assert promise.join().get().value().equals("Yes") : promise;
+    }
+
+    @Test
+    public void joinTest2() {
+        Promise<String> promise = new Promise<String>() {
+            @Override
+            public String apply(Object o) throws InterruptedException {
+                Thread.sleep(1000000000);
+                return "zzz...";
+            }
+        };
+        assert !promise.join(1000).get().isPresent() : promise;
     }
 }
