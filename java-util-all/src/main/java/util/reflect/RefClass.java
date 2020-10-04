@@ -3,6 +3,7 @@ package util.reflect;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import util.ReflectionHelper;
 import util.SneakyThrow;
 
 import java.lang.annotation.Annotation;
@@ -114,4 +115,8 @@ public class RefClass<T> {
     public T cast(Object obj) { return this.clazz.cast(obj); }
 
     public T[] getEnumConstants() { return this.clazz.getEnumConstants(); }
+
+    public boolean isExtends(Class<?> clazz) {
+        return ReflectionHelper.getSupers(this.clazz).contains(clazz);
+    }
 }

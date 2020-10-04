@@ -9,6 +9,7 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.reflections.util.FilterBuilder;
 import util.reflect.Ref;
+import util.reflect.RefMethod;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -18,12 +19,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Helps you using reflection.
  */
 public final class ReflectionHelper {
     private ReflectionHelper() {}
+
+    public static final RefMethod<ClassLoader> getPackagesMethod = Ref.getDeclaredMethod(ClassLoader.class, "getPackages").accessible(true);
+    public static final RefMethod<ClassLoader> getPackageMethod = Ref.getDeclaredMethod(ClassLoader.class, "getPackage", String.class).accessible(true);
 
     /**
      * Find method in class.
@@ -205,7 +210,7 @@ public final class ReflectionHelper {
      * @return Result of constructor if success, null otherwise
      */
     @Nullable
-    public static <T> Object invokeConstructorWithoutException(@NotNull Class<? extends T> clazz, @NotNull Object... args) {
+    public static <T> T invokeConstructorWithoutException(@NotNull Class<? extends T> clazz, @NotNull Object... args) {
         try {
             return invokeConstructor(clazz, args);
         } catch (IllegalAccessException | InvocationTargetException | InstantiationException ignored) {
@@ -276,7 +281,7 @@ public final class ReflectionHelper {
     @NotNull
     public static CollectionList<String> findPackages(@Nullable ClassLoader cl, @NotNull String prefix, boolean recursive) {
         if (cl == null) return findPackages(prefix, recursive);
-        return ICollectionList.asList((Package[]) Ref.getDeclaredMethod(ClassLoader.class, "getPackages").accessible(true).invoke(cl))
+        return ICollectionList.asList((Package[]) getPackagesMethod.invoke(cl))
                 .map(Package::getName)
                 .filter(s -> {
                     if (recursive) return s.toLowerCase().startsWith(prefix.toLowerCase());
@@ -291,6 +296,50 @@ public final class ReflectionHelper {
 
     public static boolean isValidPackage(@Nullable ClassLoader cl, @NotNull String packageName) {
         if (cl == null) return isValidPackage(packageName);
-        return Ref.getDeclaredMethod(ClassLoader.class, "getPackage", String.class).accessible(true).invoke(cl, packageName) != null;
+        return getPackageMethod.invoke(cl, packageName) != null;
+    }
+
+    @NotNull
+    public static Class<?> getCallerClass() { return getCallerClass(0); }
+
+    @NotNull
+    public static Class<?> getCallerClass(int offset) {
+        StackTraceElement[] stElements = Thread.currentThread().getStackTrace();
+        for (int i = 1 + offset; i < stElements.length; i++) {
+            StackTraceElement ste = stElements[i];
+            if (!ste.getClassName().equals(ReflectionHelper.class.getName()) && !ste.getClassName().contains("java.lang.Thread")) {
+                return Ref.forName(ste.getClassName()).getClazz();
+            }
+        }
+        throw new NoSuchElementException("sorry :(");
+    }
+
+    /**
+     * Gets all super classes and super interfaces, and return them. The returned entry is not unique and may contains the duplicate entry.
+     * @return the super classes and interfaces.
+     */
+    public static CollectionList<Class<?>> getSupers(Class<?> clazz) {
+        return getSuperclasses(clazz).concat(getInterfaces(clazz));
+    }
+
+    public static CollectionList<Class<?>> getSuperclasses(Class<?> clazz) {
+        CollectionList<Class<?>> classes = new CollectionList<>();
+        Class<?> superclass = clazz;
+        while (superclass.getSuperclass() != null) {
+            classes.add(superclass.getSuperclass());
+            superclass = superclass.getSuperclass();
+        }
+        return classes;
+    }
+
+    public static CollectionList<Class<?>> getInterfaces(Class<?> clazz) {
+        CollectionList<Class<?>> classes = new CollectionList<>(clazz);
+        for (Class<?> anInterface : clazz.getInterfaces()) classes.addAll(getInterfaces(anInterface));
+        Class<?> superclass = clazz;
+        while (superclass.getSuperclass() != null) {
+            classes.addAll(getInterfaces(superclass.getSuperclass()));
+            superclass = superclass.getSuperclass();
+        }
+        return classes;
     }
 }
