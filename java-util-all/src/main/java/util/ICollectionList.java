@@ -125,6 +125,10 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
     @Contract("_ -> this")
     ICollectionList<V> addAll(@Nullable ICollectionList<V> list);
 
+    default ICollectionList<V> addAll(@Nullable V[] array) {
+        return array == null ? this : addAll(ICollectionList.asList(array));
+    }
+
     /**
      * Add all values from list into this list.
      * @param list Another list
