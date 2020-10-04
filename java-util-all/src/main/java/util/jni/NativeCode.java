@@ -1,6 +1,7 @@
 package util.jni;
 
 import com.google.common.io.ByteStreams;
+import util.platform.LazyOSType;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,13 +15,13 @@ public class NativeCode {
     private final String name;
 
     public NativeCode(String name) {
-        String os = System.getProperty("os.name") == null ? "" : System.getProperty("os.name");
-        if ("Mac OS X".equals(os)) name = "osx-" + name;
-        if (os.toLowerCase().startsWith("windows")) name = "windows-" + name;
+        LazyOSType os = LazyOSType.detectOS();
+        if (os == LazyOSType.Mac_OS || os == LazyOSType.Mac_OS_X) name = "osx-" + name;
+        if (os == LazyOSType.Windows) name = "windows-" + name;
         this.name = name;
     }
 
-    public boolean load() {
+    public boolean load() throws UnsatisfiedLinkError {
         if (loaded) return true;
         String fullName = "java-util-all-" + name;
         try {

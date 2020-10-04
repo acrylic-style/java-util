@@ -11,6 +11,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+/**
+ * AtomicThrowable makes easier to use Throwable on AtomicReference.
+ */
 public class AtomicThrowable extends AtomicReference<Throwable> {
     public AtomicThrowable() { super(); }
     public AtomicThrowable(@Nullable Throwable throwable) { super(throwable); }
@@ -18,6 +21,12 @@ public class AtomicThrowable extends AtomicReference<Throwable> {
     @NotNull
     public AtomicThrowable throwIfSet() {
         if (this.get() != null) SneakyThrow.sneaky(this.get());
+        return this;
+    }
+
+    @NotNull
+    public AtomicThrowable throwAsRuntimeExceptionIfSet() {
+        if (this.get() != null) throw new RuntimeException(this.get());
         return this;
     }
 

@@ -7,6 +7,10 @@ import java.io.ObjectOutputStream;
 public final class MemoryMeasure {
     private MemoryMeasure() {}
 
+    /**
+     * Measures the size of the object. The underlying object and their fields must be Serializable.
+     * @return the size of the object in bytes.
+     */
     public static long getSize(Object o) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

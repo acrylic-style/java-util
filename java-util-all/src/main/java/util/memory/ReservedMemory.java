@@ -2,6 +2,10 @@ package util.memory;
 
 import com.google.common.annotations.Beta;
 
+/**
+ * A small class that makes easier to allocate memory and free the memory after.
+ * Also the small note: this class itself also consumes the very few memory.
+ */
 @Beta
 public final class ReservedMemory {
     private byte[] reserve;

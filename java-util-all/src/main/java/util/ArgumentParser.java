@@ -31,10 +31,10 @@ public class ArgumentParser {
         Preconditions.checkNotNull(args, "args cannot be null");
         Matcher matcher = Pattern.compile("\"(.*?)\"").matcher(args);
         while (matcher.find()) {
-            args = args.replaceFirst(Pattern.quote(matcher.group()), matcher.group().replaceAll(" ", "　"));
+            args = args.replaceFirst(Pattern.quote(matcher.group()), matcher.group().replaceAll(" ", "　")); // ugly hack to bypass single-space splits
         }
-        for (String s : args.split("[ ]+")) {
-            s = s.replaceAll("　", " ");
+        for (String s : args.split("[ ]+")) { // single-byte whitespace
+            s = s.replaceAll("　", " "); // multi-byte whitespace to single-byte whitespace
             s = s.replaceAll("\"(.*)\"", "$1");
             if (Pattern.compile("(\\s+|)\"(.*)\"(\\s+|)").matcher(s).matches()) {
                 arguments.add(s.replaceFirst("\"(.*)\"", "$1"));

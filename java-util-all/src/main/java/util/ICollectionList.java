@@ -181,6 +181,22 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
     @Contract(value = "_ -> new", pure = true)
     <T> ICollectionList<T> map(@NotNull Function<V, T> function);
 
+    @NotNull
+    @Contract(pure = true)
+    default <T> ICollectionList<T> flatMap(@NotNull Function<V, ? extends List<? extends T>> function) {
+        ICollectionList<T> newList = createList();
+        this.forEach(v -> newList.addAll(function.apply(v)));
+        return newList;
+    }
+
+    @NotNull
+    @Contract(pure = true)
+    default <T> ICollectionList<T> arrayFlatMap(@NotNull Function<V, T[]> function) {
+        ICollectionList<T> newList = createList();
+        this.forEach(v -> newList.addAll(function.apply(v)));
+        return newList;
+    }
+
     /**
      * The <b>map()</b> method <b>creates a new array</b> populated with the results of calling a provided function on every element in the calling array.
      * @param function Function that will run to create a new array.

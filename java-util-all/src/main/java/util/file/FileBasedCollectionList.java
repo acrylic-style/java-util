@@ -33,6 +33,13 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/**
+ * This list is almost same as {@link util.CollectionList CollectionList},
+ * but it may be slow as it saves the data to the disk. (unless you're using ssd)
+ * This list saves your memory and prevents {@link OutOfMemoryError} when storing
+ * the many entries into the list. The list data will be saved at the tmp directory
+ * and will be removed when VM exits or the {@link #close()} was called.
+ */
 @SuppressWarnings({ "ConstantConditions", "unused", "RedundantSuppression" })
 public class FileBasedCollectionList<E extends Serializable> extends AbstractCollectionList<E> implements ICollectionList<E>, Cloneable, AutoCloseable {
     /**
