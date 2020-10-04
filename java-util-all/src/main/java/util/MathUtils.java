@@ -25,7 +25,11 @@
 
 package util;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.security.SecureRandom;
 import java.util.Random;
+import java.util.regex.Pattern;
 
 /**
  * The class {@code Math} contains methods for performing basic
@@ -2049,4 +2053,57 @@ public final class MathUtils {
      * Returns difference between x and y.
      */
     public static float diff(float x, float y) { return negativeToPositive(x - y); }
+
+    /**
+     * Converts time (hh:mm or just seconds) to seconds (integer).
+     * @param s Time, must be format in seconds (it will just converts to integer) or hh:mm.
+     * @return Seconds in integer
+     * @throws IllegalArgumentException When couldn't parse time
+     */
+    public static int timeToSeconds(@NotNull String s) {
+        if (Pattern.compile("^\\d+$").matcher(s).matches()) {
+            return Integer.parseInt(s);
+        } else {
+            if (!Pattern.compile("^\\d+:\\d+$").matcher(s).matches()) throw new IllegalArgumentException("Time must be format number:number.");
+            String[] times = s.split(":");
+            return Integer.parseInt(times[0])*60 + Integer.parseInt(times[1]);
+        }
+    }
+
+    /**
+     * @return A string. Examples:
+     * <ul>
+     *     <li>60 -> 1:00</li>
+     *     <li>90 -> 1:30</li>
+     * </ul>
+     */
+    @NotNull
+    public static String secondsToTime(int seconds) {
+        int minutes = (int) Math.floor(seconds / 60D);
+        String sec = Integer.toString(seconds % 60);
+        return minutes + ":" + (sec.length() == 1 ? "0" + sec : sec);
+    }
+
+    /**
+     * Random number between 0 - max.<br />
+     * It isn't secure, so if you want the secure numbers, use {@link #randomSecureNumber(int)}.
+     * @param max Maximum random number.
+     * @return Random number
+     */
+    public static int randomNumber(int max) { return (int) (Math.random() * max + 1); }
+
+    /**
+     * Random number between 0 - max.
+     * @param seed seed that will be used to generate number
+     * @param max Maximum random number.
+     * @return Unique random number
+     */
+    public static int randomSecureNumber(int max, byte[] seed) { return new SecureRandom(seed).nextInt() * max + 1; }
+
+    /**
+     * Random number between 0 - max.
+     * @param max Maximum random number.
+     * @return Unique random number
+     */
+    public static int randomSecureNumber(int max) { return new SecureRandom().nextInt() * max + 1; }
 }
