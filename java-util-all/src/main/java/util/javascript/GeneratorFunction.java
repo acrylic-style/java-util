@@ -1,7 +1,5 @@
 package util.javascript;
 
-import com.google.common.annotations.Beta;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -13,8 +11,9 @@ import java.util.function.Consumer;
  *     <li>You cannot call infinite "while" loop.</li>
  *     <li>yield is actually a Consumer and you must call {@link Consumer#accept(Object) yield.accept(Object)}.</li>
  * </ul>
+ * @deprecated Use {@link util.experimental.javascript.GeneratorFunction} instead
  */
-@Beta
+@Deprecated
 public abstract class GeneratorFunction {
     public final Iterator<Object> values;
 
