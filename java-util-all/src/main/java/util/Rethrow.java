@@ -38,7 +38,6 @@ public class Rethrow<T> {
      * was the thrown.
      * @return the evaluated value, or null if exception was thrown.
      */
-    @SneakyThrows({IllegalAccessException.class, InstantiationException.class})
     public T run() {
         try {
             return runnable.run();
