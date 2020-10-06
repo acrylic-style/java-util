@@ -174,7 +174,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
      * Queue running the promise.<br />
      * It'll just run at the Thread and then runs Thread#start. There are no way to stop it when you've started.
      */
-    public Promise<T> queue() { return queue(null); }
+    public void queue() { queue(null); }
 
     /**
      * Queue running the promise with object.
