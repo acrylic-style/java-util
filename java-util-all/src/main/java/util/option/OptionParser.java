@@ -21,7 +21,8 @@ public class OptionParser {
         return option;
     }
 
-    @NotNull AcceptingOption<String> accepts(@NotNull String key, @Nullable String description) {
+    @NotNull
+    public AcceptingOption<String> accepts(@NotNull String key, @Nullable String description) {
         return accepts(key).description(description);
     }
 
