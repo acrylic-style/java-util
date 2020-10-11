@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 public class ArgumentParser {
     public final CollectionList<String> arguments = new CollectionList<>();
     public final StringCollection<Object> parsedOptions = new StringCollection<>();
+    public final StringCollection<String> parsedRawOptions = new StringCollection<>();
 
     /**
      * Parses arguments.<br />
@@ -48,6 +49,7 @@ public class ArgumentParser {
                 String k = args2.replaceAll("(.*?)=(.*)", "$1");
                 String v = args2.replaceAll("(.*?)=(.*)", "$2");
                 parsedOptions.add(k, parseString(v));
+                parsedRawOptions.add(k, v);
             }
         }
     }
