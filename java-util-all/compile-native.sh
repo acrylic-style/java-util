@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
   # brew install mbedtls zlib
@@ -7,11 +7,14 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 elif [[ "$OSTYPE" == "cygwin"* ]]; then
   PREFIX="windows-"
   CXX_ARGS="-lz -I$JAVA_HOME/include/ -I$JAVA_HOME/include/win32/"
+
+  # Try this if the above CXX_ARGS does not work
+  #CXX_ARGS="-lz"
 else
   # apt-get install libmbedtls-dev zlib1g-dev
   CXX_ARGS="-lz -I$JAVA_HOME/include/ -I$JAVA_HOME/include/linux/"
 fi
 
-CXX="gcc -shared -fPIC -O3 -Wall -Werror"
+CXX="gcc -shared -fPIC -O3 -Werror"
 
-#$CXX src/main/c/MemoryMeasure.cpp -o src/main/resources/${PREFIX}native-memory-measure.so $CXX_ARGS $@
+#$CXX src/main/c/jni.cpp -o src/main/resources/${PREFIX}native-jni.so "$CXX_ARGS" "$@"

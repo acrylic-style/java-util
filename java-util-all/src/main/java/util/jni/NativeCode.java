@@ -1,6 +1,7 @@
 package util.jni;
 
-import com.google.common.io.ByteStreams;
+import org.jetbrains.annotations.NotNull;
+import util.io.Bytes;
 import util.platform.LazyOSType;
 
 import java.io.File;
@@ -14,7 +15,7 @@ public class NativeCode {
     private boolean loaded = false;
     private final String name;
 
-    public NativeCode(String name) {
+    public NativeCode(@NotNull String name) {
         LazyOSType os = LazyOSType.detectOS();
         if (os == LazyOSType.Mac_OS || os == LazyOSType.Mac_OS_X) name = "osx-" + name;
         if (os == LazyOSType.Windows) name = "windows-" + name;
@@ -33,10 +34,16 @@ public class NativeCode {
             if (soFile == null) throw new RuntimeException(new FileNotFoundException("Could not find " + name + ".so in jar file"));
             File temp = File.createTempFile(fullName, ".so");
             temp.deleteOnExit();
-            try (OutputStream outputStream = new FileOutputStream( temp )) { ByteStreams.copy( soFile, outputStream ); }
+            OutputStream os = new FileOutputStream(temp);
+            Bytes.copy(soFile, os);
+            os.close();
             System.load(temp.getPath());
             loaded = true;
         } catch (IOException ignore) {}
         return loaded;
+    }
+
+    public static boolean loadLibrary(@NotNull String name) throws UnsatisfiedLinkError {
+        return new NativeCode(name).load();
     }
 }
