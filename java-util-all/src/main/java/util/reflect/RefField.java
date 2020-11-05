@@ -8,9 +8,10 @@ import util.SneakyThrow;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Type;
 
-public class RefField<T> {
+public class RefField<T> implements RefModifierEditor<RefField<T>, Field> {
     @NotNull
     private final Field field;
 
@@ -38,6 +39,8 @@ public class RefField<T> {
     public Object getObj(@Nullable Object t) { try { return this.field.get(t); } catch (IllegalAccessException e) { return SneakyThrow.sneaky(e); } }
 
     public void set(@Nullable T t, Object o) { try { this.field.set(t, o); } catch (ReflectiveOperationException e) { SneakyThrow.sneaky(e); } }
+
+    public void setObj(@Nullable Object obj, Object o) { try { this.field.set(obj, o); } catch (ReflectiveOperationException e) { SneakyThrow.sneaky(e); } }
 
     public void setAccessible(boolean flag) { this.field.setAccessible(flag); }
 
@@ -114,4 +117,7 @@ public class RefField<T> {
     @NotNull
     @Contract(pure = true)
     public Type getGenericType() { return this.field.getGenericType(); }
+
+    @Override
+    public @NotNull Member getMember() { return field; }
 }

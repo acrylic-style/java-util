@@ -5,9 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Executable;
+import java.lang.reflect.Member;
 import java.lang.reflect.TypeVariable;
 
-public class RefExecutable {
+public class RefExecutable implements RefMember {
     private final Executable executable;
 
     public RefExecutable(Executable executable) {
@@ -43,4 +44,7 @@ public class RefExecutable {
     public void setAccessible(boolean flag) {
         executable.setAccessible(flag);
     }
+
+    @Override
+    public @NotNull Member getMember() { return executable; }
 }

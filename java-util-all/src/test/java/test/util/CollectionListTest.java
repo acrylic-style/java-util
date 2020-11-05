@@ -89,8 +89,14 @@ public class CollectionListTest {
 
     @Test
     public void reduce() {
-        String r = CollectionList.of("A", "b", "C", "d").reduce((o, s) -> o + s);
+        String r = CollectionList.of("A", "b", "C", "d").reduce(ICollectionList.Reducer.CONCAT_STRING);
         assert r.equals("AbCd") : r;
+    }
+
+    @Test
+    public void reduceNumber() {
+        int r = CollectionList.of(1, 2, 3, 4).reduce(ICollectionList.Reducer.SUM_INTEGER);
+        assert r == 10 : r;
     }
 
     @Test

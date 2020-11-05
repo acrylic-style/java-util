@@ -5,9 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import util.SneakyThrow;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
-public class RefMethod<T> extends RefExecutable {
+public class RefMethod<T> extends RefExecutable implements RefModifierEditor<RefMethod<T>, Method> {
     @NotNull
     private final Method method;
 
@@ -55,4 +56,7 @@ public class RefMethod<T> extends RefExecutable {
     @Contract("_ -> this")
     @NotNull
     public RefMethod<T> accessible(boolean flag) { setAccessible(flag); return this; }
+
+    @Override
+    public @NotNull Member getMember() { return method; }
 }

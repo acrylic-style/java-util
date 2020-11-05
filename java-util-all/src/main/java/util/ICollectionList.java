@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -75,12 +76,24 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     void foreach(@NotNull util.BiBiConsumer<V, Integer, ICollectionList<V>> action);
 
+    /**
+     * Foreach all values, but with two values.
+     * @param action the consumer to run. second argument (U) may be null if size is odd.
+     */
     default void biForEach(@NotNull BiConsumer<V, V> action) {
         foreach((v, i) -> {
             if (i % 2 == 1) return;
-            V v2 = this.size() > i + 1 ? this.get(i + 1) : null;
-            action.accept(v, v2);
+            action.accept(v, getNullable(i + 1));
         });
+    }
+
+    @Nullable
+    default V getNullable(int index) {
+        return has(index) ? get(index) : null;
+    }
+
+    default boolean has(int index) {
+        return this.size() > index;
     }
 
     /**
@@ -126,7 +139,15 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
     ICollectionList<V> addAll(@Nullable ICollectionList<V> list);
 
     default ICollectionList<V> addAll(@Nullable V[] array) {
-        return array == null ? this : addAll(ICollectionList.asList(array));
+        if (array != null) addAll(Arrays.asList(array));
+        return this;
+    }
+
+    default ICollectionList<V> addAllChain(@Nullable Iterable<V> iterable) {
+        if (iterable != null) {
+            iterable.forEach(this::add);
+        }
+        return this;
     }
 
     /**
@@ -416,34 +437,52 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @param biFunction the function to be run, t will be the 'accumulator', the accumulated value previously returned
      *                   in the last invocation of the callback.
      * @throws ClassCastException When the result cannot be cast to T.
+     * @throws RuntimeException When the list is empty
      * @param <U> the new type of the returned list
      */
     @SuppressWarnings("unchecked")
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    default <U> U reduce(@NotNull BiFunction<Object, @Nullable V, U> biFunction) {
-        AtomicReference<Object> ref = new AtomicReference<>(this.get(0));
+    default <U> U reduce(@NotNull BiFunction<U, @Nullable V, U> biFunction) {
+        if (this.isEmpty()) throw new RuntimeException("List is empty!");
+        AtomicReference<U> ref = new AtomicReference<>((U) this.get(0));
         foreach((v, i) -> {
             if (i > 0) ref.set(biFunction.apply(ref.get(), v));
         });
-        return (U) ref.get();
+        return ref.get();
     }
 
     /**
      * Merges 2 entries into the one.
      * @param biFunction the function to be run, t will be the 'accumulator', the accumulated value previously returned
      *                   in the last invocation of the callback.
-     * @throws ClassCastException When the result cannot be cast to T.
      * @param <U> the new type of the returned list
      */
-    @SuppressWarnings("unchecked")
     @NotNull
     @Contract(value = "_, _ -> new", pure = true)
-    default <U> U reduce(@NotNull BiFunction<Object, @Nullable V, U> biFunction, @Nullable Object initialValue) {
-        AtomicReference<Object> ref = new AtomicReference<>(initialValue);
+    default <U> U reduce(@NotNull BiFunction<U, V, U> biFunction, @Nullable U initialValue) {
+        AtomicReference<U> ref = new AtomicReference<>(initialValue);
         forEach((v) -> ref.set(biFunction.apply(ref.get(), v)));
-        return (U) ref.get();
+        return ref.get();
     }
+
+    /**
+     * Merges 2 entries into the one.
+     * @param reducer the {@link Reducer} to use
+     * @param <U> the new type of the returned list
+     */
+    @NotNull
+    @Contract(value = "_, _ -> new", pure = true)
+    default <U> U reduce(@NotNull Reducer<V, U> reducer, @Nullable U initialValue) { return reduce(reducer.biFunction, initialValue); }
+
+    /**
+     * Merges 2 entries into the one.
+     * @param reducer the {@link Reducer} to use
+     * @param <U> the new type of the returned list
+     */
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    default <U> U reduce(@NotNull Reducer<V, U> reducer) { return reduce(reducer.biFunction); }
 
     /**
      * The slice() method returns a shallow copy of a portion of an array into a new array object selected from start
@@ -487,6 +526,22 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     default boolean includes(Object o) { return contains(o); }
 
+    default ICollectionList<V> sorted(Comparator<? super V> comparator) {
+        this.sort(comparator);
+        return this;
+    }
+
+    /**
+     * Sorts the list.
+     * @throws ClassCastException when the class does not extends Comparable
+     * @return the sorted list
+     */
+    @SuppressWarnings("unchecked")
+    default ICollectionList<V> sorted() {
+        this.sorted((Comparator<V>) Comparator.naturalOrder());
+        return this;
+    }
+
     /* Static methods */
 
     /**
@@ -528,7 +583,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
     @NotNull
     static <T> CollectionList<T> asList(@NotNull T[] list) {
         CollectionList<T> collectionList = new CollectionList<>();
-        collectionList.addAll(Arrays.asList(list));
+        collectionList.addAll(list);
         return collectionList;
     }
 
@@ -541,7 +596,24 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @SafeVarargs
     @NotNull
-    static <T> CollectionList<T> ArrayOf(@NotNull T... t) {
+    static <T> CollectionList<T> of(@NotNull T... t) {
         return new CollectionList<>(t);
+    }
+
+    final class Reducer<T, U> {
+        public static final Reducer<Integer, Integer> SUM_INTEGER = new Reducer<>(Integer::sum);
+        public static final Reducer<Double, Double> SUM_DOUBLE = new Reducer<>(Double::sum);
+        public static final Reducer<Long, Long> SUM_LONG = new Reducer<>(Long::sum);
+        public static final Reducer<Float, Float> SUM_FLOAT = new Reducer<>(Float::sum);
+        public static final Reducer<Byte, Byte> SUM_BYTE = new Reducer<>((b1, b2) -> (byte) (b1 + b2));
+        public static final Reducer<Short, Short> SUM_SHORT = new Reducer<>((s1, s2) -> (short) (s1 + s2));
+        public static final Reducer<String, String> CONCAT_STRING = new Reducer<>((s1, s2) -> s1 + s2);
+
+        @NotNull public final BiFunction<U, T, U> biFunction;
+
+        private Reducer(@NotNull BiFunction<U, T, U> biFunction) {
+            Validate.notNull(biFunction, "BiFunction cannot be null");
+            this.biFunction = biFunction;
+        }
     }
 }

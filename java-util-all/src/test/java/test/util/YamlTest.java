@@ -15,5 +15,6 @@ public class YamlTest {
         assert obj.getInt("ff") == 1;
         assert obj.getBoolean("gg");
         assert obj.getString("non-existent-value", "yes").equals("yes");
+        assert obj.getString("non-existent-value") == null;
     }
 }

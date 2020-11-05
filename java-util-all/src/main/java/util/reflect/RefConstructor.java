@@ -7,7 +7,7 @@ import util.SneakyThrow;
 
 import java.lang.reflect.*;
 
-public class RefConstructor<T> extends RefExecutable {
+public class RefConstructor<T> extends RefExecutable implements RefModifierEditor<RefConstructor<T>, Constructor<T>> {
     @NotNull
     private final Constructor<T> constructor;
 
@@ -56,4 +56,7 @@ public class RefConstructor<T> extends RefExecutable {
     @Override
     @NotNull
     public String toString() { return this.constructor.toString(); }
+
+    @Override
+    public @NotNull Member getMember() { return constructor; }
 }

@@ -123,6 +123,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
 
     private static <V> Object tryResolve(Promise<V> promise, Object o) {
         if (promise.status == PromiseStatus.RESOLVED) return promise.v;
+        throwIfRejected(promise);
         try {
             Object result = call(o, promise, buildChain(promise));
             promise.status = PromiseStatus.RESOLVED;
