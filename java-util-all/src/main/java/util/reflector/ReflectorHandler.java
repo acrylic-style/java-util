@@ -37,6 +37,7 @@ public class ReflectorHandler implements InvocationHandler {
         FieldGetter getter = method.getAnnotation(FieldGetter.class);
         FieldSetter setter = method.getAnnotation(FieldSetter.class);
         ForwardMethod forwardMethod = method.getAnnotation(ForwardMethod.class);
+        CastTo castTo = method.getAnnotation(CastTo.class);
         if (getter != null) {
             if (args != null && args.length > 0) throw new IllegalArgumentException("Requires exactly zero argument on method when applying FieldGetter");
             Field field;
@@ -46,6 +47,7 @@ public class ReflectorHandler implements InvocationHandler {
                 field = findField(target, getter.value());
             }
             if (field == null) throw new NoSuchFieldException(getter.value().equals("") ? fieldName(method) : getter.value());
+            if (castTo != null) return Reflector.castFieldTo(method.getDeclaringClass(), proxy, field.getName(), castTo.value());
             return field.get(instance);
         }
         if (setter != null) {
@@ -59,7 +61,7 @@ public class ReflectorHandler implements InvocationHandler {
             if (field == null) throw new NoSuchFieldException(setter.value().equals("") ? fieldName(method) : setter.value());
             RefField<?> refField = new RefField<>(field);
             if (setter.removeFinal()) refField.removeFinal();
-            refField.setObj(instance, args[0]);
+            refField.setObj(Reflector.reverseInstanceList.getOrDefault(instance, instance), args[0]);
             return null;
         }
         String methodName = method.getName();
@@ -67,20 +69,24 @@ public class ReflectorHandler implements InvocationHandler {
             methodName = forwardMethod.value();
         }
         Method found = findMethod(target, methodName, method.getParameterTypes());
+        //System.out.println("F: " + found + ", name: " + methodName + ", castTo: " + castTo + ", target: " + target);
         if (found != null) {
-            return found.invoke(instance, args);
+            if (castTo != null) return Reflector.castTo(null, method.getDeclaringClass(), proxy, methodName, method, castTo.value(), args);
+            return found.invoke(Reflector.reverseInstanceList.getOrDefault(instance, instance), args);
         } else {
             if (method.getName().startsWith("get") && method.getName().length() >= 4 && (args == null || args.length == 0)) {
                 Field field = findField(target, method);
+                if (field != null && castTo != null) return Reflector.castFieldTo(method.getDeclaringClass(), proxy, field.getName(), castTo.value());
                 if (field != null) return field.get(instance);
             } else if (method.getName().startsWith("set") && method.getName().length() >= 4 && args.length == 1) {
                 Field field = findField(target, method);
                 if (field != null) {
-                    field.set(instance, args[0]);
+                    field.set(Reflector.reverseInstanceList.getOrDefault(instance, instance), args[0]);
                     return null;
                 }
             }
-            throw new NoSuchMethodException(method.toGenericString());
+            return method.invoke(instance, args);
+            //throw new NoSuchMethodException(method.toGenericString());
         }
     }
 

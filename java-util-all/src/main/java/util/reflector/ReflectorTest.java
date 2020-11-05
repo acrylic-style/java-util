@@ -6,8 +6,8 @@ class ReflectorTest {
         // CraftPlayerTest = abstraction of CraftPlayer
         // EntityPlayer4Test = abstraction of EntityPlayer4Test
         CraftPlayerTest player = Reflector.newReflector(ClassLoader.getSystemClassLoader(), CraftPlayerTest.class, new ReflectorHandler(CraftPlayer.class, new CraftPlayer()));
-        System.out.println(player.getClazz());
-        EntityPlayer4Test ep = Reflector.castTo(CraftPlayerTest.class, player, "getHandle", EntityPlayer4Test.class);
+        System.out.println("Locale: " + player.getLocale());
+        EntityPlayer4Test ep = player.getHandle();
         System.out.println("ToString: " + ep.toString());
         System.out.println("Actual Ping: " + ep.getActualPing() + ", expected: 4848");
         System.out.println("Ping before set: " + ep.getPing() + ", expected: 1212");
@@ -34,7 +34,9 @@ class ReflectorTest {
 
     // abstraction of CraftPlayer
     public interface CraftPlayerTest extends ReflectorHandler.ClazzGetter {
+        @CastTo(EntityPlayer4Test.class)
         EntityPlayer4Test getHandle();
+        String getLocale();
     }
 
     // nms.EntityPlayer
