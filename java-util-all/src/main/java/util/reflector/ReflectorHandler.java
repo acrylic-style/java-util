@@ -3,6 +3,7 @@ package util.reflector;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import util.ReflectionHelper;
 import util.Validate;
 import util.reflect.Ref;
 import util.reflect.RefField;
@@ -10,6 +11,8 @@ import util.reflect.RefField;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ReflectorHandler implements InvocationHandler {
     private final Class<?> target;
@@ -52,6 +55,7 @@ public class ReflectorHandler implements InvocationHandler {
         String methodName = forwardMethod == null ? method.getName() : forwardMethod.value();
         Method found = findMethod(target, methodName, method.getParameterTypes());
         if (found != null) {
+            System.out.println("aFound: " + found.toGenericString() + ", instance: " + instance);
             if (castTo != null) {
                 if (castTo.createInstance()) {
                     return castTo.value().getConstructor(Object.class).newInstance(found.invoke(Reflector.reverseInstanceList.getOrDefault(instance, instance), args));
@@ -59,7 +63,12 @@ public class ReflectorHandler implements InvocationHandler {
                     return Reflector.castTo(null, method.getDeclaringClass(), proxy, methodName, method, castTo.value(), args);
                 }
             }
-            return found.invoke(Reflector.reverseInstanceList.getOrDefault(instance, instance), args);
+            try {
+                return found.invoke(instance, args);
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace();
+                return found.invoke(Reflector.reverseInstanceList.getOrDefault(instance, instance), args);
+            }
         } else {
             if (method.getName().startsWith("get") && method.getName().length() >= 4 && (args == null || args.length == 0)) {
                 return getField(instance, proxy, null, castTo, target, method);
@@ -67,7 +76,7 @@ public class ReflectorHandler implements InvocationHandler {
                 setField(instance, null, target, method, args[0]);
                 return null;
             }
-            return method.invoke(instance, args);
+            throw new NoSuchMethodException(method.toGenericString());
         }
     }
 
@@ -92,7 +101,7 @@ public class ReflectorHandler implements InvocationHandler {
         Field field = getField(setter == null ? null : setter.value(), target, method);
         RefField<?> refField = new RefField<>(field);
         if (setter != null && setter.removeFinal()) refField.removeFinal();
-        refField.setObj(Reflector.reverseInstanceList.getOrDefault(instance, instance), arg);
+        refField.setObj(Reflector.reverseInstanceList.get(instance), arg);
     }
 
     @NotNull
@@ -143,25 +152,31 @@ public class ReflectorHandler implements InvocationHandler {
 
     @Nullable
     private static <T> Method findMethod(@NotNull Class<? extends T> clazz, @NotNull String methodName, @Nullable Class<?>... args) {
-        try {
-            Method method = clazz.getDeclaredMethod(methodName, args);
-            method.setAccessible(true);
-            return method;
-        } catch (NoSuchMethodException e) {
-            return null;
-        }
+        AtomicReference<Method> method = new AtomicReference<>();
+        AtomicReference<Method> implMethod = new AtomicReference<>();
+        ReflectionHelper.getSupers(clazz).addChain(clazz).forEach(cl -> {
+            try {
+                Method m = cl.getDeclaredMethod(methodName, args);
+                if (m.isDefault() || (m.getModifiers() & Modifier.ABSTRACT) == Modifier.ABSTRACT) implMethod.set(m);
+                method.set(m);
+            } catch (NoSuchMethodException ignore) {}
+        });
+        if (implMethod.get() == null) implMethod.set(method.get());
+        if (implMethod.get() != null) implMethod.get().setAccessible(true);
+        return implMethod.get();
     }
 
     @Contract(pure = true)
     @Nullable
     private static <T> Field findField(@NotNull Class<? extends T> clazz, @NotNull String fieldName) {
-        try {
-            Field field = clazz.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            return field;
-        } catch (NoSuchFieldException e) {
-            return null;
-        }
+        AtomicReference<Field> field = new AtomicReference<>();
+        ReflectionHelper.getSupers(clazz).forEach(cl -> {
+            try {
+                field.set(cl.getDeclaredField(fieldName));
+            } catch (NoSuchFieldException ignore) {}
+        });
+        if (field.get() != null) field.get().setAccessible(true);
+        return field.get();
     }
 
     @NotNull
