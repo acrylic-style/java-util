@@ -14,13 +14,15 @@ import java.lang.reflect.Proxy;
  * See {@link ReflectorTest} for example.
  */
 public class Reflector {
+    public static ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+
     static final Collection<Class<?>, Class<?>> reverseList = new Collection<>();
     static final Collection<Object, Object> reverseInstanceList = new Collection<>();
 
     @SuppressWarnings("unchecked")
     public static <T> T newReflector(@Nullable ClassLoader classLoader, @NotNull Class<T> clazz, @NotNull ReflectorHandler handler) {
         reverseList.add(clazz, handler.getTarget());
-        return (T) Proxy.newProxyInstance(classLoader == null ? ClassLoader.getSystemClassLoader() : classLoader, new Class[] { clazz }, handler);
+        return (T) Proxy.newProxyInstance(classLoader == null ? Reflector.classLoader : classLoader, new Class[] { clazz }, handler);
     }
 
     public static <T, U> U castTo(@NotNull Class<T> clazz, @NotNull Object instance, @NotNull String method, @NotNull Class<U> target, Object... args) {
