@@ -1,5 +1,6 @@
 package util.reflector;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import util.Validate;
@@ -29,7 +30,8 @@ public class ReflectorHandler implements InvocationHandler {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+    public Object invoke(Object proxy, Method method, Object[] args_) throws Throwable {
+        Object[] args = parseFieldGetterParameter(method, args_);
         if (method.isDefault()) System.err.println("Default methods are not supported. Please don't mark methods as 'default'. Method: " + method.toGenericString());
         if (method.equals(ClazzGetter.METHOD) && (args == null || args.length == 0)) {
             return Object.class.getMethod("getClass").invoke(instance);
@@ -40,63 +42,101 @@ public class ReflectorHandler implements InvocationHandler {
         CastTo castTo = method.getAnnotation(CastTo.class);
         if (getter != null) {
             if (args != null && args.length > 0) throw new IllegalArgumentException("Requires exactly zero argument on method when applying FieldGetter");
-            Field field;
-            if (getter.value().equals("")) {
-                field = findField(target, method);
-            } else {
-                field = findField(target, getter.value());
-            }
-            if (field == null) throw new NoSuchFieldException(getter.value().equals("") ? fieldName(method) : getter.value());
-            if (castTo != null) return Reflector.castFieldTo(method.getDeclaringClass(), proxy, field.getName(), castTo.value());
-            return field.get(instance);
+            return getField(instance, proxy, getter, castTo, target, method);
         }
         if (setter != null) {
             if ((args == null || args.length == 0) || (args.length > 1)) throw new IllegalArgumentException("Requires exactly one argument on method when applying FieldSetter");
-            Field field;
-            if (setter.value().equals("")) {
-                field = findField(target, method);
-            } else {
-                field = findField(target, setter.value());
-            }
-            if (field == null) throw new NoSuchFieldException(setter.value().equals("") ? fieldName(method) : setter.value());
-            RefField<?> refField = new RefField<>(field);
-            if (setter.removeFinal()) refField.removeFinal();
-            refField.setObj(Reflector.reverseInstanceList.getOrDefault(instance, instance), args[0]);
+            setField(instance, setter, target, method, args[0]);
             return null;
         }
-        String methodName = method.getName();
-        if (forwardMethod != null) {
-            methodName = forwardMethod.value();
-        }
+        String methodName = forwardMethod == null ? method.getName() : forwardMethod.value();
         Method found = findMethod(target, methodName, method.getParameterTypes());
-        //System.out.println("F: " + found + ", name: " + methodName + ", castTo: " + castTo + ", target: " + target);
         if (found != null) {
-            if (castTo != null) return Reflector.castTo(null, method.getDeclaringClass(), proxy, methodName, method, castTo.value(), args);
+            if (castTo != null) {
+                if (castTo.createInstance()) {
+                    return castTo.value().getConstructor(Object.class).newInstance(found.invoke(Reflector.reverseInstanceList.getOrDefault(instance, instance), args));
+                } else {
+                    return Reflector.castTo(null, method.getDeclaringClass(), proxy, methodName, method, castTo.value(), args);
+                }
+            }
             return found.invoke(Reflector.reverseInstanceList.getOrDefault(instance, instance), args);
         } else {
             if (method.getName().startsWith("get") && method.getName().length() >= 4 && (args == null || args.length == 0)) {
-                Field field = findField(target, method);
-                if (field != null && castTo != null) return Reflector.castFieldTo(method.getDeclaringClass(), proxy, field.getName(), castTo.value());
-                if (field != null) return field.get(instance);
+                return getField(instance, proxy, null, castTo, target, method);
             } else if (method.getName().startsWith("set") && method.getName().length() >= 4 && args.length == 1) {
-                Field field = findField(target, method);
-                if (field != null) {
-                    field.set(Reflector.reverseInstanceList.getOrDefault(instance, instance), args[0]);
-                    return null;
-                }
+                setField(instance, null, target, method, args[0]);
+                return null;
             }
             return method.invoke(instance, args);
-            //throw new NoSuchMethodException(method.toGenericString());
         }
     }
 
-    public static String fieldName(Method method) { return deCapitalize(method.getName().replaceFirst("[gs]et", "")); }
+    private static Object getField(@NotNull Object instance,
+                                   @NotNull Object proxy,
+                                   @Nullable FieldGetter getter,
+                                   @Nullable CastTo castTo,
+                                   @NotNull Class<?> target,
+                                   @NotNull Method method) throws Throwable {
+        Field field = getField(getter == null ? null : getter.value(), target, method);
+        if (castTo != null) {
+            if (castTo.createInstance()) {
+                return castTo.value().getConstructor(Object.class).newInstance(field.get(instance));
+            } else {
+                return Reflector.castFieldTo(method.getDeclaringClass(), proxy, field.getName(), castTo.value());
+            }
+        }
+        return field.get(instance);
+    }
 
-    public static Field findField(Class<?> target, Method method) {
+    private static void setField(@NotNull Object instance, @Nullable FieldSetter setter, @NotNull Class<?> target, @NotNull Method method, @Nullable Object arg) throws NoSuchFieldException {
+        Field field = getField(setter == null ? null : setter.value(), target, method);
+        RefField<?> refField = new RefField<>(field);
+        if (setter != null && setter.removeFinal()) refField.removeFinal();
+        refField.setObj(Reflector.reverseInstanceList.getOrDefault(instance, instance), arg);
+    }
+
+    @NotNull
+    private static Field getField(String value, Class<?> target, Method method) throws NoSuchFieldException {
+        Field field;
+        if (value == null || value.equals("")) {
+            field = findField(target, method);
+        } else {
+            field = findField(target, value);
+        }
+        if (field == null) throw new NoSuchFieldException(value == null || value.equals("") ? fieldName(method) : value);
+        return field;
+    }
+
+    @Contract("_, _ -> param2")
+    private static Object[] parseFieldGetterParameter(@NotNull Method method, @Nullable Object[] args) throws Throwable {
+        if (args == null) return null;
+        for (int i = 0; i < method.getParameters().length; i++) {
+            FieldGetter getter = method.getParameters()[i].getAnnotation(FieldGetter.class);
+            Object arg = args[i];
+            if (getter == null || arg == null) continue;
+            Class<?> target;
+            if (getter.target().equals(Object.class)) {
+                target = arg.getClass();
+            } else {
+                target = getter.target();
+            }
+            Field field = findField(target, getter.value());
+            if (field == null) throw new NoSuchFieldException("Could not find field " + target.getCanonicalName() + "#" + getter.value());
+            args[i] = field.get(arg);
+        }
+        return args;
+    }
+
+    @NotNull
+    private static String fieldName(Method method) { return deCapitalize(method.getName().replaceFirst("[gs]et", "")); }
+
+    @Nullable
+    private static Field findField(Class<?> target, Method method) {
         return findField(target, fieldName(method));
     }
 
-    public static <T> Method findMethod(@NotNull Class<? extends T> clazz, @NotNull String methodName, @Nullable Class<?>... args) {
+    @Nullable
+    private static <T> Method findMethod(@NotNull Class<? extends T> clazz, @NotNull String methodName, @Nullable Class<?>... args) {
         try {
             Method method = clazz.getDeclaredMethod(methodName, args);
             method.setAccessible(true);
@@ -106,7 +146,9 @@ public class ReflectorHandler implements InvocationHandler {
         }
     }
 
-    public static <T> Field findField(@NotNull Class<? extends T> clazz, @NotNull String fieldName) {
+    @Contract(pure = true)
+    @Nullable
+    private static <T> Field findField(@NotNull Class<? extends T> clazz, @NotNull String fieldName) {
         try {
             Field field = clazz.getDeclaredField(fieldName);
             field.setAccessible(true);
@@ -116,9 +158,8 @@ public class ReflectorHandler implements InvocationHandler {
         }
     }
 
-    public static String deCapitalize(String s) {
-        return s.substring(0, 1).toLowerCase() + s.substring(1);
-    }
+    @NotNull
+    private static String deCapitalize(String s) { return s.substring(0, 1).toLowerCase() + s.substring(1); }
 
     public interface ClazzGetter {
         Method METHOD = Ref.getMethod(ClazzGetter.class, "getClazz").getMethod();

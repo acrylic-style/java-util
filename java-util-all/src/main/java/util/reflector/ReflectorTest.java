@@ -16,12 +16,12 @@ class ReflectorTest {
     }
 
     // org.bukkit.entity.Player
-    public interface Player {
+    private interface Player {
         String getLocale();
     }
 
     // org.bukkit.craftbukkit.entity.CraftPlayer
-    public static class CraftPlayer implements Player {
+    private static class CraftPlayer implements Player {
         @Override
         public String getLocale() {
             return "en";
@@ -33,14 +33,14 @@ class ReflectorTest {
     }
 
     // abstraction of CraftPlayer
-    public interface CraftPlayerTest extends ReflectorHandler.ClazzGetter {
+    private interface CraftPlayerTest extends ReflectorHandler.ClazzGetter {
         @CastTo(EntityPlayer4Test.class)
         EntityPlayer4Test getHandle();
         String getLocale();
     }
 
     // nms.EntityPlayer
-    public static class EntityPlayer {
+    private static class EntityPlayer {
         // can be get via #getPing, and can be set via #setPing
         public int ping = 1212;
 
@@ -57,11 +57,11 @@ class ReflectorTest {
     }
 
     // abstraction of EntityPlayer
-    public interface EntityPlayer4Test {
+    private interface EntityPlayer4Test {
         @FieldGetter // if this annotation is present, it will get value from field "ping", instead of just invoking "getPing".
         int getPing();
 
-        void setPing(int ping);
+        void setPing(@FieldGetter("value") Integer ping);
 
         @ForwardMethod("getSomething")
         int getActualPing();

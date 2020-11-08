@@ -12,4 +12,6 @@ import java.lang.annotation.Target;
 public @interface CastTo {
     @NotNull
     Class<?> value();
+
+    boolean createInstance() default false;
 }
