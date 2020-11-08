@@ -5,7 +5,7 @@
     <parent>
         <artifactId>Util</artifactId>
         <groupId>xyz.acrylicstyle</groupId>
-        <version>0.11.37a</version>
+        <version>0.11.37b</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>util-annotations</artifactId>

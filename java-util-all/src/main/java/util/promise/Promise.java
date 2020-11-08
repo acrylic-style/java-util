@@ -112,11 +112,15 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     }
 
     private static <V> void setResolved(Promise<V> promise, V v) {
+        if (promise.status != PromiseStatus.PENDING && promise.status != PromiseStatus.WAITING && promise.status != PromiseStatus.RUNNING)
+            throw new IllegalStateException("the promise is already resolved or rejected!");
         promise.status = PromiseStatus.RESOLVED;
         promise.v = v;
     }
 
     private static void setRejected(Promise<?> promise, Throwable throwable) {
+        if (promise.status != PromiseStatus.PENDING && promise.status != PromiseStatus.WAITING && promise.status != PromiseStatus.RUNNING)
+            throw new IllegalStateException("the promise is already resolved or rejected!");
         promise.status = PromiseStatus.REJECTED;
         promise.v = throwable;
     }
@@ -396,16 +400,15 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     /**
      * Rejects promise with the value.
      */
-    protected void reject(Throwable throwable) {
-        setRejected(this, throwable);
-    }
+    public void reject(Throwable throwable) { setRejected(this, throwable); }
 
     /**
      * Resolves promise with the value.
      */
-    protected void resolve(T value) {
-        setResolved(this, value);
-    }
+    public void resolve(T value) { setResolved(this, value); }
+
+    @SuppressWarnings("unchecked")
+    public void resolveWithObject(Object value) { setResolved(this, (T) value); }
 
     @Override
     public String toString() {
