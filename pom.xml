@@ -7,7 +7,7 @@
     <groupId>xyz.acrylicstyle</groupId>
     <artifactId>Util</artifactId>
     <packaging>pom</packaging>
-    <version>0.11.36</version>
+    <version>0.11.37</version>
     <modules>
         <module>java-util-all</module>
         <module>util-annotation-processor</module>

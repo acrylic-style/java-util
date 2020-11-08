@@ -111,18 +111,24 @@ public class ReflectorHandler implements InvocationHandler {
     private static Object[] parseFieldGetterParameter(@NotNull Method method, @Nullable Object[] args) throws Throwable {
         if (args == null) return null;
         for (int i = 0; i < method.getParameters().length; i++) {
-            FieldGetter getter = method.getParameters()[i].getAnnotation(FieldGetter.class);
             Object arg = args[i];
-            if (getter == null || arg == null) continue;
-            Class<?> target;
-            if (getter.target().equals(Object.class)) {
-                target = arg.getClass();
-            } else {
-                target = getter.target();
+            if (arg == null) return null;
+            FieldGetter getter = method.getParameters()[i].getAnnotation(FieldGetter.class);
+            ForwardMethod forwardMethod = method.getParameters()[i].getAnnotation(ForwardMethod.class);
+            if (getter == null && forwardMethod == null) continue;
+            Class<?> target = arg.getClass();
+            if (getter != null) {
+                if (!getter.target().equals(Object.class)) target = getter.target();
+                Field field = findField(target, getter.value());
+                if (field == null) throw new NoSuchFieldException("Could not find field " + target.getCanonicalName() + "#" + getter.value());
+                args[i] = field.get(arg);
             }
-            Field field = findField(target, getter.value());
-            if (field == null) throw new NoSuchFieldException("Could not find field " + target.getCanonicalName() + "#" + getter.value());
-            args[i] = field.get(arg);
+            if (forwardMethod != null) {
+                if (!forwardMethod.target().equals(Object.class)) target = forwardMethod.target();
+                Method m = findMethod(target, forwardMethod.value());
+                if (m == null) throw new NoSuchMethodException("Could not find method " + target.getCanonicalName() + "#" + forwardMethod.value());
+                args[i] = m.invoke(arg);
+            }
         }
         return args;
     }

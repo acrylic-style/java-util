@@ -5,7 +5,7 @@
     <parent>
         <artifactId>Util</artifactId>
         <groupId>xyz.acrylicstyle</groupId>
-        <version>0.11.36</version>
+        <version>0.11.37</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>java-util-all</artifactId>
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>xyz.acrylicstyle</groupId>
             <artifactId>util-annotations</artifactId>
-            <version>0.11.36</version>
+            <version>0.11.37</version>
         </dependency>
         <dependency>
             <groupId>org.reflections</groupId>
