@@ -25,9 +25,13 @@ public class ReflectorHandler implements InvocationHandler {
 
     public Object getInstance() { return instance; }
 
-    public ReflectorHandler(@NotNull Class<?> target, @NotNull Object instance) {
+    /**
+     * Creates new ReflectorHandler instance.
+     * @param target the target class to call.
+     * @param instance the instance. If null, it will be static ReflectorHandler and will be unable to call instance methods.
+     */
+    public ReflectorHandler(@NotNull Class<?> target, @Nullable Object instance) {
         Validate.notNull(target, "target cannot be null");
-        Validate.notNull(instance, "instance cannot be null");
         this.target = target;
         this.instance = instance;
     }
@@ -37,50 +41,51 @@ public class ReflectorHandler implements InvocationHandler {
         Object[] args = parseFieldGetterParameter(method, args_);
         if (method.isDefault()) System.err.println("Default methods are not supported. Please don't mark methods as 'default'. Method: " + method.toGenericString());
         if (method.equals(ClazzGetter.METHOD) && (args == null || args.length == 0)) {
+            if (instance == null) throw new IllegalArgumentException("Cannot invoke Object#getClass with static ReflectorHandler");
             return Object.class.getMethod("getClass").invoke(instance);
         }
         FieldGetter getter = method.getAnnotation(FieldGetter.class);
         FieldSetter setter = method.getAnnotation(FieldSetter.class);
         ForwardMethod forwardMethod = method.getAnnotation(ForwardMethod.class);
         CastTo castTo = method.getAnnotation(CastTo.class);
+        boolean isStatic = method.isAnnotationPresent(Static.class);
         if (getter != null) {
             if (args != null && args.length > 0) throw new IllegalArgumentException("Requires exactly zero argument on method when applying FieldGetter");
-            return getField(instance, proxy, getter, castTo, target, method);
+            return getField(isStatic ? null : instance, proxy, getter, castTo, target, method);
         }
         if (setter != null) {
             if ((args == null || args.length == 0) || (args.length > 1)) throw new IllegalArgumentException("Requires exactly one argument on method when applying FieldSetter");
-            setField(instance, setter, target, method, args[0]);
+            setField(isStatic ? null : instance, setter, target, method, args[0]);
             return null;
         }
         String methodName = forwardMethod == null ? method.getName() : forwardMethod.value();
         Method found = findMethod(target, methodName, method.getParameterTypes());
         if (found != null) {
-            System.out.println("aFound: " + found.toGenericString() + ", instance: " + instance);
             if (castTo != null) {
                 if (castTo.createInstance()) {
-                    return castTo.value().getConstructor(Object.class).newInstance(found.invoke(Reflector.reverseInstanceList.getOrDefault(instance, instance), args));
+                    return castTo.value().getConstructor(Object.class).newInstance(found.invoke(isStatic ? null : Reflector.reverseInstanceList.getOrDefault(instance, instance), args));
                 } else {
                     return Reflector.castTo(null, method.getDeclaringClass(), proxy, methodName, method, castTo.value(), args);
                 }
             }
             try {
-                return found.invoke(instance, args);
+                return found.invoke(isStatic ? null : instance, args);
             } catch (IllegalArgumentException ex) {
                 ex.printStackTrace();
-                return found.invoke(Reflector.reverseInstanceList.getOrDefault(instance, instance), args);
+                return found.invoke(isStatic ? null : Reflector.reverseInstanceList.getOrDefault(instance, instance), args);
             }
         } else {
             if (method.getName().startsWith("get") && method.getName().length() >= 4 && (args == null || args.length == 0)) {
-                return getField(instance, proxy, null, castTo, target, method);
+                return getField(isStatic ? null : instance, proxy, null, castTo, target, method);
             } else if (method.getName().startsWith("set") && method.getName().length() >= 4 && args.length == 1) {
-                setField(instance, null, target, method, args[0]);
+                setField(isStatic ? null : instance, null, target, method, args[0]);
                 return null;
             }
             throw new NoSuchMethodException(method.toGenericString());
         }
     }
 
-    private static Object getField(@NotNull Object instance,
+    private static Object getField(@Nullable Object instance,
                                    @NotNull Object proxy,
                                    @Nullable FieldGetter getter,
                                    @Nullable CastTo castTo,
@@ -97,7 +102,7 @@ public class ReflectorHandler implements InvocationHandler {
         return field.get(instance);
     }
 
-    private static void setField(@NotNull Object instance, @Nullable FieldSetter setter, @NotNull Class<?> target, @NotNull Method method, @Nullable Object arg) throws NoSuchFieldException {
+    private static void setField(@Nullable Object instance, @Nullable FieldSetter setter, @NotNull Class<?> target, @NotNull Method method, @Nullable Object arg) throws NoSuchFieldException {
         Field field = getField(setter == null ? null : setter.value(), target, method);
         RefField<?> refField = new RefField<>(field);
         if (setter != null && setter.removeFinal()) refField.removeFinal();

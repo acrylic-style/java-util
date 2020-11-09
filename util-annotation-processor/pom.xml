@@ -5,7 +5,7 @@
     <parent>
         <artifactId>Util</artifactId>
         <groupId>xyz.acrylicstyle</groupId>
-        <version>0.11.37c</version>
+        <version>0.11.38</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -14,7 +14,7 @@
         <dependency>
             <groupId>xyz.acrylicstyle</groupId>
             <artifactId>util-annotations</artifactId>
-            <version>0.11.37c</version>
+            <version>0.11.38</version>
         </dependency>
         <dependency>
             <groupId>com.squareup</groupId>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>xyz.acrylicstyle</groupId>
             <artifactId>java-util-all</artifactId>
-            <version>0.11.37c</version>
+            <version>0.11.38</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>
