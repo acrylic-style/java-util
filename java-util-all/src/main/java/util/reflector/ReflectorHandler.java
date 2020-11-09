@@ -106,7 +106,12 @@ public class ReflectorHandler implements InvocationHandler {
         Field field = getField(setter == null ? null : setter.value(), target, method);
         RefField<?> refField = new RefField<>(field);
         if (setter != null && setter.removeFinal()) refField.removeFinal();
-        refField.setObj(Reflector.reverseInstanceList.get(instance), arg);
+        try {
+            refField.setObj(instance, arg);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            refField.setObj(Reflector.reverseInstanceList.get(instance), arg);
+        }
     }
 
     @NotNull
