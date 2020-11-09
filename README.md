@@ -19,3 +19,16 @@ java-util includes Collection(not java.util.Collection!), CollectionList and som
 - CollectionSet - HashSet implementation, with ICollectionList methods (Some methods are not supported)
 - MathUtils - Provides some Math methods + methods
 - reflect.Ref - helps you using reflection (unlike ReflectionHelper, it has more methods)
+
+## Note about Reflector
+If it throws error like `java.lang.IllegalArgumentException: methods with same signature method() but incompatible return types: <some primitive type> and others`, you will need the custom jdk to run this properly.
+You have to insert these lines into the first line at sun/misc/ProxyGenerator.java#checkReturnTypes(List) to avoid errors.
+```java
+if (true) {
+    if (methods.size() == 0) return;
+    ProxyMethod m = methods.get(0);
+    methods.clear();
+    methods.add(m);
+    return;
+}
+```
