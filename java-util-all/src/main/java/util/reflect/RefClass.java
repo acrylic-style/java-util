@@ -36,6 +36,10 @@ public class RefClass<T> {
         }
     }
 
+    @Contract(pure = true)
+    @NotNull
+    public RefClass<?> unchecked() { return Ref.getClassUnchecked(clazz); }
+
     @NotNull
     public Class<T> getClazz() { return clazz; }
 

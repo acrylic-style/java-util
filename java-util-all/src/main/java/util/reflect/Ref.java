@@ -14,6 +14,11 @@ public class Ref {
     public static <S> RefClass<S> getClass(@NotNull Class<S> clazz) { return new RefClass<>(clazz); }
 
     @NotNull
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @Contract(value = "_ -> new", pure = true)
+    public static <S, R> RefClass<R> getClassUnchecked(@NotNull Class<S> clazz) { return new RefClass<>((Class)clazz); }
+
+    @NotNull
     @Contract(value = "_ -> new", pure = true)
     public static <C> RefClass<C> forName(@NotNull String clazz) { return RefClass.forName(clazz); }
 

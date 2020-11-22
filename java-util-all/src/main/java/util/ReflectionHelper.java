@@ -300,7 +300,7 @@ public final class ReflectionHelper {
     }
 
     @NotNull
-    public static Class<?> getCallerClass() { return getCallerClass(0); }
+    public static Class<?> getCallerClass() { return getCallerClass(3); } // 2 + this method
 
     @NotNull
     public static Class<?> getCallerClass(int offset) {

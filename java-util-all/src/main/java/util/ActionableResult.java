@@ -16,11 +16,11 @@ public class ActionableResult<T> {
     private static final ActionableResult<?> EMPTY = new ActionableResult<>();
 
     @Nullable
-    private T value = null;
+    protected final T value;
 
-    private ActionableResult() {}
+    protected ActionableResult() { this.value = null; }
 
-    private ActionableResult(@NotNull T value) { this.value = Objects.requireNonNull(value); }
+    protected ActionableResult(@Nullable T value) { this.value = value; }
 
     @SuppressWarnings("unchecked")
     @NotNull
@@ -109,20 +109,26 @@ public class ActionableResult<T> {
         @SuppressWarnings("unchecked")
         public static <E> ConditionalInvocableResult<E> empty() { return (ConditionalInvocableResult<E>) EMPTY; }
 
-        public void ifPresent(@NotNull Consumer<? super E> consumer) {
+        @NotNull
+        public ConditionalInvocableResult<E> ifPresent(@NotNull Consumer<? super E> consumer) {
             Validate.notNull(consumer, "consumer cannot be null");
             if (value != null) consumer.accept(value);
+            return this;
         }
 
-        public void always(@NotNull Consumer<? super E> consumer) {
+        @NotNull
+        public ConditionalInvocableResult<E> always(@NotNull Consumer<? super E> consumer) {
             Validate.notNull(consumer, "consumer cannot be null");
             consumer.accept(value);
+            return this;
         }
 
-        public void ifTrue(@NotNull Predicate<? super E> predicate, @NotNull Consumer<? super E> consumer) {
+        @NotNull
+        public ConditionalInvocableResult<E> ifTrue(@NotNull Predicate<? super E> predicate, @NotNull Consumer<? super E> consumer) {
             Validate.notNull(predicate, "predicate cannot be null");
             Validate.notNull(consumer, "consumer cannot be null");
             if (predicate.test(value)) consumer.accept(value);
+            return this;
         }
 
         @NotNull

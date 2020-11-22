@@ -1,5 +1,9 @@
 package util;
 
-public interface ThrowableSupplier<T> {
-    T run() throws Throwable;
+/**
+ * @deprecated Use {@link util.function.ThrowableSupplier} instead.
+ */
+@Deprecated
+public interface ThrowableSupplier<UseUtil_Function_ThrowableSupplierInstead> {
+    UseUtil_Function_ThrowableSupplierInstead run() throws Throwable;
 }

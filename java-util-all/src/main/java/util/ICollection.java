@@ -181,15 +181,28 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * Converts map into entry list.
      * @return List of entries.
      */
+    @NotNull
     CollectionList<Entry<K, V>> toEntryList();
 
     /**
      * Converts map into map list.
      * @return List of maps.
      */
+    @NotNull
     CollectionList<Map<K, V>> toMapList();
 
+    @NotNull
     <S> CollectionList<S> toList(BiFunction<K, V, S> function);
+
+    default boolean mayContainsKey(@NotNull K key) { return find(key) != null; }
+
+    @Nullable
+    default V find(@NotNull K key) {
+        Validate.notNull(key, "key cannot be null");
+        V original = get(key); // try #get before doing expensive action
+        if (original != null) return original;
+        return this.filterKeys(k -> k.equals(key)).valuesList().first();
+    }
 
     static <K, V> Collection<K, V> asCollection(Map<? extends K, ? extends V> map) {
         Collection<K, V> collection = new Collection<>();
@@ -223,5 +236,68 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
         Collection<K, V> result = new Collection<>();
         for (Entry<K, V> entry : list) result.put(entry.getKey(), entry.getValue());
         return result;
+    }
+
+    class NullableEntry<@Nullable K, @Nullable V> implements Map.Entry<K, V> {
+        @Nullable private final K key;
+        @Nullable private V value;
+
+        public NullableEntry(@Nullable K key, @Nullable V value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public NullableEntry(@Nullable Map.Entry<K, V> entry) {
+            this(entry == null ? null : entry.getKey(), entry == null ? null : entry.getValue());
+        }
+
+        @Nullable
+        @Override
+        public K getKey() { return this.key; }
+
+        @Nullable
+        @Override
+        public V getValue() { return this.value; }
+
+        @Nullable
+        @Override
+        public V setValue(@Nullable V value) {
+            V old = this.value;
+            this.value = value;
+            return old;
+        }
+    }
+
+    class NonNullEntry<@NotNull K, @NotNull V> implements Map.Entry<K, V> {
+        @NotNull private final K key;
+        @NotNull private V value;
+
+        public NonNullEntry(@NotNull K key, @NotNull V value) {
+            Validate.notNull(key, "key cannot be null");
+            Validate.notNull(value, "value cannot be null");
+            this.key = key;
+            this.value = value;
+        }
+
+        public NonNullEntry(@NotNull Map.Entry<K, V> entry) {
+            this(Validate.notNull(entry.getKey(), "key cannot be null"), Validate.notNull(entry.getValue(), "value cannot be null"));
+        }
+
+        @NotNull
+        @Override
+        public K getKey() { return this.key; }
+
+        @NotNull
+        @Override
+        public V getValue() { return this.value; }
+
+        @NotNull
+        @Override
+        public V setValue(@NotNull V value) {
+            Validate.notNull(value, "value cannot be null");
+            V old = this.value;
+            this.value = value;
+            return old;
+        }
     }
 }

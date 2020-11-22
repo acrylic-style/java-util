@@ -264,7 +264,7 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * {@inheritDoc}
      */
     @Override
-    public CollectionList<Entry<K, V>> toEntryList() {
+    public @NotNull CollectionList<Entry<K, V>> toEntryList() {
         CollectionList<Entry<K, V>> entries = new CollectionList<>();
         this.forEach((k, v) -> entries.add(new HashMap.SimpleEntry<>(k, v)));
         return entries;
@@ -274,14 +274,14 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
      * {@inheritDoc}
      */
     @Override
-    public CollectionList<Map<K, V>> toMapList() {
+    public @NotNull CollectionList<Map<K, V>> toMapList() {
         CollectionList<Map<K, V>> entries = new CollectionList<>();
         this.forEach((k, v) -> entries.add(Collections.singletonMap(k, v)));
         return entries;
     }
 
     @Override
-    public <S> CollectionList<S> toList(BiFunction<K, V, S> function) {
+    public <S> @NotNull CollectionList<S> toList(BiFunction<K, V, S> function) {
         CollectionList<S> list = new CollectionList<>();
         this.forEach((k, v) -> list.add(function.apply(k, v)));
         return list;

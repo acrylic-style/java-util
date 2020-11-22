@@ -2,45 +2,30 @@ package util.function;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import util.Collection;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 public final class BuiltinStringConverter<T> implements StringConverter<T> {
-    private static final Map<Class<?>, StringConverter<?>> converters = new HashMap<>();
+    private static final Collection<Class<?>, StringConverter<?>> converters = new Collection<>();
 
-    public static final BuiltinStringConverter<String> STRING = new BuiltinStringConverter<>(String.class, s -> s);
-    public static final BuiltinStringConverter<Boolean> BOOLEAN = new BuiltinStringConverter<>(Boolean.class, Boolean::parseBoolean);
-    public static final BuiltinStringConverter<Integer> INTEGER = new BuiltinStringConverter<>(Integer.class, Integer::parseInt);
-    public static final BuiltinStringConverter<File> FILE = new BuiltinStringConverter<>(File.class, File::new);
-    public static final BuiltinStringConverter<Byte> BYTE = new BuiltinStringConverter<>(Byte.class, Byte::parseByte);
-    public static final BuiltinStringConverter<Short> SHORT = new BuiltinStringConverter<>(Short.class, Short::parseShort);
-    public static final BuiltinStringConverter<Float> FLOAT = new BuiltinStringConverter<>(Float.class, Float::parseFloat);
-    public static final BuiltinStringConverter<Long> LONG = new BuiltinStringConverter<>(Long.class, Long::parseLong);
-    public static final BuiltinStringConverter<Double> DOUBLE = new BuiltinStringConverter<>(Double.class, Double::parseDouble);
-    public static final BuiltinStringConverter<URI> URI = new BuiltinStringConverter<>(URI.class, s -> {
-        try {
-            return new URI(s);
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    });
-    public static final BuiltinStringConverter<URL> URL = new BuiltinStringConverter<>(URL.class, s -> {
-        try {
-            return new URL(s);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    });
+    public static final StringConverter<String> STRING = new BuiltinStringConverter<>(String.class, s -> s);
+    public static final StringConverter<Boolean> BOOLEAN = new BuiltinStringConverter<>(Boolean.class, Boolean::parseBoolean);
+    public static final StringConverter<Integer> INTEGER = new BuiltinStringConverter<>(Integer.class, Integer::parseInt);
+    public static final StringConverter<File> FILE = new BuiltinStringConverter<>(File.class, File::new);
+    public static final StringConverter<Byte> BYTE = new BuiltinStringConverter<>(Byte.class, Byte::parseByte);
+    public static final StringConverter<Short> SHORT = new BuiltinStringConverter<>(Short.class, Short::parseShort);
+    public static final StringConverter<Float> FLOAT = new BuiltinStringConverter<>(Float.class, Float::parseFloat);
+    public static final StringConverter<Long> LONG = new BuiltinStringConverter<>(Long.class, Long::parseLong);
+    public static final StringConverter<Double> DOUBLE = new BuiltinStringConverter<>(Double.class, Double::parseDouble);
+    public static final StringConverter<URI> URI = new BuiltinStringConverter<>(URI.class, URI::new);
+    public static final StringConverter<URL> URL = new BuiltinStringConverter<>(URL.class, URL::new);
 
-    private final StringConverter<T> converter;
+    @NotNull private final StringConverter<T> converter;
 
-    public BuiltinStringConverter(Class<T> clazz, StringConverter<T> converter) {
+    public BuiltinStringConverter(@NotNull Class<T> clazz, @NotNull ThrowableStringConverter<T> converter) {
         this.converter = converter;
         converters.put(clazz, converter);
         Class<?> clazz2 = null;
@@ -56,9 +41,8 @@ public final class BuiltinStringConverter<T> implements StringConverter<T> {
 
     @SuppressWarnings("unchecked")
     @Nullable
-    public static <T> StringConverter<T> findConverter(Class<T> clazz) {
-        if (!converters.containsKey(clazz)) return null;
-        return (StringConverter<T>) converters.get(clazz);
+    public static <T> StringConverter<T> findConverter(@NotNull Class<T> clazz) {
+        return (StringConverter<T>) converters.find(clazz); // uses #equals
     }
 
     @Override

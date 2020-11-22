@@ -7,11 +7,12 @@
     <groupId>xyz.acrylicstyle</groupId>
     <artifactId>Util</artifactId>
     <packaging>pom</packaging>
-    <version>0.11.38a</version>
+    <version>0.11.39</version>
     <modules>
         <module>java-util-all</module>
         <module>util-annotation-processor</module>
         <module>util-annotations</module>
+        <module>java-util-test</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -52,7 +53,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <minimizeJar>true</minimizeJar>
+                            <minimizeJar>false</minimizeJar>
                         </configuration>
                     </execution>
                 </executions>

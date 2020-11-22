@@ -2,12 +2,13 @@ package util;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class SneakyThrow {
-    @SuppressWarnings("SameReturnValue")
-    @Contract(value = "_ -> fail")
-    @NotNull
-    public static <T> T sneaky(@NotNull Throwable exception) {
+    @Contract("_ -> null")
+    @Nullable
+    public static <T> T sneaky(@Nullable Throwable exception) {
+        if (exception == null) return null;
         SneakyThrow.throwSneaky(exception);
         return null;
     }

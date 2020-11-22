@@ -133,12 +133,6 @@ public class StringCollection<V> extends Collection<String, V> implements IColle
         return super.put(key, value);
     }
 
-    private V find(String key) {
-        CollectionList<String> list = this.keysList().filterNullable(str -> str.equals(key));
-        if (list == null) return null;
-        return super.get(list.first());
-    }
-
     @Override
     public V get(Object key) {
         V v = super.get(key);
