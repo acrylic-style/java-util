@@ -3,6 +3,7 @@ package util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import util.function.ThrowableSupplier;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -27,9 +28,20 @@ public class ActionableResult<T> {
     public static <V> ActionableResult<V> empty() { return (ActionableResult<V>) EMPTY; }
 
     @NotNull
+    public static <V> ActionableResult<V> of(@NotNull Supplier<V> supplier) { return of(supplier.get()); }
+
+    @NotNull
+    public static <V> ActionableResult<V> ofNullable(@NotNull Supplier<V> supplier) { return ofNullable(supplier.get()); }
+
+    @NotNull
     public static <V> ActionableResult<V> of(@NotNull V value) {
         Validate.notNull(value, "value cannot be null (Use #ofNullable)");
         return new ActionableResult<>(value);
+    }
+
+    @NotNull
+    public static <V> ThrowableActionableResult<V> ofThrowable(@NotNull ThrowableSupplier<V> supplier) {
+        return ThrowableActionableResult.of(supplier);
     }
 
     @NotNull
@@ -51,6 +63,24 @@ public class ActionableResult<T> {
 
     @NotNull
     public ConditionalInvocableResult<T> invoke() { return new ConditionalInvocableResult<>(value); }
+
+    @NotNull
+    public ActionableResult<T> then(@NotNull Consumer<? super T> action) {
+        invoke().always(action);
+        return this;
+    }
+
+    @NotNull
+    public ActionableResult<T> ifPresent(@NotNull Consumer<? super T> action) {
+        invoke().ifPresent(action);
+        return this;
+    }
+
+    @NotNull
+    public <U> ActionableResult<U> swap(@NotNull Supplier<U> supplier) { return ofNullable(supplier.get()); }
+
+    @NotNull
+    public <U> ActionableResult<U> swap(@Nullable U value) { return ofNullable(value); }
 
     @NotNull
     public ActionableResult<T> filter(@NotNull Predicate<? super T> predicate) {

@@ -5,8 +5,10 @@ import org.jetbrains.annotations.Nullable;
 import util.function.DelegatingThrowableSupplier;
 import util.function.ThrowableSupplier;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class ThrowableActionableResult<T> extends ActionableResult<T> {
     @SuppressWarnings("rawtypes")
@@ -41,6 +43,7 @@ public class ThrowableActionableResult<T> extends ActionableResult<T> {
 
     @NotNull
     public static <T> ThrowableActionableResult<T> of(@NotNull ThrowableSupplier<T> supplier) {
+        Validate.notNull(supplier, "supplier cannot be null");
         return new ThrowableActionableResult<>(supplier);
     }
 
@@ -51,7 +54,7 @@ public class ThrowableActionableResult<T> extends ActionableResult<T> {
 
     @NotNull
     public static <T> ThrowableActionableResult<T> of(@NotNull T value) {
-        Validate.notNull(value, "value cannot be null (Use #ofNullable)");
+        Validate.notNull(value, "value cannot be null (Use #ofNullable or #of(T, Throwable))");
         return new ThrowableActionableResult<>(value);
     }
 
@@ -63,6 +66,15 @@ public class ThrowableActionableResult<T> extends ActionableResult<T> {
         return value == null ? empty() : of(value);
     }
 
+    @NotNull
+    public static <V> ThrowableActionableResult<V> of(@NotNull Supplier<V> supplier) { return of(supplier.get()); }
+
+    @NotNull
+    public static <V> ThrowableActionableResult<V> ofNullable(@NotNull Supplier<V> supplier) { return ofNullable(supplier.get()); }
+
+    /**
+     * Throws exception (sneaky) if the exception was thrown when evaluating the result.
+     */
     @NotNull
     public final ThrowableActionableResult<T> throwIfAny() {
         SneakyThrow.sneaky(throwable);
@@ -83,6 +95,24 @@ public class ThrowableActionableResult<T> extends ActionableResult<T> {
     public @NotNull ThrowableActionableResult<T> filter(@NotNull Predicate<? super T> predicate) {
         return new ThrowableActionableResult<>(super.filter(predicate).value, throwable);
     }
+
+    @Override
+    public @NotNull ThrowableActionableResult<T> then(@NotNull Consumer<? super T> action) {
+        super.then(action);
+        return this;
+    }
+
+    @Override
+    public @NotNull ThrowableActionableResult<T> ifPresent(@NotNull Consumer<? super T> action) {
+        super.ifPresent(action);
+        return this;
+    }
+
+    @Override
+    public @NotNull <U> ThrowableActionableResult<U> swap(@NotNull Supplier<U> supplier) { return of(supplier.get(), throwable); }
+
+    @Override
+    public @NotNull <U> ThrowableActionableResult<U> swap(@Nullable U value) { return of(value, throwable); }
 
     /**
      * Gets throwable for this result. May be null.
