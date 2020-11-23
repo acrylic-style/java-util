@@ -199,8 +199,6 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
     @Nullable
     default V find(@NotNull K key) {
         Validate.notNull(key, "key cannot be null");
-        V original = get(key); // try #get before doing expensive action
-        if (original != null) return original;
         return this.filterKeys(k -> k.equals(key)).valuesList().first();
     }
 
