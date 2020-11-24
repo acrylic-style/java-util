@@ -34,3 +34,7 @@ if (true) {
     return;
 }
 ```
+
+### Another methods to resolve that issue
+- Replace (edit) the problematic class
+- Try to avoid using problematic class
