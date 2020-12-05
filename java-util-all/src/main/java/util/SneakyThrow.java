@@ -5,8 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class SneakyThrow {
-    @Contract("_ -> null")
-    @Nullable
+    @SuppressWarnings({ "ConstantConditions", "Contract" })
+    @Contract("_ -> fail") // its result value should not be used and should be ignored
+    @NotNull
     public static <T> T sneaky(@Nullable Throwable exception) {
         if (exception == null) return null;
         SneakyThrow.throwSneaky(exception);

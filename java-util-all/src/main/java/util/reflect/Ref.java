@@ -16,7 +16,7 @@ public class Ref {
     @NotNull
     @SuppressWarnings({"unchecked", "rawtypes"})
     @Contract(value = "_ -> new", pure = true)
-    public static <S, R> RefClass<R> getClassUnchecked(@NotNull Class<S> clazz) { return new RefClass<>((Class)clazz); }
+    public static <R> RefClass<R> getClassUnchecked(@NotNull Class<?> clazz) { return new RefClass<>((Class)clazz); }
 
     @NotNull
     @Contract(value = "_ -> new", pure = true)

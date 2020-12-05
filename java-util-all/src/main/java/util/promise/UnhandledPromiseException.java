@@ -1,8 +1,8 @@
 package util.promise;
 
 public class UnhandledPromiseException extends RuntimeException {
-    public UnhandledPromiseException(Throwable throwable) {
-        super(throwable);
+    public UnhandledPromiseException(Throwable cause) {
+        super(cause instanceof UnhandledPromiseException && cause.getCause() != null ? cause.getCause() : cause);
     }
 
     @Override

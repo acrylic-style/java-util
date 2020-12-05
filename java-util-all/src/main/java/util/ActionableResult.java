@@ -77,6 +77,12 @@ public class ActionableResult<T> {
     }
 
     @NotNull
+    public ActionableResult<T> ifNotPresent(@NotNull Runnable action) {
+        invoke().ifNotPresent(action);
+        return this;
+    }
+
+    @NotNull
     public <U> ActionableResult<U> swap(@NotNull Supplier<U> supplier) { return ofNullable(supplier.get()); }
 
     @NotNull
@@ -143,6 +149,13 @@ public class ActionableResult<T> {
         public ConditionalInvocableResult<E> ifPresent(@NotNull Consumer<? super E> consumer) {
             Validate.notNull(consumer, "consumer cannot be null");
             if (value != null) consumer.accept(value);
+            return this;
+        }
+
+        @NotNull
+        public ConditionalInvocableResult<E> ifNotPresent(@NotNull Runnable action) {
+            Validate.notNull(action, "runnable cannot be null");
+            if (value == null) action.run();
             return this;
         }
 

@@ -108,6 +108,12 @@ public class ThrowableActionableResult<T> extends ActionableResult<T> {
         return this;
     }
 
+    @NotNull
+    public ThrowableActionableResult<T> ifNotPresent(@NotNull Runnable action) {
+        super.ifNotPresent(action);
+        return this;
+    }
+
     @Override
     public @NotNull <U> ThrowableActionableResult<U> swap(@NotNull Supplier<U> supplier) { return of(supplier.get(), throwable); }
 
