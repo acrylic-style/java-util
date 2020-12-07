@@ -14,20 +14,24 @@ import java.util.Iterator;
  *     <li>Still experimental and should not be used yet</li>
  *     <li>You'll receive no support for this</li>
  * </ul>
+ * Use "yield" keyword for Java 14+. It's better.
  */
 @Beta
 @FunctionalInterface
 public interface GeneratorFunction<T> extends Iterator<GeneratorFunctionResult<T>> {
     T apply(GeneratorFunction<T> function);
 
-    default void yield(T result) {
+    /**
+     * Use "this.yield(value)" or "function.yield(value)" or your code will break on Java 14+
+     */
+    default void yield(T value) {
         // disable broken thing for now
         //Class<?> caller = ReflectionHelper.getCallerClass(2);
         //System.out.println("Caller: " + caller);
         //if (!Ref.getClass(caller).isExtends(GeneratorFunction.class)) {
         //    throw new IllegalStateException("yield method cannot be invoked from caller: " + caller);
         //}
-        GeneratorResultHolder.holder.add(this, new GeneratorFunctionResult<>(result, false));
+        GeneratorResultHolder.holder.add(this, new GeneratorFunctionResult<>(value, false));
         while (GeneratorResultHolder.holder.containsKey(this)) {
             try {
                 synchronized (Thread.currentThread()) {

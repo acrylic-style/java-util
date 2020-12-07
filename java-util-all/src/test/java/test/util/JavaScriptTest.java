@@ -1,9 +1,7 @@
 package test.util;
 
 import org.junit.Test;
-import util.javascript.GeneratorFunction;
-
-import java.util.function.Consumer;
+import util.experimental.javascript.GeneratorFunction;
 
 import static util.javascript.JavaScript.If;
 import static util.javascript.JavaScript.parseInt;
@@ -16,7 +14,7 @@ public class JavaScriptTest {
 
     @Test
     public void parseIntHexTest() {
-        assert parseInt("ff", 16) == 0xff : "Parsed result was " + parseInt("ff", 16); // 256
+        assert parseInt("ff", 16) == 255 : "expected 255, but got: " + parseInt("ff", 16);
     }
 
     @Test
@@ -31,23 +29,23 @@ public class JavaScriptTest {
 
     @Test
     public void notConvertibleParseIntTest() {
-        assert parseInt("YouTube") == 0;
+        assert parseInt("java-util is the best") == 0;
     }
 
     @Test
     public void generatorFunction() {
-        GeneratorFunction generatorFunction = new GeneratorFunction() {
-            @Override
-            public void apply(Consumer<Object> yield, Object... o) {
-                yield.accept(0);
-                yield.accept(1);
-                yield.accept(2);
-                yield.accept("Hello o/");
-            }
+        GeneratorFunction<Object> generatorFunction = function -> {
+            function.yield(0);
+            function.yield(1);
+            function.yield(2);
+            function.yield("Hello o/");
+            return "hi";
         };
-        assert (int) generatorFunction.next() == 0;
-        assert (int) generatorFunction.next() == 1;
-        assert (int) generatorFunction.next() == 2;
-        assert generatorFunction.next().equals("Hello o/");
+        assert (int) generatorFunction.next().value == 0;
+        assert (int) generatorFunction.next().value == 1;
+        assert (int) generatorFunction.next().value == 2;
+        assert generatorFunction.next().value.equals("Hello o/");
+        assert generatorFunction.next().value.equals("hi");
+        assert !generatorFunction.hasNext();
     }
 }

@@ -25,7 +25,9 @@
 
 package util;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.security.SecureRandom;
 import java.util.Random;
@@ -2106,4 +2108,62 @@ public final class MathUtils {
      * @return Unique random number
      */
     public static int randomSecureNumber(int max) { return new SecureRandom().nextInt() * max + 1; }
+
+    @Contract(value = "!null, null, null -> param1; null, !null, null -> param2; null, null, !null -> param3", pure = true)
+    public static int min(@Nullable Integer i1, @Nullable Integer i2, @Nullable Integer i3) {
+        if (i1 != null && i2 != null && i3 == null) return min(i1, i2);
+        if (i1 != null && i2 == null && i3 != null) return min(i1, i3);
+        if (i1 == null && i2 != null && i3 != null) return min(i2, i3);
+        if (i1 != null && i2 != null) return min(i1, min(i2, i3));
+        if (i1 != null) return i1;
+        if (i2 != null) return i2;
+        if (i3 != null) return i3;
+        return -1;
+    }
+
+    public static int min(int i1, int i2, int i3, int i4) {
+        return min(i4, min(i1, i2, i3));
+    }
+
+    /**
+     * The <b>parseInt()</b> function parses a string argument
+     * and returns an integer of the specified radix
+     * (the base in mathematical numeral systems).
+     * @param o The value to parse. If this argument is not a string,
+     *          then it is converted to one using the toString abstract
+     *          operation. All underscores and whitespaces will be ignored.
+     * @param radix An integer between 2 and 36 that represents the radix
+     *              (the base in mathematical numeral systems) of the string.
+     * @return An integer parsed from the given string.<br />
+     * Or 0 when:
+     * Couldn't convert object to number.
+     */
+    public static int parseInt(@NotNull Object o, int radix) {
+        try {
+            return Integer.parseInt(o.toString().replaceAll("\\s+", "").replaceAll("_", ""), radix);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    /**
+     * The <b>parseInt()</b> function parses a string argument
+     * and returns an integer of the specified radix
+     * (the base in mathematical numeral systems).
+     * @param o The value to parse. If this argument is not a string,
+     *          then it is converted to one using the toString abstract
+     *          operation. Leading whitespace in this argument is ignored.<br />
+     *          All underscores will be replaced with empty string and will be parsed as number.<br />
+     *          The default radix is 10.
+     * @return An integer parsed from the given string.<br />
+     * Or 0 when:
+     * Couldn't convert object to number.
+     */
+    public static int parseInt(Object o) {
+        return parseInt(o, 10);
+    }
+
+    public static int parseHex(@NotNull String s) {
+        return parseInt(s.replaceFirst("^0x", ""), 16);
+    }
 }
