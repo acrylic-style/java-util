@@ -4,6 +4,7 @@ import org.junit.Test;
 import util.CollectionList;
 import util.promise.IPromise;
 import util.promise.Promise;
+import util.ref.RejectedFieldOperationException;
 
 import static util.promise.Promise.async;
 import static util.promise.Promise.await;
@@ -125,5 +126,15 @@ public class PromiseTest {
             }
         };
         assert !promise.join(1000).get().isPresent() : promise;
+    }
+
+    @Test(expected = RejectedFieldOperationException.class)
+    public void freezeTwiceTest() {
+        Promise.EMPTY_RESOLVED_PROMISE.freeze();
+    }
+
+    @Test(expected = RejectedFieldOperationException.class)
+    public void freezeTest() {
+        Promise.EMPTY_RESOLVED_PROMISE.complete();
     }
 }

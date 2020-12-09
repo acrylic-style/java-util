@@ -4,16 +4,23 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
+import util.collection.SimpleCollector;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Collector;
 
 public interface ICollectionList<V> extends List<V>, DeepCloneable {
     /**
@@ -542,6 +549,27 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
         return this;
     }
 
+    /**
+     * Converts list into byte array.
+     * The element must be number.
+     * @return byte array
+     */
+    @Contract(pure = true)
+    default byte@NotNull[] toByteArray() {
+        ICollectionList<V> list = clone();
+        byte[] bytes = new byte[list.size()];
+        list.foreach((v, i) -> bytes[i] = ((Number) v).byteValue());
+        return bytes;
+    }
+
+    @Contract(pure = true)
+    static byte@NotNull[] toByteArray(@NotNull List<? extends Number> list) {
+        byte[] bytes = new byte[list.size()];
+        AtomicInteger i = new AtomicInteger();
+        list.forEach(number -> bytes[i.getAndIncrement()] = number.byteValue());
+        return bytes;
+    }
+
     /* Static methods */
 
     /**
@@ -615,5 +643,19 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
             Validate.notNull(biFunction, "BiFunction cannot be null");
             this.biFunction = biFunction;
         }
+    }
+
+    Set<Collector.Characteristics> CH_ID = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
+
+    @Contract(value = " -> new", pure = true)
+    @NotNull
+    static <T> Collector<T, ?, CollectionList<T>> toCollectionList() {
+        return new SimpleCollector<>((Supplier<CollectionList<T>>) CollectionList::new, List::add, (left, right) -> { left.addAll(right); return left; }, CH_ID);
+    }
+
+    @Contract(value = " -> new", pure = true)
+    @NotNull
+    static <T> Collector<T, ?, CollectionSet<T>> toCollectionSet() {
+        return new SimpleCollector<>((Supplier<CollectionSet<T>>) CollectionSet::new, List::add, (left, right) -> { left.addAll(right); return left; }, CH_ID);
     }
 }

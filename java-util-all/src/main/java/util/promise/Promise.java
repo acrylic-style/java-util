@@ -8,8 +8,10 @@ import util.CollectionList;
 import util.ICollectionList;
 import util.RunnableFunction;
 import util.Watchdog;
+import util.ref.FieldPredicateUpdater;
+import util.ref.RejectedFieldOperationException;
 
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
 
 /**
  * Represents partial implementation of JavaScript Promise.
@@ -26,21 +28,33 @@ public abstract class Promise<T> implements IPromise<Object, T> {
                 return null;
             }
         };
-        EMPTY_RESOLVED_PROMISE.status = PromiseStatus.RESOLVED;
+        EMPTY_RESOLVED_PROMISE.setStatus(PromiseStatus.RESOLVED);
+        EMPTY_RESOLVED_PROMISE.freeze();
         EMPTY_REJECTED_PROMISE = new Promise<Object>() {
             @Override
             public Object apply(Object o) {
                 return null;
             }
         };
-        EMPTY_REJECTED_PROMISE.status = PromiseStatus.REJECTED;
+        EMPTY_REJECTED_PROMISE.setStatus(PromiseStatus.REJECTED);
+        EMPTY_REJECTED_PROMISE.freeze();
     }
 
     private Promise<Object> parent = null;
     private Promise<Object> then = null;
     private Promise<Object> catch_ = null;
-    private PromiseStatus status = PromiseStatus.PENDING;
+    private final FieldPredicateUpdater<Boolean> frozen = new FieldPredicateUpdater<>((oldValue, newValue) -> !oldValue, false).setterRejectedMessage("This promise is already set to frozen");
+    private final FieldPredicateUpdater<PromiseStatus> status = new FieldPredicateUpdater<>((oldValue, newValue) -> !frozen.get(), PromiseStatus.PENDING).setterRejectedMessage("Cannot modify the status of this promise, this promise is frozen");
     private Object v = null;
+
+    private void setStatus(@NotNull PromiseStatus status) throws RejectedFieldOperationException {
+        this.status.set(status);
+    }
+
+    @NotNull
+    public PromiseStatus getStatus() {
+        return this.status.get();
+    }
 
     @NotNull
     @Contract(value = "_ -> new", pure = true)
@@ -107,30 +121,31 @@ public abstract class Promise<T> implements IPromise<Object, T> {
                 }
             };
         }
-        promise.status = PromiseStatus.RUNNING;
+        promise.setStatus(PromiseStatus.RUNNING);
         return tryResolve(promise, o);
     }
 
     private static <V> void setResolved(Promise<V> promise, V v) {
-        if (promise.status != PromiseStatus.PENDING && promise.status != PromiseStatus.WAITING && promise.status != PromiseStatus.RUNNING)
+        if (promise.status.isNot(PromiseStatus.PENDING) && promise.status.isNot(PromiseStatus.WAITING) && promise.status.isNot(PromiseStatus.RUNNING))
             throw new IllegalStateException("the promise is already resolved or rejected!");
-        promise.status = PromiseStatus.RESOLVED;
+        promise.setStatus(PromiseStatus.RESOLVED);
         promise.v = v;
     }
 
     private static void setRejected(Promise<?> promise, Throwable throwable) {
-        if (promise.status != PromiseStatus.PENDING && promise.status != PromiseStatus.WAITING && promise.status != PromiseStatus.RUNNING)
+        if (promise.status.isNot(PromiseStatus.PENDING) && promise.status.isNot(PromiseStatus.WAITING) && promise.status.isNot(PromiseStatus.RUNNING))
             throw new IllegalStateException("the promise is already resolved or rejected!");
-        promise.status = PromiseStatus.REJECTED;
+        promise.setStatus(PromiseStatus.REJECTED);
         promise.v = throwable;
     }
 
     private static <V> Object tryResolve(Promise<V> promise, Object o) {
-        if (promise.status == PromiseStatus.RESOLVED) return promise.v;
+        if (promise.status.is(PromiseStatus.RESOLVED)) return promise.v;
         throwIfRejected(promise);
         try {
+            promise.setStatus(PromiseStatus.RUNNING);
             Object result = call(o, promise, buildChain(promise));
-            promise.status = PromiseStatus.RESOLVED;
+            promise.setStatus(PromiseStatus.RESOLVED);
             promise.v = result;
             return result;
         } catch (Throwable throwable) {
@@ -139,13 +154,13 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     }
 
     private static <V> Object doReject(Promise<V> promise, Throwable throwable) {
-        promise.status = PromiseStatus.REJECTED;
+        promise.setStatus(PromiseStatus.REJECTED);
         promise.v = throwable;
         return throwIfRejected(promise);
     }
 
     private static Object throwIfRejected(Promise<?> promise) {
-        if (promise.status != PromiseStatus.REJECTED) return null;
+        if (promise.status.isNot(PromiseStatus.REJECTED)) return null;
         if (promise.catch_ != null) {
             try {
                 return promise.catch_.apply(promise.v);
@@ -208,13 +223,9 @@ public abstract class Promise<T> implements IPromise<Object, T> {
      * @param promises List of the promises.
      * @return List of the resolved result of the promises.
      */
+    @SuppressWarnings("unchecked")
     public static Promise<CollectionList<Object>> all(Promise<?>... promises) {
-        return new Promise<CollectionList<Object>>() {
-            @Override
-            public CollectionList<Object> apply(Object o) {
-                return ICollectionList.asList(ICollectionList.asList(promises).parallelStream().map(Promise::await).collect(Collectors.toList()));
-            }
-        };
+        return Promise.allTyped((Promise<Object>[]) promises);
     }
 
     /**
@@ -227,7 +238,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
         return new Promise<CollectionList<T>>() {
             @Override
             public CollectionList<T> apply(Object o) {
-                return ICollectionList.asList(ICollectionList.asList(promises).parallelStream().map(Promise::complete).collect(Collectors.toList()));
+                return ICollectionList.asList(promises).parallelStream().map(Promise::complete).collect(ICollectionList.toCollectionList());
             }
         };
     }
@@ -251,7 +262,30 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     }
 
     @SuppressWarnings("unchecked")
-    public <V extends Throwable, E> Promise<E> catch_(IPromise<V, E> promise) {
+    @NotNull
+    public Promise<T> then(@NotNull Consumer<T> action) {
+        Promise<T> promise1 = new Promise<T>() {
+            @Override
+            public T apply(Object o) {
+                T t = (T) o;
+                action.accept(t);
+                return t;
+            }
+        };
+        promise1.parent = (Promise<Object>) this;
+        this.then = new Promise<Object>() {
+            @Override
+            public Object apply(Object o) {
+                action.accept((T) o);
+                return this;
+            }
+        };
+        return promise1;
+    }
+
+    @SuppressWarnings("unchecked")
+    @NotNull
+    public <V extends Throwable, E> Promise<E> catch_(@NotNull IPromise<V, E> promise) {
         Promise<E> promise1 = new Promise<E>() {
             @Override
             public E apply(Object o) throws Throwable {
@@ -274,7 +308,34 @@ public abstract class Promise<T> implements IPromise<Object, T> {
         return promise1;
     }
 
+    @SuppressWarnings("unchecked")
+    @NotNull
+    public <V extends Throwable> Promise<T> catch_(@NotNull Consumer<V> action) {
+        Promise<T> promise1 = new Promise<T>() {
+            @Override
+            public T apply(Object o) {
+                action.accept((V) o);
+                return (T) o;
+            }
+        };
+        promise1.parent = new Promise<Object>() {
+            @Override
+            public Object apply(Object o) throws Throwable {
+                return Promise.this.apply(o);
+            }
+        };
+        promise1.catch_ = new Promise<Object>() {
+            @Override
+            public Object apply(Object o) throws Throwable {
+                return promise1.apply(o);
+            }
+        };
+        this.catch_ = promise1.catch_;
+        return promise1;
+    }
+
     @SuppressWarnings("rawtypes")
+    @NotNull
     public static final Promise EMPTY_PROMISE = async(o -> o);
 
     /**
@@ -282,6 +343,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
      * @return the empty promise
      */
     @SuppressWarnings("unchecked")
+    @NotNull
     public static <T> Promise<T> getEmptyPromise() { return EMPTY_PROMISE; }
 
     /**
@@ -310,17 +372,17 @@ public abstract class Promise<T> implements IPromise<Object, T> {
      */
     @SuppressWarnings("unchecked")
     protected T waitUntilResolve() {
-        if (status == PromiseStatus.RESOLVED || status == PromiseStatus.REJECTED) {
+        if (this.status.is(PromiseStatus.RESOLVED) || this.status.is(PromiseStatus.REJECTED)) {
             throwIfRejected(this);
             return (T) this.v;
         }
-        status = PromiseStatus.WAITING;
+        this.setStatus(PromiseStatus.WAITING);
         while (true) {
             if (Thread.interrupted()) {
                 Thread.currentThread().interrupt();
                 break;
             }
-            if (status == PromiseStatus.WAITING) {
+            if (this.status.is(PromiseStatus.WAITING)) {
                 try {
                     synchronized (this) {
                         this.wait(1);
@@ -331,7 +393,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
                 }
             } else break;
         }
-        if (status == PromiseStatus.PENDING) throw new IllegalStateException("Not expecting PENDING status");
+        if (this.status.is(PromiseStatus.PENDING)) throw new IllegalStateException("Not expecting PENDING status");
         throwIfRejected(this);
         return (T) this.v;
     }
@@ -362,13 +424,13 @@ public abstract class Promise<T> implements IPromise<Object, T> {
 
     @NotNull
     public Promise<T> join() {
-        if (status == PromiseStatus.PENDING) this.queue();
+        if (this.status.is(PromiseStatus.PENDING)) this.queue();
         while (true) {
             if (Thread.interrupted()) {
                 Thread.currentThread().interrupt();
                 break;
             }
-            if (status == PromiseStatus.PENDING || status == PromiseStatus.RUNNING || status == PromiseStatus.WAITING) {
+            if (this.status.is(PromiseStatus.PENDING) || this.status.is(PromiseStatus.RUNNING) || this.status.is(PromiseStatus.WAITING)) {
                 try {
                     synchronized (this) {
                         this.wait(1);
@@ -379,7 +441,8 @@ public abstract class Promise<T> implements IPromise<Object, T> {
                 }
             } else break;
         }
-        if (status == PromiseStatus.PENDING || status == PromiseStatus.WAITING || status == PromiseStatus.RUNNING) throw new IllegalStateException("Not expecting " + this.status.name() + " status");
+        if (this.status.is(PromiseStatus.PENDING) || this.status.is(PromiseStatus.WAITING) || this.status.is(PromiseStatus.RUNNING))
+            throw new IllegalStateException("Not expecting " + this.status.get().name() + " status");
         throwIfRejected(this);
         return this;
     }
@@ -393,7 +456,8 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     @SuppressWarnings("unchecked")
     @NotNull
     public ActionableResult<T> getIfResolved() {
-        if (status != PromiseStatus.RESOLVED && status != PromiseStatus.REJECTED) throw new IllegalStateException("Promise isn't resolved nor rejected yet");
+        if (status.isNot(PromiseStatus.RESOLVED) && status.isNot(PromiseStatus.REJECTED))
+            throw new IllegalStateException("Promise isn't resolved nor rejected yet");
         return ActionableResult.ofNullable((T) this.v);
     }
 
@@ -410,8 +474,10 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     @SuppressWarnings("unchecked")
     public void resolveWithObject(Object value) { setResolved(this, (T) value); }
 
+    public void freeze() { frozen.set(true); }
+
     @Override
     public String toString() {
-        return "Promise{status=" + status.name().toLowerCase() + ",value=" + v + "}";
+        return "Promise{status=" + getStatus().name().toLowerCase() + ",value=" + v + "}";
     }
 }
