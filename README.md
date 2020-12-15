@@ -38,3 +38,4 @@ if (true) {
 ### Another methods to resolve that issue
 - Replace (edit) the problematic class
 - Try to avoid using problematic class
+- Maybe we could try to make agent class to rewrite class in runtime
