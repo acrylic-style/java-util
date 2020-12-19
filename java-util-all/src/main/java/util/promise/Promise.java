@@ -263,7 +263,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public Promise<T> then(@NotNull Consumer<T> action) {
+    public Promise<T> thenDo(@NotNull Consumer<T> action) {
         Promise<T> promise1 = new Promise<T>() {
             @Override
             public T apply(Object o) {
@@ -310,7 +310,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public <V extends Throwable> Promise<T> catch_(@NotNull Consumer<V> action) {
+    public <V extends Throwable> Promise<T> catchDo(@NotNull Consumer<V> action) {
         Promise<T> promise1 = new Promise<T>() {
             @Override
             public T apply(Object o) {
