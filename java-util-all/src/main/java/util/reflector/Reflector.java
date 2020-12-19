@@ -1,5 +1,6 @@
 package util.reflector;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import util.Collection;
@@ -19,10 +20,30 @@ public class Reflector {
     static final Collection<Class<?>, Class<?>> reverseList = new Collection<>();
     static final Collection<Object, Object> reverseInstanceList = new Collection<>();
 
+    @Contract(pure = true)
     @SuppressWarnings("unchecked")
     public static <T> @NotNull T newReflector(@Nullable ClassLoader classLoader, @NotNull Class<T> clazz, @NotNull ReflectorHandler handler) {
         reverseList.add(clazz, handler.getTarget());
         return (T) Proxy.newProxyInstance(classLoader == null ? Reflector.classLoader : classLoader, new Class[] { clazz }, handler);
+    }
+
+    /**
+     * Creates new reflector. When targetClassName cannot be found at runtime, the null will be returned.
+     * @param classLoader class loader to find class
+     * @param clazz the class
+     * @param targetClassName the target class to find
+     * @param instance the instance of target class
+     * @return reflector if found, null if target class could not be found
+     */
+    @Contract(pure = true)
+    public static <T> @Nullable T newReflector(@Nullable ClassLoader classLoader, @NotNull Class<T> clazz, @NotNull String targetClassName, @Nullable Object instance) {
+        Class<?> targetClass;
+        try {
+            targetClass = Class.forName(targetClassName);
+        } catch (ClassNotFoundException ex) {
+            return null;
+        }
+        return newReflector(classLoader, clazz, new ReflectorHandler(targetClass, instance));
     }
 
     public static <T, U> @NotNull U castTo(@NotNull Class<T> clazz, @NotNull Object instance, @NotNull String method, @NotNull Class<U> target, Object... args) {
