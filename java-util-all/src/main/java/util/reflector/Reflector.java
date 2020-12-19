@@ -20,16 +20,16 @@ public class Reflector {
     static final Collection<Object, Object> reverseInstanceList = new Collection<>();
 
     @SuppressWarnings("unchecked")
-    public static <T> T newReflector(@Nullable ClassLoader classLoader, @NotNull Class<T> clazz, @NotNull ReflectorHandler handler) {
+    public static <T> @NotNull T newReflector(@Nullable ClassLoader classLoader, @NotNull Class<T> clazz, @NotNull ReflectorHandler handler) {
         reverseList.add(clazz, handler.getTarget());
         return (T) Proxy.newProxyInstance(classLoader == null ? Reflector.classLoader : classLoader, new Class[] { clazz }, handler);
     }
 
-    public static <T, U> U castTo(@NotNull Class<T> clazz, @NotNull Object instance, @NotNull String method, @NotNull Class<U> target, Object... args) {
+    public static <T, U> @NotNull U castTo(@NotNull Class<T> clazz, @NotNull Object instance, @NotNull String method, @NotNull Class<U> target, Object... args) {
         return castTo(null, clazz, instance, method, target, args);
     }
 
-    public static <T, U> U castFieldTo(@NotNull Class<T> clazz, @NotNull Object instance, @NotNull String field, @NotNull Class<U> target) {
+    public static <T, U> @NotNull U castFieldTo(@NotNull Class<T> clazz, @NotNull Object instance, @NotNull String field, @NotNull Class<U> target) {
         return castFieldTo(null, clazz, instance, field, target);
     }
 
