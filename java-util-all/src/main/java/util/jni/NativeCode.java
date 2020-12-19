@@ -1,7 +1,7 @@
 package util.jni;
 
 import org.jetbrains.annotations.NotNull;
-import util.io.Bytes;
+import util.base.Bytes;
 import util.platform.LazyOSType;
 
 import java.io.File;

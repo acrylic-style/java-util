@@ -556,10 +556,17 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @Contract(pure = true)
     default byte@NotNull[] toByteArray() {
-        ICollectionList<V> list = clone();
-        byte[] bytes = new byte[list.size()];
-        list.foreach((v, i) -> bytes[i] = ((Number) v).byteValue());
-        return bytes;
+        return toByteArray((CollectionList<? extends Number>) this);
+    }
+
+    /**
+     * Converts list into int array.
+     * The element must be number.
+     * @return int array
+     */
+    @Contract(pure = true)
+    default int@NotNull[] toIntArray() {
+        return toIntArray((CollectionList<? extends Number>) this);
     }
 
     @Contract(pure = true)
@@ -567,6 +574,14 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
         byte[] bytes = new byte[list.size()];
         AtomicInteger i = new AtomicInteger();
         list.forEach(number -> bytes[i.getAndIncrement()] = number.byteValue());
+        return bytes;
+    }
+
+    @Contract(pure = true)
+    static int@NotNull[] toIntArray(@NotNull List<? extends Number> list) {
+        int[] bytes = new int[list.size()];
+        AtomicInteger i = new AtomicInteger();
+        list.forEach(number -> bytes[i.getAndIncrement()] = number.intValue());
         return bytes;
     }
 
