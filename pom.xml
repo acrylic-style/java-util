@@ -13,6 +13,7 @@
         <module>util-annotation-processor</module>
         <module>util-annotations</module>
         <module>java-util-test</module>
+        <module>java-util-agent</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

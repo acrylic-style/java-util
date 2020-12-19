@@ -22,8 +22,20 @@ java-util includes Collection(not java.util.Collection!), CollectionList and som
 - reflector.* - Call internal class/methods without writing complex reflection code.
 
 ## Note about Reflector
-If it throws error like `java.lang.IllegalArgumentException: methods with same signature method() but incompatible return types: <some primitive type> and others`, you will need the custom jdk to run this properly.
+If it throws error like `java.lang.IllegalArgumentException: methods with same signature method() but incompatible return types: <some primitive type> and others`, you will need to do one of them to work properly.
 
+### Method 1 (Easiest, and mostly it works)
+Use [java agent](https://um.acrylicstyle.xyz/13916272196/39163041/java-util-agent-0.11.43.jar) to workaround this.
+
+Then run: `java -javaagent:/path/to/agent.jar ...`
+
+or create a file named `java` and add it to the PATH
+```shell
+#!/bin/bash
+absolute/path/to/java -javaagent:/path/to/agent.jar $@
+```
+
+### Method 2 (Hard, but it should work all the time)
 You have to insert these lines into the first line at sun/misc/ProxyGenerator.java#checkReturnTypes(List) to avoid errors.
 ```java
 if (true) {
@@ -38,4 +50,3 @@ if (true) {
 ### Another methods to resolve that issue
 - Replace (edit) the problematic class
 - Try to avoid using problematic class
-- Maybe we could try to make agent class to rewrite class in runtime
