@@ -6,11 +6,14 @@ import org.yaml.snakeyaml.Yaml;
 import util.CollectionList;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-public class YamlArray extends CollectionList<Object> implements YamlMember {
+public class YamlArray extends CollectionList<YamlArray, Object> implements YamlMember {
     private final Yaml yaml;
 
     public YamlArray(@NotNull Yaml yaml, @Nullable List<?> list) {
@@ -55,9 +58,34 @@ public class YamlArray extends CollectionList<Object> implements YamlMember {
     @SuppressWarnings("unchecked")
     public <T> void forEachAsType(Consumer<T> action) { forEach(o -> action.accept((T) o)); }
 
+
+    @SuppressWarnings("unchecked")
+    public @NotNull <F, T> YamlArray mapAsType(@NotNull BiFunction<F, Integer, T> function) {
+        YamlArray newList = createList();
+        this.foreach((v, i) -> newList.add(function.apply((F) v, i)));
+        return newList;
+    }
+
+    @SuppressWarnings("unchecked")
+    public @NotNull <F, T> YamlArray mapAsType(@NotNull Function<F, T> function) {
+        YamlArray newList = createList();
+        this.forEach(v -> newList.add(function.apply((F) v)));
+        return newList;
+    }
+
     @Override
     public @NotNull Yaml getYaml() { return yaml; }
 
     @Override
     public @NotNull Object getRawData() { return this; }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public @NotNull YamlArray createList() { return new YamlArray(); }
+
+    @Override
+    public @NotNull YamlArray newList(Collection<?> list) { return new YamlArray(new ArrayList<>(list)); }
+
+    @Override
+    public @NotNull YamlArray newList() { return new YamlArray(); }
 }

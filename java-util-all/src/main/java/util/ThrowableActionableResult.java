@@ -32,9 +32,13 @@ public class ThrowableActionableResult<T> extends ActionableResult<T> {
         this.throwable = throwable;
     }
 
+    /**
+     * @deprecated less efficient method, consumes more resources than {@link #of(ThrowableSupplier)}
+     */
+    @Deprecated
     protected ThrowableActionableResult(@NotNull ThrowableSupplier<T> supplier) {
         this(DelegatingThrowableSupplier.getInstance(supplier).entry().getKey(), DelegatingThrowableSupplier.getInstance(supplier).entry().getValue());
-        DelegatingThrowableSupplier.remove(supplier); // remove from cache
+        DelegatingThrowableSupplier.removeCache(supplier); // remove from cache
     }
 
     @SuppressWarnings("unchecked")
@@ -44,7 +48,8 @@ public class ThrowableActionableResult<T> extends ActionableResult<T> {
     @NotNull
     public static <T> ThrowableActionableResult<T> of(@NotNull ThrowableSupplier<T> supplier) {
         Validate.notNull(supplier, "supplier cannot be null");
-        return new ThrowableActionableResult<>(supplier);
+        ICollection.NullableEntry<T, Throwable> entry = supplier.entry();
+        return new ThrowableActionableResult<>(entry.getKey(), entry.getValue());
     }
 
     @NotNull

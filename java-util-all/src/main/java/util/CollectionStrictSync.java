@@ -14,7 +14,9 @@ import java.util.function.Function;
  * @see Collection
  * @see HashMap
  * @see Map
+ * @deprecated high maintenance cost
  */
+@Deprecated
 public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
     /**
      * Constructs an empty Collection with the default initial capacity (16) and the default load factor (0.75).
@@ -37,7 +39,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
     @Override
     public synchronized V first() {
         synchronized (StrictLock.LOCK) {
-            return this.valuesArray()[0];
+            return super.first();
         }
     }
 
@@ -47,7 +49,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
     @Override
     public synchronized K firstKey() {
         synchronized (StrictLock.LOCK) {
-            return this.keys()[0];
+            return super.firstKey();
         }
     }
 
@@ -56,7 +58,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      */
     public V last() {
         synchronized (StrictLock.LOCK) {
-            return this.valuesArray()[this.size()-1];
+            return super.last();
         }
     }
 
@@ -65,7 +67,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      */
     public K lastKey() {
         synchronized (StrictLock.LOCK) {
-            return this.keys()[this.size()-1];
+            return super.lastKey();
         }
     }
 
@@ -77,7 +79,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
     @SuppressWarnings("unchecked")
     public synchronized K[] keys() {
         synchronized (StrictLock.LOCK) {
-            return (K[]) this.keySet().toArray();
+            return super.keys();
         }
     }
 
@@ -86,9 +88,9 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      */
     @NotNull
     @Override
-    public synchronized CollectionList<K> keysList() {
+    public synchronized CollectionList<?, K> keysList() {
         synchronized (StrictLock.LOCK) {
-            return new CollectionList<>(this.keySet());
+            return super.keysList();
         }
     }
 
@@ -108,9 +110,9 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      * @return values as CollectionList. <b>CollectionList isn't synchronized!</b>
      */
     @Override
-    public synchronized CollectionList<V> valuesList() {
+    public synchronized CollectionList valuesList() {
         synchronized (StrictLock.LOCK) {
-            return new CollectionList<>(this.values());
+            return super.valuesList();
         }
     }
 
@@ -209,7 +211,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      * @return this collection
      */
     @Override
-    public synchronized CollectionStrictSync<K, V> removeThenReturnCollection(K k) {
+    public synchronized @NotNull CollectionStrictSync<K, V> removeThenReturnCollection(K k) {
         synchronized (StrictLock.LOCK) {
             this.remove(k);
             return this;

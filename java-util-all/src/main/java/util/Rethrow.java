@@ -3,11 +3,12 @@ package util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import util.function.ThrowableSupplier;
 import util.reflect.Ref;
 
 public class Rethrow<T> {
     @NotNull
-    private final ThrowableSupplier<T> runnable;
+    private final util.function.ThrowableSupplier<T> runnable;
     @Nullable
     private Class<? extends Throwable> clazz;
 
@@ -39,7 +40,7 @@ public class Rethrow<T> {
      */
     public T run() {
         try {
-            return runnable.run();
+            return runnable.evaluate();
         } catch (Throwable e) {
             if (clazz != null) {
                 if (Ref.getClass(e.getClass()).isExtends(clazz)) SneakyThrow.sneaky(e);

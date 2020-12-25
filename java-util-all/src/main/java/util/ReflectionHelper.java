@@ -220,15 +220,15 @@ public final class ReflectionHelper {
 
     @NotNull
     @Contract("_, _ -> new")
-    public static CollectionList<Class<?>> findAllAnnotatedClasses(@NotNull String packageName, @NotNull Class<? extends Annotation> annotation) {
-        CollectionList<Class<?>> classes = new CollectionList<>();
+    public static CollectionList<?, Class<?>> findAllAnnotatedClasses(@NotNull String packageName, @NotNull Class<? extends Annotation> annotation) {
+        CollectionList<?, Class<?>> classes = new CollectionList<>();
         classes.addAll(new Reflections(packageName).getTypesAnnotatedWith(annotation));
         return classes;
     }
 
     @NotNull
-    public static CollectionList<Class<?>> findAllAnnotatedClasses(@Nullable ClassLoader classLoader, @NotNull String packageName, @NotNull Class<? extends Annotation> annotation) {
-        CollectionList<Class<?>> classes = new CollectionList<>();
+    public static CollectionList<?, Class<?>> findAllAnnotatedClasses(@Nullable ClassLoader classLoader, @NotNull String packageName, @NotNull Class<? extends Annotation> annotation) {
+        CollectionList<?, Class<?>> classes = new CollectionList<>();
         classes.addAll(new Reflections(
                 new ConfigurationBuilder()
                         .setUrls(ClasspathHelper.forClassLoader(classLoader))
@@ -238,14 +238,14 @@ public final class ReflectionHelper {
     }
 
     @NotNull
-    public static CollectionList<Class<?>> findAllClasses(@Nullable ClassLoader classLoader, @NotNull String packageName, boolean recursive) {
+    public static CollectionList<?, Class<?>> findAllClasses(@Nullable ClassLoader classLoader, @NotNull String packageName, boolean recursive) {
         if (recursive) return findAllClassesRecursive(classLoader, packageName);
         return findAllClasses(classLoader, packageName);
     }
 
     @SuppressWarnings("UnstableApiUsage")
     @NotNull
-    public static CollectionList<Class<?>> findAllClasses(@Nullable ClassLoader classLoader, @NotNull String packageName) {
+    public static CollectionList<?, Class<?>> findAllClasses(@Nullable ClassLoader classLoader, @NotNull String packageName) {
         try {
             return new CollectionList<>(ClassPath.from(classLoader == null ? ClassLoader.getSystemClassLoader() : classLoader).getTopLevelClasses(packageName))
                     .map(ClassPath.ClassInfo::load);
@@ -257,7 +257,7 @@ public final class ReflectionHelper {
 
     @SuppressWarnings("UnstableApiUsage")
     @NotNull
-    public static CollectionList<Class<?>> findAllClassesRecursive(@Nullable ClassLoader classLoader, @NotNull String packageName) {
+    public static CollectionList<?, Class<?>> findAllClassesRecursive(@Nullable ClassLoader classLoader, @NotNull String packageName) {
         try {
             return new CollectionList<>(ClassPath.from(classLoader == null ? ClassLoader.getSystemClassLoader() : classLoader).getTopLevelClassesRecursive(packageName))
                     .map(ClassPath.ClassInfo::load);
@@ -268,7 +268,7 @@ public final class ReflectionHelper {
     }
 
     @NotNull
-    public static CollectionList<String> findPackages(@NotNull String prefix, boolean recursive) {
+    public static CollectionList<?, String> findPackages(@NotNull String prefix, boolean recursive) {
         return ICollectionList.asList(Package.getPackages())
                 .map(Package::getName)
                 .filter(s -> {
@@ -279,7 +279,7 @@ public final class ReflectionHelper {
     }
 
     @NotNull
-    public static CollectionList<String> findPackages(@Nullable ClassLoader cl, @NotNull String prefix, boolean recursive) {
+    public static CollectionList<?, String> findPackages(@Nullable ClassLoader cl, @NotNull String prefix, boolean recursive) {
         if (cl == null) return findPackages(prefix, recursive);
         return ICollectionList.asList((Package[]) getPackagesMethod.invoke(cl))
                 .map(Package::getName)
@@ -318,12 +318,12 @@ public final class ReflectionHelper {
      * Gets all super classes and super interfaces, and return them. The returned entry is not unique and may contains the duplicate entry.
      * @return the super classes and interfaces.
      */
-    public static CollectionList<Class<?>> getSupers(Class<?> clazz) {
+    public static CollectionList<?, Class<?>> getSupers(Class<?> clazz) {
         return getSuperclasses(clazz).concat(getInterfaces(clazz));
     }
 
-    public static CollectionList<Class<?>> getSuperclasses(Class<?> clazz) {
-        CollectionList<Class<?>> classes = new CollectionList<>();
+    public static CollectionList<?, Class<?>> getSuperclasses(Class<?> clazz) {
+        CollectionList<?, Class<?>> classes = new CollectionList<>();
         Class<?> superclass = clazz;
         while (superclass.getSuperclass() != null) {
             classes.add(superclass.getSuperclass());
@@ -332,8 +332,8 @@ public final class ReflectionHelper {
         return classes;
     }
 
-    public static CollectionList<Class<?>> getInterfaces(Class<?> clazz) {
-        CollectionList<Class<?>> classes = new CollectionList<>(clazz);
+    public static CollectionList<?, Class<?>> getInterfaces(Class<?> clazz) {
+        CollectionList<?, Class<?>> classes = new CollectionList<>(clazz);
         for (Class<?> anInterface : clazz.getInterfaces()) classes.addAll(getInterfaces(anInterface));
         Class<?> superclass = clazz;
         while (superclass.getSuperclass() != null) {

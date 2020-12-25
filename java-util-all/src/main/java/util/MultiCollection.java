@@ -12,16 +12,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 
 public class MultiCollection<K, V> implements DeepCloneable {
-    private final Collection<K, CollectionList<V>> map = new Collection<>();
+    private final Collection<K, CollectionList<?, V>> map = new Collection<>();
 
     @Contract("_, _ -> param2")
     public V add(@NotNull K key, @NotNull V value) {
-        map.add(key, getOrDefault(key, new CollectionList<>()).addChain(value));
+        map.add(key, getOrDefault(key, new CollectionList<>()).thenAdd(value));
         return value;
     }
 
     @NotNull
-    public CollectionList<V> getOrDefault(@NotNull K key, @NotNull CollectionList<V> values) {
+    public CollectionList<?, V> getOrDefault(@NotNull K key, @NotNull CollectionList<?, V> values) {
         return map.getOrDefault(key, values);
     }
 
@@ -109,7 +109,7 @@ public class MultiCollection<K, V> implements DeepCloneable {
      * @param key Key
      * @return List, null if not found
      */
-    public CollectionList<V> get(K key) {
+    public CollectionList<?, V> get(K key) {
         return map.get(key);
     }
 
@@ -146,7 +146,7 @@ public class MultiCollection<K, V> implements DeepCloneable {
     }
 
     public void putAll(@NotNull K k, Iterable<? extends V> iterable) {
-        CollectionList<V> list = getOrDefault(k, new CollectionList<>());
+        CollectionList<?, V> list = getOrDefault(k, new CollectionList<>());
         iterable.forEach(list::add);
         map.add(k, list);
     }
@@ -160,7 +160,7 @@ public class MultiCollection<K, V> implements DeepCloneable {
         return this;
     }
 
-    public void forEach(BiConsumer<K, CollectionList<V>> consumer) {
+    public void forEach(BiConsumer<K, CollectionList<?, V>> consumer) {
         map.forEach(consumer);
     }
 
@@ -173,7 +173,7 @@ public class MultiCollection<K, V> implements DeepCloneable {
      * @param k Key
      * @return Removed list
      */
-    public CollectionList<V> removeAll(@NotNull K k) {
+    public CollectionList<?, V> removeAll(@NotNull K k) {
         return map.remove(k);
     }
 
@@ -194,7 +194,7 @@ public class MultiCollection<K, V> implements DeepCloneable {
     }
 
     @NotNull
-    public Collection<K, CollectionList<V>> getMap() {
+    public Collection<K, CollectionList<?, V>> getMap() {
         return map;
     }
 
@@ -233,7 +233,7 @@ public class MultiCollection<K, V> implements DeepCloneable {
     }
 
     @NotNull
-    public CollectionList<K> keysList() {
+    public CollectionList<?, K> keysList() {
         return map.keysList();
     }
 
@@ -258,20 +258,20 @@ public class MultiCollection<K, V> implements DeepCloneable {
      * @return a collection view of the values contained in this map
      */
     @NotNull
-    public CollectionList<CollectionList<V>> values() {
+    public CollectionList<?, CollectionList<?, V>> values() {
         return new CollectionList<>(map.values());
     }
 
     @NotNull
     @Contract("-> new")
-    public CollectionList<Map.Entry<K, CollectionList<V>>> entries() {
-        CollectionList<Map.Entry<K, CollectionList<V>>> entries = new CollectionList<>();
+    public CollectionList<?, Map.Entry<K, CollectionList<?, V>>> entries() {
+        CollectionList<?, Map.Entry<K, CollectionList<?, V>>> entries = new CollectionList<>();
         map.forEach((k, v) -> entries.add(new AbstractMap.SimpleEntry<>(k, v)));
         return entries;
     }
 
     @NotNull
-    public Collection<K, CollectionList<V>> asMap() {
+    public Collection<K, CollectionList<?, V>> asMap() {
         return map;
     }
 
@@ -292,7 +292,7 @@ public class MultiCollection<K, V> implements DeepCloneable {
      * @return a set view of the mappings contained in this map
      */
     @NotNull
-    public Set<Map.Entry<K, CollectionList<V>>> entrySet() {
+    public Set<Map.Entry<K, CollectionList<?, V>>> entrySet() {
         return new HashSet<>(entries());
     }
 

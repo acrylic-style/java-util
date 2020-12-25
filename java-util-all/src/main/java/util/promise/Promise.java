@@ -8,7 +8,7 @@ import util.CollectionList;
 import util.ICollectionList;
 import util.RunnableFunction;
 import util.Watchdog;
-import util.ref.FieldPredicateUpdater;
+import util.ref.AtomicReferencePredicateUpdater;
 import util.ref.RejectedFieldOperationException;
 
 import java.util.function.Consumer;
@@ -43,8 +43,8 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     private Promise<Object> parent = null;
     private Promise<Object> then = null;
     private Promise<Object> catch_ = null;
-    private final FieldPredicateUpdater<Boolean> frozen = new FieldPredicateUpdater<>((oldValue, newValue) -> !oldValue, false).setterRejectedMessage("This promise is already set to frozen");
-    private final FieldPredicateUpdater<PromiseStatus> status = new FieldPredicateUpdater<>((oldValue, newValue) -> !frozen.get(), PromiseStatus.PENDING).setterRejectedMessage("Cannot modify the status of this promise, this promise is frozen");
+    private final AtomicReferencePredicateUpdater<Boolean> frozen = new AtomicReferencePredicateUpdater<>((oldValue, newValue) -> !oldValue, false).setterRejectedMessage("This promise is already set to frozen");
+    private final AtomicReferencePredicateUpdater<PromiseStatus> status = new AtomicReferencePredicateUpdater<>((oldValue, newValue) -> !frozen.get(), PromiseStatus.PENDING).setterRejectedMessage("Cannot modify the status of this promise, this promise is frozen");
     private Object v = null;
 
     private void setStatus(@NotNull PromiseStatus status) throws RejectedFieldOperationException {
@@ -91,8 +91,8 @@ public abstract class Promise<T> implements IPromise<Object, T> {
      * @param promise the last promise that has parent, no "then"
      * @return the promise chain
      */
-    protected static CollectionList<Promise<?>> buildChain(Promise<?> promise) {
-        CollectionList<Promise<?>> promises = new CollectionList<>();
+    protected static CollectionList<?, Promise<?>> buildChain(Promise<?> promise) {
+        CollectionList<?, Promise<?>> promises = new CollectionList<>();
         promises.add(promise);
         while (promise.parent != null) {
             promises.add(promise.parent);
@@ -173,7 +173,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
     }
 
     @Nullable
-    protected static <V> Object call(Object o, Promise<V> promise, CollectionList<Promise<?>> chain) throws Throwable {
+    protected static <V> Object call(Object o, Promise<V> promise, CollectionList<?, Promise<?>> chain) throws Throwable {
         if (promise.then != null) {
             chain = buildChain(promise.then);
             Object obj = o;
@@ -224,7 +224,7 @@ public abstract class Promise<T> implements IPromise<Object, T> {
      * @return List of the resolved result of the promises.
      */
     @SuppressWarnings("unchecked")
-    public static Promise<CollectionList<Object>> all(Promise<?>... promises) {
+    public static Promise<CollectionList<?, Object>> all(Promise<?>... promises) {
         return Promise.allTyped((Promise<Object>[]) promises);
     }
 
@@ -234,10 +234,10 @@ public abstract class Promise<T> implements IPromise<Object, T> {
      * @return List of the resolved result of the promises.
      */
     @SafeVarargs
-    public static <T> Promise<CollectionList<T>> allTyped(Promise<T>... promises) {
-        return new Promise<CollectionList<T>>() {
+    public static <T> Promise<CollectionList<?, T>> allTyped(Promise<T>... promises) {
+        return new Promise<CollectionList<?, T>>() {
             @Override
-            public CollectionList<T> apply(Object o) {
+            public CollectionList<?, T> apply(Object o) {
                 return ICollectionList.asList(promises).parallelStream().map(Promise::complete).collect(ICollectionList.toCollectionList());
             }
         };

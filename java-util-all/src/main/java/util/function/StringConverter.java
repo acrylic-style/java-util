@@ -1,5 +1,6 @@
 package util.function;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Function;
@@ -11,5 +12,7 @@ public interface StringConverter<T> extends Function<String, T> {
     @Override
     default T apply(@NotNull String s) { return convert(s); }
 
-    static StringConverter<String> identify() { return BuiltinStringConverter.STRING; }
+    @Contract(pure = true)
+    @NotNull
+    static StringConverter<String> identity() { return BuiltinStringConverter.STRING; }
 }

@@ -44,7 +44,7 @@ public final class Bytes {
     @Contract(pure = true)
     public static byte[] toArray(Iterable<? extends Number> iterable) {
         if (iterable instanceof CollectionList) {
-            return ((CollectionList<?>) iterable).toByteArray();
+            return ((CollectionList<?, ?>) iterable).toByteArray();
         } else if (iterable instanceof List) {
             return ICollectionList.toByteArray((List<? extends Number>) iterable);
         }

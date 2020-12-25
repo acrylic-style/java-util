@@ -6,23 +6,35 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
 import util.collection.SimpleCollector;
 
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
-public interface ICollectionList<V> extends List<V>, DeepCloneable {
+@SuppressWarnings("unchecked")
+public interface ICollectionList<C extends ICollectionList<C, V>, V> extends List<V>, DeepCloneable {
+    @Override
+    default boolean isEmpty() { return size() == 0; }
+
     /**
      * Returns the distribution of value.<br />
      * The implementation should use {@link Object#equals(Object)} to compare between objects.
@@ -30,7 +42,9 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @see #distributionEntry(Object)
      */
     @Range(from = 0, to = 1)
-    double distribution(@NotNull V v);
+    default double distribution(@NotNull V v) {
+        return filter(v2 -> v2.equals(v)).size() / (double) size();
+    }
 
     /**
      * Returns the distribution of value.<br />
@@ -38,23 +52,28 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return key is the distribution, returned in 0 - 1 range. the value is the how many values found.
      * @see #distribution(Object)
      */
-    Map.Entry<Double, Integer> distributionEntry(@NotNull V v);
+    default Map.Entry<Double, Integer> distributionEntry(@NotNull V v) {
+        int size = filter(v2 -> v2.equals(v)).size();
+        return new AbstractMap.SimpleImmutableEntry<>(size / (double) size(), size);
+    }
 
     /**
      * Adds entry into list but it returns list so it can be chained.
      * @param v Value
      * @return This list.
+     * @deprecated use {@link #thenAdd(Object)}
      */
     @NotNull
     @Contract("_ -> this")
-    ICollectionList<V> addChain(@NotNull V v);
+    @Deprecated
+    default C addChain(@NotNull V v) { return this.thenAdd(v); }
 
     /**
      * Returns first value of list.
      * @return First value of list. Null if size is 0.
      */
     @Nullable
-    V first();
+    default V first() { return this.length() == 0 ? null : this.valuesArray()[0]; }
 
     /**
      * Returns values as array.
@@ -62,32 +81,44 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    V[] valuesArray();
+    default V[] valuesArray() { return (V[]) this.toArray(); }
 
     /**
      * Returns last value of list.
      * @return Last value of list. Null if size is 0.
      */
     @Nullable
-    V last();
+    default V last() { return this.length() == 0 ? null : this.valuesArray()[this.length()-1]; }
 
     /**
      * Foreach all values.
      * @param action Passes Value and Index.
      */
-    void foreach(@NotNull BiConsumer<V, Integer> action);
+    default void foreach(@NotNull BiConsumer<V, Integer> action) {
+        final int[] index = {0};
+        this.forEach(v -> {
+            action.accept(v, index[0]);
+            index[0]++;
+        });
+    }
 
     /**
      * Foreach all values.
      * @param action Passes Value, Index and cloned list.
      */
-    void foreach(@NotNull util.BiBiConsumer<V, Integer, ICollectionList<V>> action);
+    default void foreach(@NotNull util.BiBiConsumer<V, Integer, ICollectionList<?, V>> action) {
+        final int[] index = {0};
+        this.forEach(v -> {
+            action.accept(v, index[0], this.clone());
+            index[0]++;
+        });
+    }
 
     /**
      * Foreach all values, but with two values.
-     * @param action the consumer to run. second argument (U) may be null if size is odd.
+     * @param action the consumer to run. second argument may be null.
      */
-    default void biForEach(@NotNull BiConsumer<V, V> action) {
+    default void biForEach(@NotNull BiConsumer<@NotNull V, @Nullable V> action) {
         foreach((v, i) -> {
             if (i % 2 == 1) return;
             action.accept(v, getNullable(i + 1));
@@ -95,13 +126,9 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
     }
 
     @Nullable
-    default V getNullable(int index) {
-        return has(index) ? get(index) : null;
-    }
+    default V getNullable(int index) { return has(index) ? get(index) : null; }
 
-    default boolean has(int index) {
-        return this.size() > index;
-    }
+    default boolean has(int index) { return this.size() > index; }
 
     /**
      * Put value into list.
@@ -119,7 +146,11 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    ICollectionList<V> reverse();
+    default C reverse() {
+        C target = this.clone();
+        Collections.reverse(target);
+        return target;
+    }
 
     /**
      * Shuffles all entries in list.
@@ -127,14 +158,21 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    ICollectionList<V> shuffle();
+    default C shuffle() {
+        C target = this.clone();
+        Collections.shuffle(target);
+        return target;
+    }
 
     /**
      * Add all values from list into this list.
      * @param list Another list
      * @param <ListLike> Another list type
      */
-    <ListLike extends List<? extends V>> void putAll(@NotNull ListLike list);
+    @SuppressWarnings("UseBulkOperation")
+    default <ListLike extends List<? extends V>> void putAll(@NotNull ListLike list) {
+        list.forEach(this::add);
+    }
 
     /**
      * Add all values from list into this list.
@@ -143,18 +181,28 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract("_ -> this")
-    ICollectionList<V> addAll(@Nullable ICollectionList<V> list);
-
-    default ICollectionList<V> addAll(@Nullable V[] array) {
-        if (array != null) addAll(Arrays.asList(array));
-        return this;
+    default C addAll(@Nullable ICollectionList<?, V> list) {
+        if (list != null) {
+            list.forEach(this::add);
+        }
+        return (C) this;
     }
 
-    default ICollectionList<V> addAllChain(@Nullable Iterable<V> iterable) {
+    @NotNull
+    default C addAll(@Nullable V[] array) {
+        if (array != null) addAll(Arrays.asList(array));
+        return (C) this;
+    }
+
+    /**
+     * @deprecated use {@link #thenAddAllIterable(Iterable)}
+     */
+    @Deprecated
+    default C addAllChain(@Nullable Iterable<V> iterable) {
         if (iterable != null) {
             iterable.forEach(this::add);
         }
-        return this;
+        return (C) this;
     }
 
     /**
@@ -164,7 +212,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract("_ -> this")
-    ICollectionList<V> putAll(@Nullable ICollectionList<V> list);
+    default C putAll(@Nullable ICollectionList<?, V> list) { return this.addAll(list); }
 
     /**
      * Filters values. If returned true, that value will be kept.
@@ -173,7 +221,28 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    ICollectionList<V> filter(@NotNull Function<V, Boolean> filter);
+    default C filter(@NotNull Function<V, Boolean> filter) {
+        C newList = newList();
+        this.forEach(v -> {
+            if (filter.apply(v)) newList.add(v);
+        });
+        return newList;
+    }
+
+    /**
+     * Filters values. If returned true, that value will be kept.
+     * @param filter filter function.
+     * @return New filtered list
+     */
+    @NotNull
+    @Contract(value = "_ -> new", pure = true)
+    default C filter(@NotNull BiPredicate<V, Integer> filter) {
+        C newList = newList();
+        this.foreach((v, i) -> {
+            if (filter.test(v, i)) newList.add(v);
+        });
+        return newList;
+    }
 
     /**
      * Filters values. If returned true, that value will be kept.
@@ -181,24 +250,32 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return New filtered list if not empty, null otherwise.
      */
     @Nullable
-    ICollectionList<V> filterNullable(@NotNull Function<V, Boolean> filter);
+    default C filterNullable(@NotNull Function<V, Boolean> filter) {
+        C newList = newList();
+        this.foreach((v, i) -> {
+            if (filter.apply(v)) newList.add(v);
+        });
+        return newList.size() == 0 ? null : newList;
+    }
 
     /**
      * Creates shallow copy of this list.
      * @return Shallow copy of this list.
      */
     @NotNull
-    @Contract("-> new")
-    ICollectionList<V> clone();
+    @Contract(value = "-> new", pure = true)
+    C clone();
 
     /**
      * Remove then return collection.
      * @param v Value
      * @return This list, so it can be chained.
+     * @deprecated use {@link #thenRemove(Object)}
      */
     @NotNull
     @Contract("_ -> this")
-    ICollectionList<V> removeThenReturnCollection(@NotNull V v);
+    @Deprecated
+    default C removeThenReturnCollection(@NotNull V v) { return thenRemove(v); }
 
     /**
      * The <b>map()</b> method <b>creates a new array</b> populated with the results of calling a provided function on every element in the calling array.
@@ -207,22 +284,93 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    <T> ICollectionList<T> map(@NotNull Function<V, T> function);
+    default <T> ICollectionList<?, T> map(@NotNull Function<V, T> function) {
+        ICollectionList<?, T> newList = createList();
+        this.forEach(v -> newList.add(function.apply(v)));
+        return newList;
+    }
 
     @NotNull
     @Contract(pure = true)
-    default <T> ICollectionList<T> flatMap(@NotNull Function<V, ? extends List<? extends T>> function) {
-        ICollectionList<T> newList = createList();
+    default <T> ICollectionList<?, T> flatMap(@NotNull Function<V, ? extends List<? extends T>> function) {
+        ICollectionList<?, T> newList = createList();
         this.forEach(v -> newList.addAll(function.apply(v)));
         return newList;
     }
 
     @NotNull
     @Contract(pure = true)
-    default <T> ICollectionList<T> arrayFlatMap(@NotNull Function<V, T[]> function) {
-        ICollectionList<T> newList = createList();
+    default <T> ICollectionList<?, T> arrayFlatMap(@NotNull Function<V, T[]> function) {
+        ICollectionList<?, T> newList = createList();
         this.forEach(v -> newList.addAll(function.apply(v)));
         return newList;
+    }
+
+    @NotNull
+    default C thenRemove(@NotNull Supplier<? extends V> supplier) {
+        this.remove(supplier.get());
+        return (C) this;
+    }
+
+    @NotNull
+    default C thenRemove(@NotNull V v) {
+        this.remove(v);
+        return (C) this;
+    }
+
+    @NotNull
+    default C then(@NotNull Consumer<? super V> action) {
+        forEach(action);
+        return (C) this;
+    }
+
+    @NotNull
+    default C then(@NotNull BiConsumer<V, Integer> action) {
+        foreach(action);
+        return (C) this;
+    }
+
+    @NotNull
+    default C then(@NotNull BiBiConsumer<V, Integer, ICollectionList<?, V>> action) {
+        foreach(action);
+        return (C) this;
+    }
+
+    @NotNull
+    default C thenAdd(@NotNull Supplier<? extends V> supplier) {
+        this.add(supplier.get());
+        return (C) this;
+    }
+
+    @NotNull
+    default C thenAdd(@NotNull V v) {
+        this.add(v);
+        return (C) this;
+    }
+
+    @NotNull
+    default C thenAddAll(@NotNull Supplier<? extends List<? extends V>> supplier) {
+        this.addAll(supplier.get());
+        return (C) this;
+    }
+
+    @NotNull
+    default C thenAddAll(@NotNull List<? extends V> list) {
+        this.addAll(list);
+        return (C) this;
+    }
+
+    @NotNull
+    default C thenAddAllIterable(@Nullable Iterable<V> iterable) {
+        if (iterable != null) {
+            iterable.forEach(this::add);
+        }
+        return (C) this;
+    }
+
+    @NotNull
+    default C limit(long max) {
+        return clone().filter((v, i) -> i > max);
     }
 
     /**
@@ -232,7 +380,15 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    <T> ICollectionList<T> map(@NotNull BiFunction<V, Integer, T> function);
+    default <T> ICollectionList<?, T> map(@NotNull BiFunction<V, Integer, T> function) {
+        ICollectionList<?, T> newList = createList();
+        final int[] index = {0};
+        this.forEach(v -> {
+            newList.add(function.apply(v, index[0]));
+            index[0]++;
+        });
+        return newList;
+    }
 
     /**
      * The <b>join()</b> method creates
@@ -255,7 +411,15 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    String join(@Nullable String s);
+    default String join(@Nullable String s) {
+        if (this.isEmpty()) return "";
+        StringBuilder str = new StringBuilder();
+        this.foreach((a, i) -> {
+            if (i != 0) str.append(s == null ? "," : s);
+            str.append(a);
+        });
+        return str.toString();
+    }
 
     /**
      * The <b>join()</b> method creates and returns a new list by concatenating all of the elements in an array,
@@ -265,7 +429,15 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    ICollectionList<V> joinObject(@NotNull V v);
+    default C joinObject(@NotNull V v) {
+        if (this.isEmpty()) return this.clone();
+        C list = this.newList();
+        this.foreach((a, i) -> {
+            if (i != 0) list.add(v);
+            list.add(a);
+        });
+        return list;
+    }
 
     /**
      * Simply creates new list with same type and return it.
@@ -273,7 +445,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    ICollectionList<V> newList();
+    C newList();
 
     /**
      * Simply creates new list with same type and return it.
@@ -281,7 +453,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    ICollectionList<V> newList(@Nullable java.util.Collection<? extends V> list);
+    C newList(@Nullable java.util.Collection<? extends V> list);
 
     /**
      * Simply creates new list with different type and return it.
@@ -293,7 +465,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    <E> ICollectionList<E> createList();
+    <E> ICollectionList<?, E> createList();
 
     /**
      * The <b>join()</b> method creates
@@ -310,7 +482,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    String join();
+    default String join() { return join(null); }
 
     /**
      * The <b>shift()</b> method removes the first element from
@@ -320,7 +492,22 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return The removed element from the array; null if the array is empty.
      */
     @Nullable
-    V shift();
+    default V shift() {
+        if (this.isEmpty()) return null;
+        return this.remove(0);
+    }
+
+    /**
+     * The <b>shift()</b> method removes the first element from
+     * an array and returns the list.
+     * This method changes the length of the array.<br>
+     * <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift">https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/shift</a>
+     * @return The list
+     * @deprecated Use {@link #thenShift()}, it has exactly same effect.
+     */
+    @NotNull
+    @Deprecated
+    default C shiftChain() { return thenShift(); }
 
     /**
      * The <b>shift()</b> method removes the first element from
@@ -330,13 +517,16 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return The list
      */
     @NotNull
-    ICollectionList<V> shiftChain();
+    default C thenShift() {
+        shift();
+        return (C) this;
+    }
 
     /**
      * Returns length(size) of this list.
      * @return Size of this list
      */
-    int length();
+    default int length() { return this.size(); }
 
     /**
      * The <b>unshift()</b> method adds one or more elements
@@ -347,7 +537,11 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return The new size of the object upon which the method was called.
      */
     @SuppressWarnings("unchecked")
-    int unshift(@Nullable V... v);
+    default int unshift(@Nullable V... v) {
+        if (v == null || v.length == 0) return this.size();
+        for (int i = 0; i < v.length; i++) this.add(i, v[i]);
+        return this.size();
+    }
 
     /**
      * Returns whether any elements of this list match the provided
@@ -373,6 +567,25 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
         return filterNullable(predicate::test) != null;
     }
 
+    @NotNull
+    @Override
+    default ListIterator<V> listIterator() { return this.toList().listIterator(); }
+
+    @NotNull
+    @Override
+    default Iterator<V> iterator() { return this.toList().iterator(); }
+
+    @Override
+    default Spliterator<V> spliterator() { return this.toList().spliterator(); }
+
+    @NotNull
+    @Override
+    default ListIterator<V> listIterator(int index) { return this.toList().listIterator(index); }
+
+    @NotNull
+    @Override
+    default C subList(int fromIndex, int toIndex) { return newList(this.toList().subList(fromIndex, toIndex)); }
+
     /**
      * The concat() method is used to merge two or more arrays.
      * This method does not change the existing arrays,
@@ -388,7 +601,13 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
     @SuppressWarnings("unchecked")
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    ICollectionList<V> concat(@Nullable ICollectionList<V>... lists);
+    default C concat(@Nullable ICollectionList<?, V>... lists) {
+        if (lists == null) return this.clone();
+        C list = newList();
+        list.addAll(this);
+        for (ICollectionList<?, V> vs : lists) list.addAll(vs);
+        return list.unique();
+    }
 
     /**
      * Returns unique list. This method does not modify
@@ -397,7 +616,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    ICollectionList<V> unique();
+    default C unique() { return newList(new HashSet<>(this.clone())); }
 
     /**
      * Returns non-null list. This method does not modify
@@ -406,7 +625,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    ICollectionList<V> nonNull();
+    default C nonNull() { return this.clone().filter(Objects::nonNull); }
 
     /**
      * Just returns list.
@@ -414,7 +633,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract("-> this")
-    List<V> toList();
+    default List<V> toList() { return this; }
 
     /**
      * Converts list into map.
@@ -425,7 +644,14 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "_ -> new", pure = true)
-    <A, B> ICollection<A, B> toMap(@NotNull Function<V, Map.Entry<A, B>> function);
+    default <A, B> ICollection<A, B> toMap(@NotNull Function<V, Map.Entry<A, B>> function) {
+        util.Collection<A, B> collection = new util.Collection<>();
+        this.unique().forEach(v -> {
+            Map.Entry<A, B> entry = function.apply(v);
+            collection.add(entry.getKey(), entry.getValue());
+        });
+        return collection;
+    }
 
     /**
      * Converts list into map.
@@ -437,7 +663,11 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "_, _ -> new", pure = true)
-    <A, B> ICollection<A, B> toMap(@NotNull Function<V, A> function1, @NotNull Function<V, B> function2);
+    default <A, B> ICollection<A, B> toMap(@NotNull Function<V, A> function1, @NotNull Function<V, B> function2) {
+        util.Collection<A, B> collection = new util.Collection<>();
+        this.unique().forEach(v -> collection.add(function1.apply(v), function2.apply(v)));
+        return collection;
+    }
 
     /**
      * Merges 2 entries into the one.
@@ -500,8 +730,8 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return A new array containing the extracted elements.
      */
     @NotNull
-    default ICollectionList<V> slice(int start) {
-        ICollectionList<V> list = newList();
+    default C slice(int start) {
+        C list = newList();
         foreach((v, i) -> {
             if (i >= start) list.add(v);
         });
@@ -520,8 +750,8 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return A new array containing the extracted elements.
      */
     @NotNull
-    default ICollectionList<V> slice(int start, int end) {
-        ICollectionList<V> list = newList();
+    default C slice(int start, int end) {
+        C list = newList();
         foreach((v, i) -> {
             if (i >= start && i < end) list.add(v);
         });
@@ -533,9 +763,10 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     default boolean includes(Object o) { return contains(o); }
 
-    default ICollectionList<V> sorted(Comparator<? super V> comparator) {
+    @NotNull
+    default C sorted(Comparator<? super V> comparator) {
         this.sort(comparator);
-        return this;
+        return (C) this;
     }
 
     /**
@@ -544,9 +775,9 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return the sorted list
      */
     @SuppressWarnings("unchecked")
-    default ICollectionList<V> sorted() {
-        this.sorted((Comparator<V>) Comparator.naturalOrder());
-        return this;
+    @NotNull
+    default C sorted() {
+        return this.sorted((Comparator<V>) Comparator.naturalOrder());
     }
 
     /**
@@ -556,7 +787,7 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @Contract(pure = true)
     default byte@NotNull[] toByteArray() {
-        return toByteArray((CollectionList<? extends Number>) this);
+        return toByteArray((CollectionList<?, ? extends Number>) this);
     }
 
     /**
@@ -566,8 +797,19 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @Contract(pure = true)
     default int@NotNull[] toIntArray() {
-        return toIntArray((CollectionList<? extends Number>) this);
+        return toIntArray((CollectionList<?, ? extends Number>) this);
     }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    @NotNull
+    default C deepClone() {
+        C set = newList();
+        this.clone().forEach(v -> set.add((V) DeepCloneable.clone(v)));
+        return set;
+    }
+
+    // ===== Static Methods
 
     @Contract(pure = true)
     static byte@NotNull[] toByteArray(@NotNull List<? extends Number> list) {
@@ -588,34 +830,37 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
     /* Static methods */
 
     /**
-     * Creates list from map values.
+     * Creates list from keys from map.
      * @param map Map
      * @param <T> Type that list will create with
      * @return New list
      */
+    @Contract("_ -> new")
     @NotNull
-    static <T> CollectionList<T> fromValues(@NotNull Map<?, ? extends T> map) {
-        return new CollectionList<>(map.values());
+    static <C extends CollectionList<C, T>, T> C fromKeys(@NotNull Map<? extends T, ?> map) {
+        return (C) new CollectionList<>(map.keySet());
     }
 
     /**
-     * Creates list from map keys.
+     * Creates list from values from map.
      * @param map Map
      * @param <T> Type that list will create with
      * @return New list
      */
+    @Contract("_ -> new")
     @NotNull
-    static <T> CollectionList<T> fromKeys(@NotNull Map<? extends T, ?> map) {
-        return new CollectionList<>(map.keySet());
+    static <C extends CollectionList<C, T>, T> C fromValues(@NotNull Map<?, ? extends T> map) {
+        return (C) new CollectionList<>(map.values());
     }
 
     /**
      * Wrap list with CollectionList.
      * @return New list
      */
+    @Contract("_ -> new")
     @NotNull
-    static <T> CollectionList<T> asList(@NotNull List<? extends T> list) {
-        return new CollectionList<>(list);
+    static <C extends CollectionList<C, T>, T> C asList(@NotNull List<? extends T> list) {
+        return (C) new CollectionList<>(list);
     }
 
     /**
@@ -624,8 +869,8 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      * @return New list
      */
     @NotNull
-    static <T> CollectionList<T> asList(@NotNull T[] list) {
-        CollectionList<T> collectionList = new CollectionList<>();
+    static <C extends CollectionList<C, T>, T> C asList(@NotNull T[] list) {
+        C collectionList = (C) new CollectionList<>();
         collectionList.addAll(list);
         return collectionList;
     }
@@ -639,8 +884,8 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
      */
     @SafeVarargs
     @NotNull
-    static <T> CollectionList<T> of(@NotNull T... t) {
-        return new CollectionList<>(t);
+    static <C extends CollectionList<C, T>, T> C of(@NotNull T... t) {
+        return (C) new CollectionList<>(t);
     }
 
     final class Reducer<T, U> {
@@ -664,13 +909,21 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
 
     @Contract(value = " -> new", pure = true)
     @NotNull
-    static <T> Collector<T, ?, CollectionList<T>> toCollectionList() {
-        return new SimpleCollector<>((Supplier<CollectionList<T>>) CollectionList::new, List::add, (left, right) -> { left.addAll(right); return left; }, CH_ID);
+    static <T> Collector<T, ?, CollectionList<?, T>> toCollectionList() {
+        return SimpleCollector.of(CollectionList.class);
     }
 
     @Contract(value = " -> new", pure = true)
     @NotNull
-    static <T> Collector<T, ?, CollectionSet<T>> toCollectionSet() {
-        return new SimpleCollector<>((Supplier<CollectionSet<T>>) CollectionSet::new, List::add, (left, right) -> { left.addAll(right); return left; }, CH_ID);
+    static <T> Collector<T, ?, CollectionSet<?, T>> toCollectionSet() {
+        return SimpleCollector.of(CollectionSet.class);
+    }
+
+    @NotNull
+    static Object[] toArray(@NotNull List<?> list) {
+        final Object[] objects = new Object[list.size()];
+        AtomicInteger index = new AtomicInteger();
+        list.forEach(obj -> objects[index.getAndIncrement()] = obj);
+        return objects;
     }
 }

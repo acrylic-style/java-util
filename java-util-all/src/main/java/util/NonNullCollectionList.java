@@ -1,11 +1,8 @@
 package util;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
 
-public class NonNullCollectionList<V> extends CollectionList<V> {
+public class NonNullCollectionList<C extends NonNullCollectionList<C, V>, V> extends CollectionList<C, V> {
     private static final long serialVersionUID = 11_27L;
 
     public NonNullCollectionList() { super(); }
@@ -36,19 +33,13 @@ public class NonNullCollectionList<V> extends CollectionList<V> {
     }
 
     @Override
-    public @NotNull CollectionList<V> unique() {
-        return super.unique().nonNull();
+    public V get(int index) {
+        if (this.isEmpty()) throw new IndexOutOfBoundsException("list is empty");
+        V v = super.get(index);
+        if (v == null) {
+            this.remove(index);
+            return this.get(index);
+        }
+        return v;
     }
-
-    /**
-     * The <b>CollectionList.of()</b> method creates a new
-     * NonNullCollectionList instance from a variable number of
-     * arguments, regardless of number or type of the arguments.
-     * @param t Elements of which to create the array.
-     * @return A new CollectionList instance.
-     */
-    @NotNull
-    @Contract(value = "_ -> new", pure = true)
-    @SafeVarargs
-    public static <T> NonNullCollectionList<T> of(T... t) { return new NonNullCollectionList<>(t); }
 }

@@ -4,54 +4,59 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+@SuppressWarnings("unchecked")
 public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
     /**
      * Returns first value of the collection.
      * @return First value of the collection
      */
     @Nullable
-    V first();
+    default V first() { return valuesList().first(); }
 
     /**
      * Returns first key of the collection.
      * @return First key of the collection
      */
     @Nullable
-    K firstKey();
+    default K firstKey() { return keysList().first(); }
 
     /**
      * Returns last value of the collection.
      * @return Last value of the collection
      */
     @Nullable
-    V last();
+    default V last() { return valuesList().last(); }
 
     /**
      * Returns last key of the collection.
      * @return Last key of the collection
      */
     @Nullable
-    K lastKey();
+    default K lastKey() { return keysList().last(); }
 
     /**
      * Returns keys as array.
      * @return Keys as array
      */
+    @SuppressWarnings("unchecked")
     @NotNull
-    K[] keys();
+    default K[] keys() { return ICollectionList.asList(this.keySet().toArray()).map(o -> (K) o).valuesArray(); }
 
     /**
      * Returns keys as list.
      * @return Keys as list
      */
+    @SuppressWarnings("unchecked")
     @NotNull
     @Contract("-> new")
-    CollectionList<K> keysList();
+    default <C extends CollectionList<C, K>> C keysList() { return (C) new CollectionList<>(this.keySet()); }
 
     /**
      * Returns values as array.
@@ -59,57 +64,91 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      */
     @NotNull
     @Contract(value = "-> new", pure = true)
-    V[] valuesArray();
+    default V[] valuesArray() { return this.valuesList().valuesArray(); }
 
     /**
      * Returns values as list.
      * @return Values as list
      */
-    CollectionList<V> valuesList();
+    default <C extends CollectionList<C, V>> C valuesList() { return (C) newList(this.values()); }
 
     /**
      * Foreach all values in collection.
      * @param action Passes Value and index.
      */
-    void foreach(BiConsumer<V, Integer> action);
+    default void foreach(BiConsumer<V, Integer> action) {
+        final int[] index = {0};
+        this.values().forEach(v -> {
+            action.accept(v, index[0]);
+            index[0]++;
+        });
+    }
 
     /**
      * Foreach all values in collection.
      * @param action Passes Value, index and collection.
      */
-    void foreach(BiBiConsumer<V, Integer, ICollection<K, V>> action);
+    default void foreach(BiBiConsumer<V, Integer, ICollection<K, V>> action) {
+        final int[] index = {0};
+        this.values().forEach(v -> {
+            action.accept(v, index[0], this);
+            index[0]++;
+        });
+    }
 
     /**
      * Foreach all keys in collection.
      * @param action Passes key and index.
      */
-    void foreachKeys(BiConsumer<K, Integer> action);
+    default void foreachKeys(BiConsumer<K, Integer> action) {
+        final int[] index = {0};
+        this.keySet().forEach(k -> {
+            action.accept(k, index[0]);
+            index[0]++;
+        });
+    }
 
     /**
      * Foreach all keys in collection.
      * @param action Passes key, index and collection.
      */
-    void foreachKeys(BiBiConsumer<K, Integer, ICollection<K, V>> action);
+    default void foreachKeys(BiBiConsumer<K, Integer, ICollection<K, V>> action) {
+        final int[] index = {0};
+        this.keySet().forEach(k -> {
+            action.accept(k, index[0], this);
+            index[0]++;
+        });
+    }
 
     /**
      * Foreach all keys/values in collection.
      * @param action Passes key, value and collection.
      */
-    void forEach(BiBiConsumer<K, V, ICollection<K, V>> action);
+    default void forEach(BiBiConsumer<K, V, ICollection<K, V>> action) {
+        this.forEach((k, v) -> action.accept(k, v, this));
+    }
 
     /**
      * Foreach all keys/values in collection.
      * @param action Passes key, value, index and collection.
      */
-    void forEach(BiBiBiConsumer<K, V, Integer, ICollection<K, V>> action);
+    default void forEach(BiBiBiConsumer<K, V, Integer, ICollection<K, V>> action) {
+        final int[] index = {0};
+        this.forEach((k, v) -> action.accept(k, v, index[0]++, this));
+    }
+
+    default V add(K key, V value) { return this.put(key, value); }
 
     /**
      * Add all entries into collection then return this collection.
      * @param map Map that you want to add all entries into this list
      * @return This list, so it can be chained
      */
-    @Contract("!null -> this")
-    Collection<K, V> addAll(@NotNull Map<? extends K, ? extends V> map);
+    @Contract("_ -> this")
+    default ICollection<K, V> addAll(@NotNull Map<? extends K, ? extends V> map) {
+        this.putAll(map);
+        return this;
+    }
 
     /**
      * Filters value, return true to add(keep) into collection.<br />
@@ -117,7 +156,14 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * @param filter Filter function. Return true to keep, return false to remove from collection.
      * @return Filtered collection
      */
-    Collection<K, V> filter(Function<V, Boolean> filter);
+    default Collection<K, V> filter(Function<V, Boolean> filter) {
+        Collection<K, V> newList = new Collection<>();
+        K[] keys = this.keys();
+        this.foreach((v, i) -> {
+            if (filter.apply(v)) newList.put(keys[i], v);
+        });
+        return newList.clone();
+    }
 
     /**
      * Filters key, return true to add(keep) into collection.<br />
@@ -125,14 +171,39 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * @param filter Filter function. Return true to keep, return false to remove from collection.
      * @return Filtered collection
      */
-    Collection<K, V> filterKeys(Function<K, Boolean> filter);
+    default ICollection<K, V> filterKeys(Function<K, Boolean> filter) {
+        Collection<K, V> newList = new Collection<>();
+        V[] values = this.valuesArray();
+        this.foreachKeys((k, i) -> {
+            if (filter.apply(k)) newList.put(k, values[i]);
+        });
+        return newList;
+    }
 
     /**
      * Remove key then return collection.
      * @param k Key that removes from collection.
      * @return This collection
+     * @deprecated use {@link #thenRemove(Object)}
      */
-    Collection<K, V> removeThenReturnCollection(K k);
+    @Deprecated
+    @NotNull
+    default ICollection<K, V> removeThenReturnCollection(K k) {
+        this.remove(k);
+        return this;
+    }
+
+    @NotNull
+    default ICollection<K, V> thenAdd(@NotNull K k, @Nullable V v) {
+        this.add(k, v);
+        return this;
+    }
+
+    @NotNull
+    default ICollection<K, V> thenRemove(@NotNull K k) {
+        this.remove(k);
+        return this;
+    }
 
     /**
      * Creates shallow copy of this collection.
@@ -145,7 +216,7 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * @param v Value
      * @return New collection
      */
-    Collection<K, V> values(V v);
+    default ICollection<K, V> values(V v) { return this.filter(f -> f.equals(v)); }
 
     /**
      * Converts this collection into new collection (type).
@@ -155,7 +226,15 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * @param <B> Value type
      * @return New collection with new types.
      */
-    <A, B> Collection<A, B> map(BiFunction<K, V, A> keyFunction, BiFunction<K, V, B> valueFunction);
+    default <A, B> ICollection<A, B> map(BiFunction<K, V, A> keyFunction, BiFunction<K, V, B> valueFunction) {
+        Collection<A, B> newCollection = new Collection<>();
+        this.forEach((k, v) -> {
+            A a = keyFunction.apply(k, v);
+            B b = valueFunction.apply(k, v);
+            newCollection.add(a, b);
+        });
+        return newCollection;
+    }
 
     /**
      * Converts this collection into new collection (type).
@@ -163,7 +242,7 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * @param <B> Value type
      * @return New collection with new types.
      */
-    default <B> Collection<K, B> mapValues(BiFunction<K, V, B> valueFunction) {
+    default <B> ICollection<K, B> mapValues(BiFunction<K, V, B> valueFunction) {
         return map((k, v) -> k, valueFunction);
     }
 
@@ -173,7 +252,7 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * @param <A> Value type
      * @return New collection with new types.
      */
-    default <A> Collection<A, V> mapKeys(BiFunction<K, V, A> keyFunction) {
+    default <A> ICollection<A, V> mapKeys(BiFunction<K, V, A> keyFunction) {
         return map(keyFunction, (k, v) -> v);
     }
 
@@ -182,17 +261,29 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * @return List of entries.
      */
     @NotNull
-    CollectionList<Entry<K, V>> toEntryList();
+    default CollectionList<?, Entry<K, V>> toEntryList() {
+        CollectionList<?, Entry<K, V>> entries = new CollectionList<>();
+        this.forEach((k, v) -> entries.add(new HashMap.SimpleEntry<>(k, v)));
+        return entries;
+    }
 
     /**
      * Converts map into map list.
      * @return List of maps.
      */
     @NotNull
-    CollectionList<Map<K, V>> toMapList();
+    default CollectionList<?, Map<K, V>> toMapList() {
+        CollectionList<?, Map<K, V>> entries = new CollectionList<>();
+        this.forEach((k, v) -> entries.add(Collections.singletonMap(k, v)));
+        return entries;
+    }
 
     @NotNull
-    <S> CollectionList<S> toList(BiFunction<K, V, S> function);
+    <S> CollectionList<?, S> toList(BiFunction<K, V, S> function);
+    
+    default CollectionList<?, V> newList(java.util.Collection<V> collection) {
+        return new CollectionList<>(collection);
+    }
 
     default boolean mayContainsKey(@NotNull K key) { return find(key) != null; }
 
@@ -208,28 +299,36 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
         return collection;
     }
 
+    /**
+     * @deprecated high maintenance cost
+     */
+    @Deprecated
     static <K, V> Collection<K, V> asCollectionSync(Map<? extends K, ? extends V> map) {
         CollectionSync<K, V> collection = new CollectionSync<>();
         collection.addAll(map);
         return collection;
     }
 
+    /**
+     * @deprecated high maintenance cost
+     */
+    @Deprecated
     static <K, V> Collection<K, V> asCollectionStrictSync(Map<? extends K, ? extends V> map) {
         CollectionStrictSync<K, V> collection = new CollectionStrictSync<>();
         collection.addAll(map);
         return collection;
     }
 
-    static <K, V extends Comparable<? super V>> Collection<K, V> sortByValue(Collection<K, V> map) {
-        CollectionList<Entry<K, V>> list = map.toEntryList();
+    static <C extends CollectionList<C, Entry<K, V>>, K, V extends Comparable<? super V>> Collection<K, V> sortByValue(Collection<K, V> map) {
+        C list = (C) map.toEntryList();
         list.sort(Entry.comparingByValue());
         Collection<K, V> result = new Collection<>();
         for (Entry<K, V> entry : list) result.put(entry.getKey(), entry.getValue());
         return result;
     }
 
-    static <K extends Comparable<? super K>, V> Collection<K, V> sortByKey(Collection<K, V> map) {
-        CollectionList<Entry<K, V>> list = map.toEntryList();
+    static <C extends CollectionList<C, Entry<K, V>>, K extends Comparable<? super K>, V> Collection<K, V> sortByKey(Collection<K, V> map) {
+        C list = (C) map.toEntryList();
         list.sort(Entry.comparingByKey());
         Collection<K, V> result = new Collection<>();
         for (Entry<K, V> entry : list) result.put(entry.getKey(), entry.getValue());

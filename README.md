@@ -5,10 +5,8 @@ java-util includes Collection(not java.util.Collection!), CollectionList and som
 
 ### Classes
 
-- CollectionList<V> - replaces List, with many useful methods.
+- CollectionList<C, V> - replaces List, with many useful methods.
 - Collection<K, V> - replaces HashMap
-- CollectionSync<K, V> - replaces Collection, "synchronized" at most methods
-- CollectionStrictSync<K, V> - replaces CollectionSync, most methods are thread-safe. (Expects no ConcurrentModificationException)
 - EventEmitter - Java implementation of Node.js EventEmitter
 - promise.Promise - Partial implementation of JavaScript Promise class.
 - javascript.JavaScript - Represents some keywords that can be found in javascript. Currently in development and not recommended.

@@ -14,7 +14,9 @@ import java.util.function.Function;
  * @see Collection
  * @see HashMap
  * @see Map
+ * @deprecated high maintenance cost
  */
+@Deprecated
 public class CollectionSync<K, V> extends Collection<K, V> {
     /**
      * Constructs an empty Collection with the default initial capacity (16) and the default load factor (0.75).
@@ -72,7 +74,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
      */
     @NotNull
     @Override
-    public synchronized CollectionList<K> keysList() {
+    public synchronized CollectionList<?, K> keysList() {
         return new CollectionList<>(this.keySet());
     }
 
@@ -90,7 +92,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
      * @return values as CollectionList. <b>CollectionList isn't synchronized!</b>
      */
     @Override
-    public synchronized CollectionList<V> valuesList() {
+    public synchronized CollectionList valuesList() {
         return new CollectionList<>(this.values());
     }
 
@@ -177,7 +179,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
      * @return this collection
      */
     @Override
-    public synchronized CollectionSync<K, V> removeThenReturnCollection(K k) {
+    public synchronized @NotNull CollectionSync<K, V> removeThenReturnCollection(K k) {
         this.remove(k);
         return this;
     }

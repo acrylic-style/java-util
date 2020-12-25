@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  * Simple argument parser
  */
 public class ArgumentParser {
-    public final CollectionList<String> arguments = new CollectionList<>();
+    public final CollectionList<?, String> arguments = new CollectionList<>();
     public final StringCollection<Object> parsedOptions = new StringCollection<>();
     public final StringCollection<String> parsedRawOptions = new StringCollection<>();
 
@@ -81,7 +81,7 @@ public class ArgumentParser {
      * @return immutable arguments list
      */
     @NotNull
-    public CollectionList<String> getArguments() {
+    public CollectionList<?, String> getArguments() {
         return arguments.clone();
     }
 

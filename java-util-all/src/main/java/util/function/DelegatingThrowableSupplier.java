@@ -26,7 +26,7 @@ public abstract class DelegatingThrowableSupplier<T> implements ThrowableSupplie
     @Override
     public final T evaluate() throws Throwable { return delegate().evaluate(); }
 
-    public final void unregister() { remove(this.delegate()); }
+    public final void unregister() { removeCache(this.delegate()); }
 
     @NotNull
     private static final Collection<ThrowableSupplier<?>, DelegatingThrowableSupplier<?>> cache = new Collection<>();
@@ -45,7 +45,7 @@ public abstract class DelegatingThrowableSupplier<T> implements ThrowableSupplie
         return instance;
     }
 
-    public static void remove(@NotNull ThrowableSupplier<?> supplier) {
+    public static void removeCache(@NotNull ThrowableSupplier<?> supplier) {
         cache.remove(supplier);
     }
 }

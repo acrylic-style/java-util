@@ -2,7 +2,11 @@ package util.collection;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import util.reflect.RefClass;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -11,6 +15,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 public class SimpleCollector<T, A, R> implements Collector<T, A, R> {
+    private static final Set<Characteristics> CH_ID = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
     private final Supplier<A> supplier;
     private final BiConsumer<A, T> accumulator;
     private final BinaryOperator<A> combiner;
@@ -53,4 +58,12 @@ public class SimpleCollector<T, A, R> implements Collector<T, A, R> {
 
     @Override
     public Set<Characteristics> characteristics() { return characteristics; }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Contract(value = "_ -> new", pure = true)
+    @NotNull
+    public static <T, U extends List<T>> Collector<T, ?, U> of(@NotNull Class<?> clazz) {
+        RefClass<U> refClass = new RefClass(clazz);
+        return new SimpleCollector<>(refClass::newInstance, List::add, (left, right) -> { left.addAll(right); return left; }, CH_ID);
+    }
 }

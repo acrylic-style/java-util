@@ -94,7 +94,14 @@ public class Watchdog {
         AtomicReference<Object> o = new AtomicReference<>();
         thread = new Thread(() -> {
             if (runnable instanceof RunnableFunction) {
-                o.set(((RunnableFunction<?>) runnable).runWithType());
+                try {
+                    o.set(((RunnableFunction<?>) runnable).runWithType());
+                } finally {
+                    terminated = true;
+                    synchronized (lock) {
+                        lock.notifyAll();
+                    }
+                }
             } else {
                 try {//noinspection CallToThreadRun
                     thread2.run();

@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiPredicate;
 
-public class FieldPredicateUpdater<V> implements Serializable {
+public class AtomicReferencePredicateUpdater<V> implements Serializable {
     private static final long serialVersionUID = Magic.VERSION;
     private final AtomicReference<V> reference;
     private final BiPredicate<V, V> setterPredicate;
@@ -23,7 +23,7 @@ public class FieldPredicateUpdater<V> implements Serializable {
      * @param initialValue initial value to set
      */
     @Contract(pure = true)
-    public FieldPredicateUpdater(@NotNull BiPredicate<V, V> setterPredicate, @Nullable V initialValue) {
+    public AtomicReferencePredicateUpdater(@NotNull BiPredicate<V, V> setterPredicate, @Nullable V initialValue) {
         Validate.notNull(setterPredicate, "predicate cannot be null");
         this.setterPredicate = setterPredicate;
         this.reference = new AtomicReference<>(initialValue);
@@ -34,14 +34,14 @@ public class FieldPredicateUpdater<V> implements Serializable {
      * @param setterPredicate the predicate to run when invoking {@link #set(Object)}.
      */
     @Contract(pure = true)
-    public FieldPredicateUpdater(@NotNull BiPredicate<V, V> setterPredicate) {
+    public AtomicReferencePredicateUpdater(@NotNull BiPredicate<V, V> setterPredicate) {
         Validate.notNull(setterPredicate, "predicate cannot be null");
         this.setterPredicate = setterPredicate;
         this.reference = new AtomicReference<>();
     }
 
     @NotNull
-    public FieldPredicateUpdater<V> setterRejectedMessage(@NotNull String setterRejectedMessage) {
+    public AtomicReferencePredicateUpdater<V> setterRejectedMessage(@NotNull String setterRejectedMessage) {
         this.setterRejectedMessage = setterRejectedMessage;
         return this;
     }

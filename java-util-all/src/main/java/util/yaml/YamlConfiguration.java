@@ -34,6 +34,13 @@ public class YamlConfiguration {
         this.yaml = yaml;
         this.data = this.yaml.load(inputStream);
     }
+    
+    public YamlConfiguration(@NotNull Yaml yaml, @NotNull String yamlInString) {
+        Validate.notNull(yaml, "yaml cannot be null");
+        Validate.notNull(yamlInString, "yamlInString cannot be null");
+        this.yaml = yaml;
+        this.data = this.yaml.load(yamlInString);
+    }
 
     public YamlConfiguration(@NotNull InputStream inputStream) {
         this(DEFAULT, inputStream);

@@ -62,7 +62,8 @@ public class RESTAPI extends TypedEventEmitter<RESTAPI.RESTEvent> {
                     throw new RuntimeException("Cannot open connection to " + urlConnection.getClass().getCanonicalName());
                 }
                 HttpURLConnection conn = (HttpURLConnection) urlConnection;
-                conn.setRequestMethod(RESTAPI.this.method);
+                new RefField<>(HttpURLConnection.class.getDeclaredField("method")).accessible(true).set(conn, RESTAPI.this.method);
+                // conn.setRequestMethod(RESTAPI.this.method);
                 RESTAPI.this.emit(RESTEvent.PRE_CONNECTION, conn);
                 if (requestBody != null && requestBody.getMap().size() != 0)
                     requestBody.getMap().forEach(conn::addRequestProperty);
@@ -91,6 +92,10 @@ public class RESTAPI extends TypedEventEmitter<RESTAPI.RESTEvent> {
         };
     }
 
+    /**
+     * @deprecated Breaks on Java 12+, and not needed anymore when using {@link RESTAPI}
+     */
+    @Deprecated
     public static void addCustomMethods(String... methods) {
         RefField<HttpURLConnection> methodsField = Ref.getClass(HttpURLConnection.class).getDeclaredField("methods").accessible(true).removeFinal();
         String[] oldMethods = (String[]) methodsField.get(null);

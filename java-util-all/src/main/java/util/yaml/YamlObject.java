@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class YamlObject implements YamlMember {
+    public static final YamlMember NULL = new YamlObject();
     private final Map<String, Object> map;
     private final Yaml yaml;
 
@@ -29,12 +30,32 @@ public class YamlObject implements YamlMember {
     @Contract(pure = true)
     public YamlObject() { this(YamlConfiguration.DEFAULT); }
 
+    // cannot put 'null', instead, it will remove the entry
     public void set(@NotNull String key, @Nullable Object value) {
         if (value == null) {
             map.remove(key);
         } else {
-            map.put(key, value);
+            map.put(key, value == NULL ? null : value);
         }
+    }
+
+    // can put 'null'
+    public void setNullable(@NotNull String key, @Nullable Object value) {
+        map.put(key, value == NULL ? null : value);
+    }
+
+    public void setObject(@NotNull String key, @Nullable YamlObject object) {
+        set(key, object == null ? null : object.getRawData());
+    }
+
+    public void setNullableObject(@NotNull String key, @Nullable YamlObject object) {
+        setNullable(key, object == null ? null : object.getRawData());
+    }
+
+    @NotNull
+    public YamlObject thenSet(@NotNull String key, @Nullable Object value) {
+        set(key, value);
+        return this;
     }
 
     @SuppressWarnings("unchecked")
@@ -119,5 +140,5 @@ public class YamlObject implements YamlMember {
     public @NotNull Yaml getYaml() { return yaml; }
 
     @Override
-    public @NotNull Object getRawData() { return map; }
+    public @NotNull Map<String, Object> getRawData() { return map; }
 }

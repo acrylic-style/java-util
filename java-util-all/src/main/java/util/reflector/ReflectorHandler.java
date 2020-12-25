@@ -164,7 +164,7 @@ public class ReflectorHandler implements InvocationHandler {
     private static <T> Method findMethod(@NotNull Class<? extends T> clazz, @NotNull String methodName, @Nullable Class<?>... args) {
         AtomicReference<Method> method = new AtomicReference<>();
         AtomicReference<Method> implMethod = new AtomicReference<>();
-        ReflectionHelper.getSupers(clazz).addChain(clazz).forEach(cl -> {
+        ReflectionHelper.getSupers(clazz).thenAdd(clazz).forEach(cl -> {
             try {
                 Method m = cl.getDeclaredMethod(methodName, args);
                 if (m.isDefault() || (m.getModifiers() & Modifier.ABSTRACT) == Modifier.ABSTRACT) implMethod.set(m);

@@ -10,6 +10,8 @@ public interface Option<T> {
 
     boolean isRequired();
 
+    default boolean isNotRequired() { return !isRequired(); }
+
     @NotNull
     Option<T> required();
 
