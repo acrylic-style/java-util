@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 @SuppressWarnings("unchecked")
 public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
@@ -293,7 +294,19 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
         return this.filterKeys(k -> k.equals(key)).valuesList().first();
     }
 
-    static <K, V> Collection<K, V> asCollection(Map<? extends K, ? extends V> map) {
+    @Nullable
+    default V find(@NotNull Predicate<? super K> predicate) {
+        Validate.notNull(predicate, "predicate cannot be null");
+        return this.filterKeys(predicate::test).first();
+    }
+
+    @Nullable
+    default Entry<K, V> findEntry(@NotNull Predicate<? super K> predicate) {
+        Validate.notNull(predicate, "predicate cannot be null");
+        return this.filterKeys(predicate::test).toEntryList().first();
+    }
+
+    static <K, V> @NotNull Collection<K, V> asCollection(Map<? extends K, ? extends V> map) {
         Collection<K, V> collection = new Collection<>();
         collection.addAll(map);
         return collection;

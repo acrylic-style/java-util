@@ -21,12 +21,14 @@ public class CollectionSync<K, V> extends Collection<K, V> {
     /**
      * Constructs an empty Collection with the default initial capacity (16) and the default load factor (0.75).
      */
+    @Deprecated
     public CollectionSync() {}
 
     /**
      * Constructs this Collection with values.
      * @param map will be added with this constructor
      */
+    @Deprecated
     public CollectionSync(Map<? extends K, ? extends V> map) {
         synchronized (Lock.LOCK) {
             this.addAll(map);

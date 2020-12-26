@@ -71,10 +71,10 @@ public class FieldInfo<T> {
     @NotNull
     public YamlObject serializeToYaml() {
         YamlObject object = new YamlObject();
-        object.set("class", clazz.getCanonicalName());
+        object.set("class", clazz.getTypeName());
         object.set("name", name);
         object.set("instance", instance == null ? null : new ClassSerializer<>(instance).serializeToYaml().getRawData());
-        object.setNullable("actualType", actualType == null ? null : actualType.getCanonicalName());
+        object.setNullable("actualType", actualType == null ? null : actualType.getTypeName());
         return object;
     }
 

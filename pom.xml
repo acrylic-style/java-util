@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>xyz.acrylicstyle</groupId>
-    <artifactId>Util</artifactId>
+    <artifactId>util</artifactId>
     <packaging>pom</packaging>
-    <version>0.12.0</version>
+    <version>0.12.1</version>
     <modules>
         <module>java-util-all</module>
         <module>util-annotation-processor</module>

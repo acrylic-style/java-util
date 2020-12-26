@@ -74,11 +74,12 @@ public class ClassSerializer<T> {
         return object;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void serializeToYaml0(YamlObject object) {
-        String className = this.clazz.getCanonicalName();
+        String className = this.clazz.getTypeName();
         if (instance instanceof Class) {
             object.set("type", "class");
-            object.set("data", ((Class<?>) instance).getCanonicalName());
+            object.set("data", ((Class<?>) instance).getTypeName());
         } else if (instance instanceof String) {
             object.set("type", "string");
             object.set("data", instance);
@@ -105,7 +106,7 @@ public class ClassSerializer<T> {
             object.set("data", instance);
         } else if (instance instanceof Enum) {
             object.set("type", "enum");
-            object.set("class", this.clazz.getCanonicalName());
+            object.set("class", this.clazz.getTypeName());
             object.set("data", ((Enum<?>) instance).name());
         } else if (instance instanceof WeakReference) {
             object.set("type", "weakref");
@@ -120,9 +121,16 @@ public class ClassSerializer<T> {
                 object.set("type", "bytearray");
                 object.set("data", new Serializer(instance).asString());
             } else {
-                object.set("type", "object");
-                object.set("class", className);
-                object.set("fields", this.getFields().map(FieldInfo::serializeToYaml).map(YamlObject::getRawData));
+                Map.Entry<Class<?>, CustomClassSerializer<?>> entry = CustomClassSerializers.serializers.findEntry(c -> c.isInstance(instance));
+                if (entry != null) {
+                    ((CustomClassSerializer) entry.getValue()).serialize(object, instance);
+                    object.set("type", "custom");
+                    object.set("class", entry.getKey().getTypeName());
+                } else {
+                    object.set("type", "object");
+                    object.set("class", className);
+                    object.set("fields", this.getFields().map(FieldInfo::serializeToYaml).map(YamlObject::getRawData));
+                }
             }
         }
     }
@@ -203,6 +211,8 @@ public class ClassSerializer<T> {
                 return object.getRawData().get("data") == null ? null : (T) new WeakReference<>(ClassSerializer.deserialize(null, object.getObject("data")));
             case "softref":
                 return object.getRawData().get("data") == null ? null : (T) new SoftReference<>(ClassSerializer.deserialize(null, object.getObject("data")));
+            case "custom":
+                return (T) Objects.requireNonNull(CustomClassSerializers.serializers.find(Ref.forName(object.getString("class")).getClazz())).deserialize(object);
         }
         // and type should be object now, if not, throw exception
         if (!type.equals("object")) {
@@ -226,14 +236,14 @@ public class ClassSerializer<T> {
         int expectedFCount = fields.size();
         int actualFCount = declaredFields.size();
         if (expectedFCount != actualFCount) {
-            throw new IllegalArgumentException("Declared field count is not expected value, expected = " + expectedFCount + ", actual = " + actualFCount + ", class = " + cl.getCanonicalName());
+            throw new IllegalArgumentException("Declared field count is not expected value, expected = " + expectedFCount + ", actual = " + actualFCount + ", class = " + cl.getTypeName());
         }
         AtomicInteger matches = new AtomicInteger();
         fields.foreach((f, i) -> {
             if (f.equals(declaredFields.get(i))) matches.getAndIncrement();
         });
         if (matches.get() != expectedFCount) {
-            throw new IllegalArgumentException("Fields are different than expected, expected = " + fields + ", actual = " + declaredFields + " (matches: " + matches.get() + ", expected: " + expectedFCount + "), class = " + cl.getCanonicalName());
+            throw new IllegalArgumentException("Fields are different than expected, expected = " + fields + ", actual = " + declaredFields + " (matches: " + matches.get() + ", expected: " + expectedFCount + "), class = " + cl.getTypeName());
         }
         Object[] args = fields.<FieldInfo, Object>mapAsType(FieldInfo::getInstance).toArray();
         Object inst;

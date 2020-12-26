@@ -3,8 +3,11 @@ package test.util;
 import org.junit.Test;
 import util.serialization.ActualType;
 import util.serialization.ClassSerializer;
+import util.serialization.CustomClassSerializer;
+import util.serialization.CustomClassSerializers;
 
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.AbstractMap;
 import java.util.Map;
@@ -35,7 +38,7 @@ public class ClassSerializerTest {
                 |   actualType: null
                 |   name: value
                 |   class: java.lang.Object
-                | class: java.util.AbstractMap.SimpleEntry
+                | class: java.util.AbstractMap$SimpleEntry
                 */
                 /*
                 | Serialized (if implements java.io.Serializable) (no class, because it isn't needed):
@@ -79,7 +82,7 @@ public class ClassSerializerTest {
                 |   actualType: null
                 |   name: z
                 |   class: double
-                | class: test.util.ClassSerializerTest.TestCl
+                | class: test.util.ClassSerializerTest$TestCl
                 */
                 TestCl test = ClassSerializer.deserialize(TestCl.class, serialized);
                 assert test.world.get() != null : "world is null";
@@ -96,9 +99,43 @@ public class ClassSerializerTest {
             e.printStackTrace();
         }
     }
-    
+
+    @Test
+    public void customSerializerTest() {
+        CustomClassSerializers.register(TestCl.class, CustomClassSerializer.of((object, instance) -> {}, object -> TestCl.instance));
+        String serialized = new ClassSerializer<>(new TestCl2(new SoftReference<>(TestCl.instance))).serialize();
+        // System.out.println(serialized);
+        /*
+        | type: object
+        | fields:
+        | - instance:
+        |     data:
+        |       type: custom
+        |       class: test.util.ClassSerializerTest$TestCl
+        |     type: softref
+        |   actualType: test.util.ClassSerializerTest$TestCl
+        |   name: reference
+        |   class: java.lang.ref.Reference
+        | class: test.util.ClassSerializerTest$TestCl2
+        */
+        TestCl2 cl2 = ClassSerializer.deserialize(TestCl2.class, serialized);
+        assert cl2.reference.get() == TestCl.instance;
+        CustomClassSerializers.unregister(TestCl.class); // to make sure it doesn't affect other tests
+    }
+
+    public static class TestCl2 {
+        @SuppressWarnings({ "FieldCanBeLocal", "FieldMayBeFinal", "unused" })
+        @ActualType(TestCl.class)
+        private Reference<TestCl> reference;
+
+        public TestCl2(Reference<TestCl> reference) {
+            this.reference = reference;
+        }
+    }
+
     @SuppressWarnings("FieldMayBeFinal")
     public static class TestCl {
+        public static final TestCl instance = new TestCl(null, 0, 0, 0);
         @ActualType(String.class)
         private Reference<String> world;
         private double x;
