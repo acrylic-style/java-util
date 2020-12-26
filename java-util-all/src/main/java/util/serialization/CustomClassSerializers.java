@@ -10,7 +10,7 @@ import java.util.Map;
 public final class CustomClassSerializers {
     static final Collection<Class<?>, CustomClassSerializer<?>> serializers = new Collection<>();
 
-    public static void register(@NotNull Class<?> forClass, @NotNull CustomClassSerializer<?> serializer) {
+    public static <T> void register(@NotNull Class<T> forClass, @NotNull CustomClassSerializer<T> serializer) {
         Validate.notNull(forClass, "class cannot be null");
         Validate.notNull(serializer, "serializer cannot be null");
         serializers.put(forClass, serializer);
