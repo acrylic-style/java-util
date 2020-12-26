@@ -360,6 +360,10 @@ public interface ICollectionList<C extends ICollectionList<C, V>, V> extends Lis
         return (C) this;
     }
 
+    @SuppressWarnings("rawtypes")
+    @NotNull
+    default ICollectionList unchecked() { return this; }
+
     @NotNull
     default C thenAddAllIterable(@Nullable Iterable<V> iterable) {
         if (iterable != null) {
