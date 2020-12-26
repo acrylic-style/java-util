@@ -364,6 +364,8 @@ public interface ICollectionList<C extends ICollectionList<C, V>, V> extends Lis
     @NotNull
     default ICollectionList unchecked() { return this; }
 
+    default <A> A fixTypeEverywhere() { return (A) this; }
+
     @NotNull
     default C thenAddAllIterable(@Nullable Iterable<V> iterable) {
         if (iterable != null) {
