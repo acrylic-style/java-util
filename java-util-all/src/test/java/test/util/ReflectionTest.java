@@ -1,7 +1,6 @@
 package test.util;
 
 import org.junit.Test;
-import sun.reflect.Reflection;
 import util.ReflectionHelper;
 import util.reflect.Ref;
 

@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import util.reflect.RefField;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -71,7 +72,8 @@ public class JSONAPI extends EventEmitter {
     public <T> Response<T> call(Class<T> jsonClass) {
         try {
             HttpURLConnection conn = (HttpURLConnection) this.url.openConnection();
-            conn.setRequestMethod(this.method);
+            new RefField<>(HttpURLConnection.class.getDeclaredField("method")).accessible(true).set(conn, this.method);
+            // conn.setRequestMethod(this.method);
             postConnection.accept(conn);
             this.emit("postConnection", conn);
             if (requestBody != null && requestBody.getMap().size() != 0) requestBody.getMap().forEach(conn::addRequestProperty);
@@ -93,7 +95,7 @@ public class JSONAPI extends EventEmitter {
                 e.printStackTrace();
                 return new Response<>(conn.getResponseCode(), null, sb.toString());
             }
-        } catch (IOException e) {
+        } catch (IOException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
     }
