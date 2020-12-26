@@ -76,7 +76,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
      */
     @NotNull
     @Override
-    public synchronized CollectionList<?, K> keysList() {
+    public synchronized CollectionList<K> keysList() {
         return new CollectionList<>(this.keySet());
     }
 
@@ -94,7 +94,7 @@ public class CollectionSync<K, V> extends Collection<K, V> {
      * @return values as CollectionList. <b>CollectionList isn't synchronized!</b>
      */
     @Override
-    public synchronized CollectionList valuesList() {
+    public synchronized CollectionList<V> valuesList() {
         return new CollectionList<>(this.values());
     }
 
@@ -173,17 +173,6 @@ public class CollectionSync<K, V> extends Collection<K, V> {
             if (filter.apply(k)) newList.put(k, values[i]);
         });
         return newList.clone();
-    }
-
-    /**
-     * Removes entry but it returns this collection.
-     * @param k will be removed
-     * @return this collection
-     */
-    @Override
-    public synchronized @NotNull CollectionSync<K, V> removeThenReturnCollection(K k) {
-        this.remove(k);
-        return this;
     }
 
     /**

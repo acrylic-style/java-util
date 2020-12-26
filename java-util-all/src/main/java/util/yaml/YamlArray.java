@@ -13,7 +13,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class YamlArray extends CollectionList<YamlArray, Object> implements YamlMember {
+public class YamlArray extends CollectionList<Object> implements YamlMember {
     private final Yaml yaml;
 
     public YamlArray(@NotNull Yaml yaml, @Nullable List<?> list) {

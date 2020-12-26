@@ -78,7 +78,7 @@ public class PromiseTest {
             }
             return 3;
         };
-        CollectionList<?, Object> everything = Promise.all(p1, p2, p3.build()).complete();
+        CollectionList<Object> everything = Promise.all(p1, p2, p3.build()).complete();
         int o1 = (int) everything.get(0);
         int o2 = (int) everything.get(1);
         int o3 = (int) everything.get(2);

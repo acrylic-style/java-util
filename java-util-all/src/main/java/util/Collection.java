@@ -1,15 +1,10 @@
 package util;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 /**
  * The Great HashMap
@@ -67,8 +62,8 @@ public class Collection<K, V> extends HashMap<K, V> implements ICollection<K, V>
 
     @Override
     @NotNull
-    public <S> CollectionList<?, S> toList(BiFunction<K, V, S> function) {
-        CollectionList<?, S> list = new CollectionList<>();
+    public <S> CollectionList<S> toList(BiFunction<K, V, S> function) {
+        CollectionList<S> list = new CollectionList<>();
         this.forEach((k, v) -> list.add(function.apply(k, v)));
         return list;
     }

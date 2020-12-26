@@ -8,52 +8,52 @@ import org.jetbrains.annotations.NotNull;
  * @see TypedEventEmitter
  */
 public class EventEmitter {
-    protected final StringCollection<CollectionList<?, AConsumer>> consumers = new StringCollection<>();
-    protected final StringCollection<CollectionList<?, AConsumer>> onceConsumers = new StringCollection<>();
+    protected final StringCollection<CollectionList<AConsumer>> consumers = new StringCollection<>();
+    protected final StringCollection<CollectionList<AConsumer>> onceConsumers = new StringCollection<>();
     protected int maxListeners = 10;
 
-    protected CollectionList<?, AConsumer> getConsumers(String event) {
+    protected CollectionList<AConsumer> getConsumers(String event) {
         return consumers.containsKey(event) ? consumers.get(event) : new CollectionList<>();
     }
 
-    protected CollectionList<?, AConsumer> getOnceConsumers(String event) {
+    protected CollectionList<AConsumer> getOnceConsumers(String event) {
         return onceConsumers.containsKey(event) ? onceConsumers.get(event) : new CollectionList<>();
     }
 
     protected void addConsumer(String event, AConsumer consumer) {
         checkListeners(event);
-        CollectionList<?, AConsumer> consumers2 = getConsumers(event);
+        CollectionList<AConsumer> consumers2 = getConsumers(event);
         consumers2.add(consumer);
         consumers.thenRemove(event).add(event, consumers2);
     }
 
     protected void unshiftConsumer(String event, AConsumer consumer) {
-        CollectionList<?, AConsumer> consumers2 = getConsumers(event);
+        CollectionList<AConsumer> consumers2 = getConsumers(event);
         consumers2.unshift(consumer);
         consumers.add(event, consumers2);
     }
 
     protected void addConsumerOnce(String event, AConsumer consumer) {
         checkListeners(event);
-        CollectionList<?, AConsumer> consumers2 = getOnceConsumers(event);
+        CollectionList<AConsumer> consumers2 = getOnceConsumers(event);
         consumers2.add(consumer);
         onceConsumers.add(event, consumers2);
     }
 
     protected void unshiftConsumerOnce(String event, AConsumer consumer) {
-        CollectionList<?, AConsumer> consumers2 = getOnceConsumers(event);
+        CollectionList<AConsumer> consumers2 = getOnceConsumers(event);
         consumers2.unshift(consumer);
         onceConsumers.add(event, consumers2);
     }
 
     protected void removeConsumer(String event, AConsumer consumer) {
-        CollectionList<?, AConsumer> consumers2 = getConsumers(event);
+        CollectionList<AConsumer> consumers2 = getConsumers(event);
         consumers2.remove(consumer);
         consumers.add(event, consumers2);
     }
 
     protected void removeConsumerOnce(String event, AConsumer consumer) {
-        CollectionList<?, AConsumer> consumers2 = getOnceConsumers(event);
+        CollectionList<AConsumer> consumers2 = getOnceConsumers(event);
         consumers2.remove(consumer);
         onceConsumers.add(event, consumers2);
     }
@@ -232,14 +232,14 @@ public class EventEmitter {
      * including any wrappers (such as those created by {@link EventEmitter#once(String, AConsumer)}).
      * @param event The name of event
      */
-    public CollectionList<?, AConsumer> listeners(String event) {
+    public ICollectionList<AConsumer> listeners(String event) {
         return getConsumers(event).concat(getOnceConsumers(event));
     }
 
     /**
      * Alias for {@link EventEmitter#listeners(String)}.
      */
-    public CollectionList<?, AConsumer> rawListeners(String event) {
+    public ICollectionList<AConsumer> rawListeners(String event) {
         return listeners(event);
     }
 }

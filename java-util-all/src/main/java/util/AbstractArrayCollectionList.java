@@ -2,16 +2,14 @@ package util;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public abstract class AbstractArrayCollectionList<C extends AbstractArrayCollectionList<C, E>, E> extends ArrayList<E> implements ICollectionList<C, E>, Cloneable, DeepCloneable {
+public abstract class AbstractArrayCollectionList<E> extends ArrayList<E> implements ICollectionList<E>, Cloneable, DeepCloneable {
     public AbstractArrayCollectionList() {
         super();
     }
@@ -49,8 +47,8 @@ public abstract class AbstractArrayCollectionList<C extends AbstractArrayCollect
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public <T> AbstractArrayCollectionList<?, T> map(@NotNull Function<E, T> function) {
-        AbstractArrayCollectionList<?, T> newList = createList();
+    public <T> AbstractArrayCollectionList<T> map(@NotNull Function<E, T> function) {
+        AbstractArrayCollectionList<T> newList = createList();
         this.forEach(v -> newList.add(function.apply(v)));
         return newList;
     }
@@ -61,8 +59,8 @@ public abstract class AbstractArrayCollectionList<C extends AbstractArrayCollect
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public <T> AbstractArrayCollectionList<?, T> map(@NotNull BiFunction<E, Integer, T> function) {
-        AbstractArrayCollectionList<?, T> newList = createList();
+    public <T> AbstractArrayCollectionList<T> map(@NotNull BiFunction<E, Integer, T> function) {
+        AbstractArrayCollectionList<T> newList = createList();
         final int[] index = {0};
         this.forEach(v -> {
             newList.add(function.apply(v, index[0]));
@@ -73,16 +71,18 @@ public abstract class AbstractArrayCollectionList<C extends AbstractArrayCollect
 
     @Override
     @NotNull
-    public abstract <NT> AbstractArrayCollectionList<?, NT> createList();
+    public abstract <NT> AbstractArrayCollectionList<NT> createList();
 
     @SuppressWarnings({ "unchecked", "MethodDoesntCallSuperMethod" })
     @Override
     @NotNull
-    public C clone() { return (C) superClone(); }
+    public AbstractArrayCollectionList<E> clone() { return (AbstractArrayCollectionList<E>) superClone(); }
 
     @Override
     @NotNull
-    public C subList(int fromIndex, int toIndex) { return ICollectionList.super.subList(fromIndex, toIndex); }
+    public AbstractArrayCollectionList<E> subList(int fromIndex, int toIndex) {
+        return (AbstractArrayCollectionList<E>) ICollectionList.super.subList(fromIndex, toIndex);
+    }
 
     @NotNull
     public Object superClone() { return super.clone(); }

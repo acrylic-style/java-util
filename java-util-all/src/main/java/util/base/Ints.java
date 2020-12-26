@@ -12,7 +12,7 @@ public class Ints {
     @Contract(pure = true)
     public static int[] toArray(Iterable<? extends Number> iterable) {
         if (iterable instanceof CollectionList) {
-            return ((CollectionList<?, ?>) iterable).toIntArray();
+            return ((CollectionList<?>) iterable).toIntArray();
         } else if (iterable instanceof List) {
             return ICollectionList.toIntArray((List<? extends Number>) iterable);
         }

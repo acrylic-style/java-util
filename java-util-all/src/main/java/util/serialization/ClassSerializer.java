@@ -39,7 +39,7 @@ public class ClassSerializer<T> {
     @NotNull
     private final T instance;
     @NotNull
-    private final CollectionList<?, FieldInfo<?>> fields;
+    private final CollectionList<FieldInfo<?>> fields;
 
     @SuppressWarnings("unchecked")
     @Contract(pure = true)
@@ -58,7 +58,7 @@ public class ClassSerializer<T> {
     }
 
     @NotNull
-    public CollectionList<?, FieldInfo<?>> getFields() { return fields; }
+    public CollectionList<FieldInfo<?>> getFields() { return fields; }
 
     @NotNull
     public T getInstance() { return instance; }
@@ -161,8 +161,8 @@ public class ClassSerializer<T> {
 
     @Contract(pure = true)
     @NotNull
-    public static CollectionList<?, FieldInfo<?>> readFields(@NotNull Class<?> clazz, @NotNull Object instance) {
-        CollectionList<?, FieldInfo<?>> fields = new CollectionList<>();
+    public static CollectionList<FieldInfo<?>> readFields(@NotNull Class<?> clazz, @NotNull Object instance) {
+        CollectionList<FieldInfo<?>> fields = new CollectionList<>();
         for (Field field : clazz.getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers())) continue; // don't add static fields
             fields.add(FieldInfo.fromFieldWithObject(field, new RefField<>(field).accessible(true).get(instance)));
@@ -230,7 +230,7 @@ public class ClassSerializer<T> {
         YamlArray fields = object.getArray("fields")
                 .mapAsType((Function<Map<String, Object>, YamlObject>) YamlObject::new)
                 .mapAsType((Function<YamlObject, FieldInfo>) FieldInfo::fromYaml);
-        CollectionList<?, FieldInfo<?>> declaredFields = ICollectionList.asList(cl.getDeclaredFields())
+        ICollectionList<FieldInfo<?>> declaredFields = ICollectionList.asList(cl.getDeclaredFields())
                 .filter(field -> !Modifier.isStatic(field.getModifiers()))
                 .map(FieldInfo::fromField);
         int expectedFCount = fields.size();

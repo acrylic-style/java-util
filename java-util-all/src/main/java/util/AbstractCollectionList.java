@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public abstract class AbstractCollectionList<C extends AbstractCollectionList<C, E>, E> implements ICollectionList<C, E>, Cloneable, DeepCloneable {
+public abstract class AbstractCollectionList<E> implements ICollectionList<E>, Cloneable, DeepCloneable {
     public AbstractCollectionList() {
         super();
     }
@@ -55,7 +55,7 @@ public abstract class AbstractCollectionList<C extends AbstractCollectionList<C,
     }
 
     @Override
-    public abstract @NotNull <E1> AbstractCollectionList<?, E1> createList();
+    public abstract @NotNull <E1> AbstractCollectionList<E1> createList();
 
     /**
      * {@inheritDoc}
@@ -64,8 +64,8 @@ public abstract class AbstractCollectionList<C extends AbstractCollectionList<C,
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public <T> AbstractCollectionList<?, T> map(@NotNull Function<E, T> function) {
-        return (AbstractCollectionList<?, T>) ICollectionList.super.map(function);
+    public <T> AbstractCollectionList<T> map(@NotNull Function<E, T> function) {
+        return (AbstractCollectionList<T>) ICollectionList.super.map(function);
     }
 
     /**
@@ -75,13 +75,13 @@ public abstract class AbstractCollectionList<C extends AbstractCollectionList<C,
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public <T> AbstractCollectionList<?, T> map(@NotNull BiFunction<E, Integer, T> function) {
-        return (AbstractCollectionList<?, T>) ICollectionList.super.map(function);
+    public <T> AbstractCollectionList<T> map(@NotNull BiFunction<E, Integer, T> function) {
+        return (AbstractCollectionList<T>) ICollectionList.super.map(function);
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
     @NotNull
     @Contract("-> new")
-    public C clone() { return newList(this); }
+    public AbstractCollectionList<E> clone() { return (AbstractCollectionList<E>) newList(this); }
 }

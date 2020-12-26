@@ -1,9 +1,11 @@
 package util;
 
+import util.magic.Magic;
+
 import java.util.List;
 
-public class NonNullCollectionList<C extends NonNullCollectionList<C, V>, V> extends CollectionList<C, V> {
-    private static final long serialVersionUID = 11_27L;
+public class NonNullCollectionList<V> extends CollectionList<V> {
+    private static final long serialVersionUID = Magic.VERSION;
 
     public NonNullCollectionList() { super(); }
 

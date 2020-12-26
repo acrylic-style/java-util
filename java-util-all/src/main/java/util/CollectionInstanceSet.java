@@ -13,7 +13,7 @@ import java.util.function.BiConsumer;
  * @deprecated i have no idea why do we have this
  */
 @Deprecated
-public class CollectionInstanceSet<C extends CollectionInstanceSet<C, V>, V> extends CollectionList<C, V> implements Serializable {
+public class CollectionInstanceSet<V> extends CollectionList<V> implements Serializable {
     private static final long serialVersionUID = Magic.VERSION;
 
     public CollectionInstanceSet() {
@@ -30,12 +30,12 @@ public class CollectionInstanceSet<C extends CollectionInstanceSet<C, V>, V> ext
         this.addAll(list);
     }
 
-    public CollectionInstanceSet(CollectionList<?, ? extends V> list) {
+    public CollectionInstanceSet(CollectionList<? extends V> list) {
         super();
         this.addAll(list);
     }
 
-    public CollectionInstanceSet(CollectionInstanceSet<?, ? extends V> list) {
+    public CollectionInstanceSet(CollectionInstanceSet<? extends V> list) {
         super();
         this.addAll(list);
     }
@@ -62,19 +62,19 @@ public class CollectionInstanceSet<C extends CollectionInstanceSet<C, V>, V> ext
     }
 
     @Override
-    public @NotNull C newList() {
+    public @NotNull CollectionInstanceSet<V> newList() {
         checkClass("#newList", CollectionInstanceSet.class);
-        return (C) new CollectionInstanceSet<>();
+        return new CollectionInstanceSet<>();
     }
 
     @Override
-    public @NotNull C newList(Collection<? extends V> list) {
+    public @NotNull CollectionInstanceSet<V> newList(Collection<? extends V> list) {
         checkClass("#newList(java.util.Collection)", CollectionInstanceSet.class);
-        return (C) new CollectionInstanceSet<>();
+        return new CollectionInstanceSet<>();
     }
 
     @Override
-    public @NotNull <E> CollectionInstanceSet<?, E> createList() {
+    public @NotNull <E> CollectionInstanceSet<E> createList() {
         checkClass("#createList", CollectionInstanceSet.class);
         return new CollectionInstanceSet<>();
     }

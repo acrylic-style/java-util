@@ -157,7 +157,7 @@ public class RefClass<T> {
     }
 
     @Nullable
-    public Map.Entry<RefConstructor<T>, Object[]> tryFindConstructor(Object[] args, @NotNull ICollectionList<?, FieldInfo<?>> fields) {
+    public Map.Entry<RefConstructor<T>, Object[]> tryFindConstructor(Object[] args, @NotNull ICollectionList<FieldInfo<?>> fields) {
         RefConstructor<T> constructor;
         if ((constructor = getDeclaredConstructorMaybe(fields.map(FieldInfo::getClazz).toArray(new Class[0]))) != null) return new AbstractMap.SimpleImmutableEntry<>(constructor, args);
         Class<?>[] classes1 = fields.map(field -> {

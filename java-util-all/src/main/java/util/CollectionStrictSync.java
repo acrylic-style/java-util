@@ -78,7 +78,6 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      */
     @NotNull
     @Override
-    @SuppressWarnings("unchecked")
     public synchronized K[] keys() {
         synchronized (StrictLock.LOCK) {
             return super.keys();
@@ -90,7 +89,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      */
     @NotNull
     @Override
-    public synchronized CollectionList<?, K> keysList() {
+    public synchronized CollectionList<K> keysList() {
         synchronized (StrictLock.LOCK) {
             return super.keysList();
         }
@@ -112,7 +111,7 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
      * @return values as CollectionList. <b>CollectionList isn't synchronized!</b>
      */
     @Override
-    public synchronized CollectionList valuesList() {
+    public synchronized CollectionList<V> valuesList() {
         synchronized (StrictLock.LOCK) {
             return super.valuesList();
         }
@@ -204,19 +203,6 @@ public class CollectionStrictSync<K, V> extends CollectionSync<K, V> {
                 if (filter.apply(k)) newList.put(k, values[i]);
             });
             return newList.clone();
-        }
-    }
-
-    /**
-     * Removes entry but it returns this collection.
-     * @param k will be removed
-     * @return this collection
-     */
-    @Override
-    public synchronized @NotNull CollectionStrictSync<K, V> removeThenReturnCollection(K k) {
-        synchronized (StrictLock.LOCK) {
-            this.remove(k);
-            return this;
         }
     }
 

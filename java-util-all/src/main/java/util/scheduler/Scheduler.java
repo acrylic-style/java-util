@@ -13,9 +13,9 @@ public class Scheduler<T> {
 
     public Scheduler(int delay) { this.delay = delay; }
 
-    private final CollectionList<?, Consumer<T>> consumers = new CollectionList<>();
-    private final CollectionList<?, T> values = new CollectionList<>();
-    private final CollectionList<?, Integer> delays = new CollectionList<>();
+    private final CollectionList<Consumer<T>> consumers = new CollectionList<>();
+    private final CollectionList<T> values = new CollectionList<>();
+    private final CollectionList<Integer> delays = new CollectionList<>();
 
     public Scheduler<T> schedule(Consumer<T> consumer, T arg, Integer minimumDelay) {
         Validate.notNull(consumer, "consumer cannot be null");

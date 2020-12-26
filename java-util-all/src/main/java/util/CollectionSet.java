@@ -11,7 +11,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 @SuppressWarnings({ "NullableProblems", "unchecked" })
-public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> implements ICollectionList<C, V>, Cloneable, DeepCloneable {
+public class CollectionSet<V> extends HashSet<V> implements ICollectionList<V>, Cloneable, DeepCloneable {
     public CollectionSet() {
         super();
     }
@@ -78,13 +78,9 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @Override
     @SuppressWarnings("unchecked")
     @Contract(value = "-> new", pure = true)
-    public V[] valuesArray() {
-        return (V[]) ((CollectionSet<?, V>) this.unique()).toArray0();
-    }
+    public V[] valuesArray() { return (V[]) this.unique().toArray0(); }
 
-    private Object[] toArray0() {
-        return super.toArray();
-    }
+    private Object[] toArray0() { return super.toArray(); }
 
     /**
      * {@inheritDoc}
@@ -121,7 +117,7 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
      * Remember: order isn't guaranteed.
      */
     @Override
-    public void foreach(@NotNull BiBiConsumer<V, Integer, ICollectionList<?, V>> action) {
+    public void foreach(@NotNull BiBiConsumer<V, Integer, ICollectionList<V>> action) {
         final int[] index = {0};
         this.unique().forEach(v -> {
             action.accept(v, index[0], this.clone());
@@ -148,8 +144,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @Override
     @Contract(value = "-> new", pure = true)
     @Deprecated
-    public C reverse() {
-        return (C) this; // set does not have order
+    public CollectionSet<V> reverse() {
+        return this; // set does not have order
     }
 
     /**
@@ -160,8 +156,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @Override
     @Contract(value = "-> new", pure = true)
     @Deprecated
-    public C shuffle() {
-        return (C) this; // set does not have order
+    public CollectionSet<V> shuffle() {
+        return this; // set does not have order
     }
 
     /**
@@ -171,7 +167,7 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @Override
     public <ListLike extends List<? extends V>> void putAll(@NotNull ListLike list) {
         if (list instanceof ICollectionList) {
-            addAll((ICollectionList<?, V>) list);
+            addAll((ICollectionList<V>) list);
         } else {
             this.addAll(list);
         }
@@ -183,8 +179,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @NotNull
     @Override
     @Contract("_ -> this")
-    public C addAll(@Nullable ICollectionList<?, V> list) {
-        return ICollectionList.super.addAll(list).unique();
+    public CollectionSet<V> addAll(@Nullable ICollectionList<V> list) {
+        return (CollectionSet<V>) ICollectionList.super.addAll(list).unique();
     }
 
     /**
@@ -193,7 +189,7 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @NotNull
     @Override
     @Contract("_ -> this")
-    public C putAll(@Nullable ICollectionList<?, V> list) {
+    public CollectionSet<V> putAll(@Nullable ICollectionList<V> list) {
         return this.addAll(list);
     }
 
@@ -203,8 +199,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public C filter(@NotNull Function<V, Boolean> filter) {
-        C newList = newList();
+    public CollectionSet<V> filter(@NotNull Function<V, Boolean> filter) {
+        CollectionSet<V> newList = newList();
         this.foreach((v, i) -> {
             if (filter.apply(v)) newList.add(v);
         });
@@ -216,8 +212,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
      */
     @Nullable
     @Override
-    public C filterNullable(@NotNull Function<V, Boolean> filter) {
-        C newList = newList();
+    public CollectionSet<V> filterNullable(@NotNull Function<V, Boolean> filter) {
+        CollectionSet<V> newList = newList();
         this.foreach((v, i) -> {
             if (filter.apply(v)) newList.add(v);
         });
@@ -231,8 +227,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @Override
     @Contract("-> new")
     @SuppressWarnings("unchecked")
-    public C clone() {
-        return ((C) super.clone());
+    public CollectionSet<V> clone() {
+        return (CollectionSet<V>) super.clone();
     }
 
     /**
@@ -241,8 +237,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public <T> CollectionSet<?, T> map(@NotNull Function<V, T> function) {
-        CollectionSet<?, T> newList = new CollectionSet<>();
+    public <T> CollectionSet<T> map(@NotNull Function<V, T> function) {
+        CollectionSet<T> newList = new CollectionSet<>();
         this.forEach(v -> newList.add(function.apply(v)));
         return newList.unique();
     }
@@ -253,8 +249,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public <T> CollectionSet<?, T> map(@NotNull BiFunction<V, Integer, T> function) {
-        CollectionSet<?, T> newList = new CollectionSet<>();
+    public <T> CollectionSet<T> map(@NotNull BiFunction<V, Integer, T> function) {
+        CollectionSet<T> newList = new CollectionSet<>();
         final int[] index = {0};
         this.forEach(v -> {
             newList.add(function.apply(v, index[0]));
@@ -285,8 +281,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @NotNull
     @Override
     @Contract(value = "_ -> new", pure = true)
-    public C joinObject(@NotNull V v) {
-        return ICollectionList.super.joinObject(v).unique();
+    public CollectionSet<V> joinObject(@NotNull V v) {
+        return (CollectionSet<V>) ICollectionList.super.joinObject(v).unique();
     }
 
     /**
@@ -296,8 +292,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @NotNull
     @Override
     @Contract(value = "-> new", pure = true)
-    public C newList() {
-        return (C) new CollectionSet<>();
+    public CollectionSet<V> newList() {
+        return new CollectionSet<>();
     }
 
     /**
@@ -305,12 +301,12 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
      * Subclasses of this class must override this method.
      */
     @Override
-    public @NotNull C newList(java.util.@Nullable Collection<? extends V> list) {
-        return (C) new CollectionSet<>(list);
+    public @NotNull CollectionSet<V> newList(java.util.@Nullable Collection<? extends V> list) {
+        return new CollectionSet<>(list);
     }
 
     @Override
-    public @NotNull <E> CollectionSet<?, E> createList() { return new CollectionSet<>(); }
+    public @NotNull <E> CollectionSet<E> createList() { return new CollectionSet<>(); }
 
     /**
      * {@inheritDoc}
@@ -338,9 +334,12 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof CollectionSet)) return false;
-        CollectionSet<?, ?> list = (CollectionSet<?, ?>) o;
+        CollectionSet<?> list = (CollectionSet<?>) o;
         return super.equals(list.unique());
     }
+
+    @Override
+    public @NotNull CollectionSet<V> unique() { return (CollectionSet<V>) ICollectionList.super.unique(); }
 
     /**
      * {@inheritDoc}
@@ -423,16 +422,6 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
      * {@inheritDoc}
      * @deprecated this implementation always throws exception since it does not have order
      */
-    @Deprecated
-    @Override
-    public final @NotNull C shiftChain() {
-        throw new UnsupportedOperationException("CollectionSet doesn't have order");
-    }
-
-    /**
-     * {@inheritDoc}
-     * @deprecated this implementation always throws exception since it does not have order
-     */
     @SafeVarargs
     @Deprecated
     @Contract("_ -> fail")
@@ -451,8 +440,8 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
     @NotNull
     @Contract("_ -> new")
     @SafeVarargs
-    public static <C extends CollectionSet<C, T>, T> C of(T... t) {
-        return (C) new CollectionSet<>(t).unique();
+    public static <T> CollectionSet<T> of(T... t) {
+        return new CollectionSet<>(t).unique();
     }
 
     /**
@@ -461,7 +450,7 @@ public class CollectionSet<C extends CollectionSet<C, V>, V> extends HashSet<V> 
      */
     @Contract(pure = true)
     @NotNull
-    public CollectionList<?, V> toList() {
+    public CollectionList<V> toList() {
         return new CollectionList<>(this.unique());
     }
 

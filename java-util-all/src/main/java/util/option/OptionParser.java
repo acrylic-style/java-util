@@ -11,7 +11,7 @@ import util.function.StringConverter;
 import java.io.PrintStream;
 
 public class OptionParser {
-    private final CollectionList<?, AcceptingOption<?>> options = new CollectionList<>();
+    private final CollectionList<AcceptingOption<?>> options = new CollectionList<>();
 
     @NotNull
     public AcceptingOption<String> accepts(@NotNull String key) {

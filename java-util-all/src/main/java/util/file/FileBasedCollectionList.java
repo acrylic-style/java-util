@@ -41,9 +41,7 @@ import java.util.stream.Collectors;
  * and will be removed when VM exits or the {@link #close()} was called.
  */
 @SuppressWarnings({ "ConstantConditions", "unused", "RedundantSuppression", "unchecked" })
-public class FileBasedCollectionList<C extends FileBasedCollectionList<C, E>, E extends Serializable>
-        extends AbstractCollectionList<C, E>
-        implements ICollectionList<C, E>, Cloneable, AutoCloseable {
+public class FileBasedCollectionList<E extends Serializable> extends AbstractCollectionList<E> implements ICollectionList<E>, Cloneable, AutoCloseable {
     /**
      * Keeps track of the number of elements in this collection.
      */
@@ -130,7 +128,7 @@ public class FileBasedCollectionList<C extends FileBasedCollectionList<C, E>, E 
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public <V extends Serializable & Comparable<V>> void sort(int bucketSize) throws IOException {
-        C sorted = (C) new FileBasedCollectionSorter().sort((FileBasedCollectionList) FileBasedCollectionList.this, bucketSize, chunkSize);
+        FileBasedCollectionList<E> sorted = new FileBasedCollectionSorter().sort((FileBasedCollectionList) FileBasedCollectionList.this, bucketSize, chunkSize);
         swap(sorted);
     }
 
@@ -219,7 +217,7 @@ public class FileBasedCollectionList<C extends FileBasedCollectionList<C, E>, E 
     }
 
     private boolean retainAll(Predicate<E> condition) {
-        C modifiedCollection = (C) new FileBasedCollectionList<>(chunkSize);
+        FileBasedCollectionList<E> modifiedCollection = new FileBasedCollectionList<>(chunkSize);
 
         try(FileBasedIterator<E> iter = iterator()) {
             while(iter.hasNext()) {
@@ -261,7 +259,7 @@ public class FileBasedCollectionList<C extends FileBasedCollectionList<C, E>, E 
     @Override
     public boolean addAll(@NotNull Collection<? extends E> c) {
         if (c instanceof FileBasedCollectionList) {
-            FileBasedCollectionList<?, ? extends E> other = (FileBasedCollectionList<?, ? extends E>) c;
+            FileBasedCollectionList<? extends E> other = (FileBasedCollectionList<? extends E>) c;
             boolean modified = false;
             try (FileBasedIterator<? extends E> iter = other.iterator()) {
                 while (iter.hasNext()) {
@@ -289,16 +287,16 @@ public class FileBasedCollectionList<C extends FileBasedCollectionList<C, E>, E 
     public Object[] toArray() { return ICollectionList.toArray(this); }
 
     @Override
-    public @NotNull C newList() { return (C) new FileBasedCollectionList<>(); }
+    public @NotNull FileBasedCollectionList<E> newList() { return new FileBasedCollectionList<>(); }
 
     @Override
-    public @NotNull C newList(Collection<? extends E> list) {
-        return (C) new FileBasedCollectionList<>(list);
+    public @NotNull FileBasedCollectionList<E> newList(Collection<? extends E> list) {
+        return new FileBasedCollectionList<>(list);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public @NotNull FileBasedCollectionList<?, ?> createList() {
+    public @NotNull FileBasedCollectionList<?> createList() {
         return new FileBasedCollectionList<>();
     }
 
@@ -314,7 +312,7 @@ public class FileBasedCollectionList<C extends FileBasedCollectionList<C, E>, E 
 
     @Override
     public void clear() {
-        swap((C) new FileBasedCollectionList<>(chunkSize));
+        swap(new FileBasedCollectionList<>(chunkSize));
     }
 
     @Override
@@ -359,7 +357,7 @@ public class FileBasedCollectionList<C extends FileBasedCollectionList<C, E>, E 
         }
     }
 
-    private void swap(C other) {
+    private void swap(FileBasedCollectionList<E> other) {
         close();
         this.store = other.store;
         this.currentChunk = other.currentChunk;
@@ -505,11 +503,11 @@ public class FileBasedCollectionList<C extends FileBasedCollectionList<C, E>, E 
 
     private static class FileBasedCollectionSorter {
 
-        public <E extends Serializable & Comparable<E>> FileBasedCollectionList<?, E> sort(
-                FileBasedCollectionList<?, E> source,
+        public <E extends Serializable & Comparable<E>> FileBasedCollectionList<E> sort(
+                FileBasedCollectionList<E> source,
                 final int bucketSize,
                 final int chunkSize) throws IOException {
-            List<FileBasedCollectionList<?, E>> buckets = new ArrayList<>();
+            List<FileBasedCollectionList<E>> buckets = new ArrayList<>();
             SortedSet<E> sorted = new TreeSet<>();
             try (FileBasedCollectionList.FileBasedIterator<E> iterator = source.iterator()) {
                 while (iterator.hasNext()){
@@ -529,14 +527,14 @@ public class FileBasedCollectionList<C extends FileBasedCollectionList<C, E>, E 
             return merge(buckets, source.getChunkSize());
         }
 
-        private <E extends Serializable & Comparable<E>> FileBasedCollectionList<?, E> createBucket(SortedSet<E> sorted, final int chunkSize){
-            FileBasedCollectionList<?, E> bucket = new FileBasedCollectionList<>(chunkSize);
+        private <E extends Serializable & Comparable<E>> FileBasedCollectionList<E> createBucket(SortedSet<E> sorted, final int chunkSize){
+            FileBasedCollectionList<E> bucket = new FileBasedCollectionList<>(chunkSize);
             bucket.addAll(sorted);
             return bucket;
         }
 
-        private <E extends Serializable & Comparable<E>> FileBasedCollectionList<?, E> merge(List<FileBasedCollectionList<?, E>> buckets, final int chunkSize) {
-            FileBasedCollectionList<?, E> merged = new FileBasedCollectionList<>(chunkSize);
+        private <E extends Serializable & Comparable<E>> FileBasedCollectionList<E> merge(List<FileBasedCollectionList<E>> buckets, final int chunkSize) {
+            FileBasedCollectionList<E> merged = new FileBasedCollectionList<>(chunkSize);
 
             List<FileBasedCollectionList.FileBasedIterator<E>> iterators = buckets.stream()
                     .map(FileBasedCollectionList::iterator)
@@ -592,7 +590,7 @@ public class FileBasedCollectionList<C extends FileBasedCollectionList<C, E>, E 
 
     @SafeVarargs
     @NotNull
-    public static <E extends Serializable & Comparable<E>> FileBasedCollectionList<?, E> of(E... e) {
+    public static <E extends Serializable & Comparable<E>> FileBasedCollectionList<E> of(E... e) {
         return new FileBasedCollectionList<>(e);
     }
 }

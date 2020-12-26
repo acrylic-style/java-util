@@ -54,10 +54,9 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * Returns keys as list.
      * @return Keys as list
      */
-    @SuppressWarnings("unchecked")
     @NotNull
     @Contract("-> new")
-    default <C extends CollectionList<C, K>> C keysList() { return (C) new CollectionList<>(this.keySet()); }
+    default CollectionList<K> keysList() { return new CollectionList<>(this.keySet()); }
 
     /**
      * Returns values as array.
@@ -71,7 +70,7 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * Returns values as list.
      * @return Values as list
      */
-    default <C extends CollectionList<C, V>> C valuesList() { return (C) newList(this.values()); }
+    default CollectionList<V> valuesList() { return newList(this.values()); }
 
     /**
      * Foreach all values in collection.
@@ -262,8 +261,8 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * @return List of entries.
      */
     @NotNull
-    default CollectionList<?, Entry<K, V>> toEntryList() {
-        CollectionList<?, Entry<K, V>> entries = new CollectionList<>();
+    default CollectionList<Entry<K, V>> toEntryList() {
+        CollectionList<Entry<K, V>> entries = new CollectionList<>();
         this.forEach((k, v) -> entries.add(new HashMap.SimpleEntry<>(k, v)));
         return entries;
     }
@@ -273,16 +272,16 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
      * @return List of maps.
      */
     @NotNull
-    default CollectionList<?, Map<K, V>> toMapList() {
-        CollectionList<?, Map<K, V>> entries = new CollectionList<>();
+    default CollectionList<Map<K, V>> toMapList() {
+        CollectionList<Map<K, V>> entries = new CollectionList<>();
         this.forEach((k, v) -> entries.add(Collections.singletonMap(k, v)));
         return entries;
     }
 
     @NotNull
-    <S> CollectionList<?, S> toList(BiFunction<K, V, S> function);
+    <S> CollectionList<S> toList(BiFunction<K, V, S> function);
     
-    default CollectionList<?, V> newList(java.util.Collection<V> collection) {
+    default CollectionList<V> newList(java.util.Collection<V> collection) {
         return new CollectionList<>(collection);
     }
 
@@ -332,16 +331,16 @@ public interface ICollection<K, V> extends Map<K, V>, DeepCloneable {
         return collection;
     }
 
-    static <C extends CollectionList<C, Entry<K, V>>, K, V extends Comparable<? super V>> Collection<K, V> sortByValue(Collection<K, V> map) {
-        C list = (C) map.toEntryList();
+    static <K, V extends Comparable<? super V>> Collection<K, V> sortByValue(Collection<K, V> map) {
+        CollectionList<Entry<K, V>> list = map.toEntryList();
         list.sort(Entry.comparingByValue());
         Collection<K, V> result = new Collection<>();
         for (Entry<K, V> entry : list) result.put(entry.getKey(), entry.getValue());
         return result;
     }
 
-    static <C extends CollectionList<C, Entry<K, V>>, K extends Comparable<? super K>, V> Collection<K, V> sortByKey(Collection<K, V> map) {
-        C list = (C) map.toEntryList();
+    static <K extends Comparable<? super K>, V> Collection<K, V> sortByKey(Collection<K, V> map) {
+        CollectionList<Entry<K, V>> list = map.toEntryList();
         list.sort(Entry.comparingByKey());
         Collection<K, V> result = new Collection<>();
         for (Entry<K, V> entry : list) result.put(entry.getKey(), entry.getValue());
