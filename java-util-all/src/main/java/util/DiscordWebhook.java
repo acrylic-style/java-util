@@ -8,6 +8,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import util.magic.Magic;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.awt.*;
@@ -21,13 +24,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
-public class DiscordWebhook {
+public class DiscordWebhook implements Chain<DiscordWebhook> {
+    public static @NotNull DiscordWebhook of(@NotNull String url, @Nullable String username, @NotNull String content) {
+        Validate.notNull(url, "url cannot be null");
+        Validate.notNull(content, "content cannot be null");
+        return new DiscordWebhook(url)
+                .setUsername(username)
+                .setContent(content);
+    }
+
+    public static @NotNull DiscordWebhook of(@NotNull String url, @Nullable String username, @Nullable String title, @Nullable String description, @Nullable Color color) {
+        Validate.notNull(url, "url cannot be null");
+        return new DiscordWebhook(url)
+                .setUsername(username)
+                .addEmbed(new EmbedObject().setTitle(title).setDescription(description).setColor(color));
+    }
+
     @Getter private final String url;
-    @Getter @Setter private String content;
-    @Getter @Setter private String username;
-    @Getter @Setter private String avatarUrl;
-    @Getter @Setter private boolean tts;
+    @Getter @Setter @Accessors(chain = true) private String content;
+    @Getter @Setter @Accessors(chain = true) private String username;
+    @Getter @Setter @Accessors(chain = true) private String avatarUrl;
+    @Getter @Setter @Accessors(chain = true) private boolean tts;
     private final List<EmbedObject> embeds = new ArrayList<>();
 
     /**
@@ -37,9 +56,17 @@ public class DiscordWebhook {
      */
     public DiscordWebhook(@NonNull String url) { this.url = url; }
 
-    public void addEmbed(@NonNull EmbedObject embed) { this.embeds.add(embed); }
+    @NotNull
+    public DiscordWebhook addEmbed(@NonNull EmbedObject embed) {
+        this.embeds.add(embed);
+        return this;
+    }
 
-    public void execute() throws IOException {
+    /**
+     * Executes a webhook. Consumer will be invoked once before the json data is written into OutputStream.
+     * @param action the consumer to run
+     */
+    public void execute(@Nullable Consumer<HttpsURLConnection> action) throws IOException {
         if (this.content == null && this.embeds.isEmpty()) throw new IllegalArgumentException("Set content or add at least one EmbedObject");
         JSONObject json = new JSONObject();
         json.put("content", this.content);
@@ -103,10 +130,12 @@ public class DiscordWebhook {
         }
         URL url = new URL(this.url);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.addRequestProperty("Accept", "application/json");
         connection.addRequestProperty("Content-Type", "application/json");
-        connection.addRequestProperty("User-Agent", "Java-DiscordWebhook-BY-Gelox_");
+        connection.addRequestProperty("User-Agent", "acrylic-style/java-util @" + Magic.VERSION);
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
+        if (action != null) action.accept(connection);
         OutputStream stream = connection.getOutputStream();
         stream.write(json.toString().getBytes(StandardCharsets.UTF_8));
         stream.flush();

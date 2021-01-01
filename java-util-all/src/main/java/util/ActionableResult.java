@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class ActionableResult<T> {
+public class ActionableResult<T> implements Chain<ActionableResult<T>> {
     @NotNull
     private static final ActionableResult<?> EMPTY = new ActionableResult<>();
 
@@ -55,6 +55,12 @@ public class ActionableResult<T> {
 
     @NotNull
     public T get() {
+        if (value == null) throw new NoSuchElementException("No value present");
+        return value;
+    }
+
+    @NotNull
+    public T getOrThrow() {
         if (value == null) throw new NoSuchElementException("No value present");
         return value;
     }

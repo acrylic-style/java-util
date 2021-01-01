@@ -13,7 +13,7 @@ import java.lang.reflect.Modifier;
 
 public class Magic {
     @SuppressWarnings("OctalInteger")
-    public static final long VERSION = 0_12_00L;
+    public static final long VERSION = 0_13_01L;
 
     /**
      * Returns forbidden magic which is not guaranteed to work across java versions, or even java platform. No

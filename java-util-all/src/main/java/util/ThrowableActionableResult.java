@@ -1,5 +1,6 @@
 package util;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import util.function.DelegatingThrowableSupplier;
@@ -76,6 +77,17 @@ public class ThrowableActionableResult<T> extends ActionableResult<T> {
 
     @NotNull
     public static <V> ThrowableActionableResult<V> ofNullable(@NotNull Supplier<V> supplier) { return ofNullable(supplier.get()); }
+
+    @Contract(pure = true)
+    @NotNull
+    public static <V> ThrowableActionableResult<V> success(V value) { return ofNullable(value); }
+
+    @Contract(pure = true)
+    @NotNull
+    public static <V> ThrowableActionableResult<V> failure(@NotNull Throwable throwable) {
+        Validate.notNull(throwable, "throwable cannot be null");
+        return new ThrowableActionableResult<>(null, throwable);
+    }
 
     /**
      * Throws exception (sneaky) if the exception was thrown when evaluating the result.

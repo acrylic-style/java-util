@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 @SuppressWarnings({ "unused", "RedundantSuppression" })
-public class RESTAPI extends TypedEventEmitter<RESTAPI.RESTEvent> {
+public class RESTAPI extends TypedEventEmitter<RESTAPI.RESTEvent> implements Chain<RESTAPI> {
     public final URL url;
     public final String method;
     public final RequestBody requestBody;

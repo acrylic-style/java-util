@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import util.ActionableResult;
+import util.Chain;
 import util.CollectionList;
 import util.ICollectionList;
 import util.RunnableFunction;
@@ -17,7 +18,7 @@ import java.util.function.Consumer;
  * Represents partial implementation of JavaScript Promise.
  * @param <T> Promise return type
  */
-public abstract class Promise<T> implements IPromise<Object, T> {
+public abstract class Promise<T> implements IPromise<Object, T>, Chain<Promise<T>> {
     public static final Promise<?> EMPTY_RESOLVED_PROMISE;
     public static final Promise<?> EMPTY_REJECTED_PROMISE;
 

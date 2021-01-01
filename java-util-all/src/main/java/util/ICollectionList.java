@@ -29,7 +29,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 @SuppressWarnings("unchecked")
-public interface ICollectionList<V> extends List<V>, DeepCloneable {
+public interface ICollectionList<V> extends List<V>, DeepCloneable, Chain<ICollectionList<V>> {
     @Override
     default boolean isEmpty() { return size() == 0; }
 
@@ -813,6 +813,19 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
         return set;
     }
 
+    @NotNull
+    @Contract(pure = true)
+    default ICollectionList<ICollectionList<V>> split(int max) {
+        CollectionList<ICollectionList<V>> list = new CollectionList<>();
+        this.foreach((v, i) -> {
+            if (i % max == 0) {
+                list.add(new CollectionList<>());
+            }
+            Objects.requireNonNull(list.last()).add(v);
+        });
+        return list;
+    }
+
     // ===== Static Methods
 
     @Contract(pure = true)
@@ -830,8 +843,6 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable {
         list.forEach(number -> bytes[i.getAndIncrement()] = number.intValue());
         return bytes;
     }
-
-    /* Static methods */
 
     /**
      * Creates list from keys from map.
