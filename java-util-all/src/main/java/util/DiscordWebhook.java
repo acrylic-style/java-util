@@ -10,21 +10,18 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONObject;
 import util.magic.Magic;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public class DiscordWebhook implements Chain<DiscordWebhook> {
     public static @NotNull DiscordWebhook of(@NotNull String url, @Nullable String username, @NotNull String content) {
@@ -68,7 +65,7 @@ public class DiscordWebhook implements Chain<DiscordWebhook> {
      * Executes a webhook. Consumer will be invoked once before the json data is written into OutputStream.
      * @param action the consumer to run
      */
-    public void execute(@Nullable Consumer<HttpsURLConnection> action) throws IOException {
+    public void execute(@Nullable BiConsumer<JSONObject, HttpsURLConnection> action) throws IOException {
         if (this.content == null && this.embeds.isEmpty()) throw new IllegalArgumentException("Set content or add at least one EmbedObject");
         JSONObject json = new JSONObject();
         json.put("content", this.content);
@@ -137,7 +134,7 @@ public class DiscordWebhook implements Chain<DiscordWebhook> {
         connection.addRequestProperty("User-Agent", "acrylic-style/java-util @" + Magic.VERSION);
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
-        if (action != null) action.accept(connection);
+        if (action != null) action.accept(json, connection);
         OutputStream stream = connection.getOutputStream();
         stream.write(json.toString().getBytes(StandardCharsets.UTF_8));
         stream.flush();
@@ -195,51 +192,6 @@ public class DiscordWebhook implements Chain<DiscordWebhook> {
             @Getter(AccessLevel.PRIVATE) private final String name;
             @Getter(AccessLevel.PRIVATE) private final String value;
             @Getter(AccessLevel.PRIVATE) private final boolean inline;
-        }
-    }
-
-    private static class JSONObject {
-        private final HashMap<String, Object> map = new HashMap<>();
-
-        void put(String key, Object value) {
-            if (value != null) {
-                map.put(key, value);
-            }
-        }
-
-        @Override
-        public String toString() {
-            StringBuilder builder = new StringBuilder();
-            Set<Map.Entry<String, Object>> entrySet = map.entrySet();
-            builder.append("{");
-
-            int i = 0;
-            for (Map.Entry<String, Object> entry : entrySet) {
-                Object val = entry.getValue();
-                builder.append(quote(entry.getKey())).append(":");
-                if (val instanceof String) {
-                    builder.append(quote(String.valueOf(val)));
-                } else if (val instanceof Integer) {
-                    builder.append(Integer.valueOf(String.valueOf(val)));
-                } else if (val instanceof Boolean) {
-                    builder.append(val);
-                } else if (val instanceof JSONObject) {
-                    builder.append(val.toString());
-                } else if (val.getClass().isArray()) {
-                    builder.append("[");
-                    int len = Array.getLength(val);
-                    for (int j = 0; j < len; j++) {
-                        builder.append(Array.get(val, j).toString()).append(j != len - 1 ? "," : "");
-                    }
-                    builder.append("]");
-                }
-                builder.append(++i == entrySet.size() ? "}" : ",");
-            }
-            return builder.toString();
-        }
-
-        private String quote(String string) {
-            return "\"" + string.replaceAll("\"", "'") + "\"";
         }
     }
 }
