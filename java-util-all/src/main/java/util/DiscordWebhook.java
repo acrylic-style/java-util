@@ -62,6 +62,8 @@ public class DiscordWebhook implements Chain<DiscordWebhook> {
         return this;
     }
 
+    public void execute() throws IOException { execute(null); }
+
     /**
      * Executes a webhook. Consumer will be invoked once before the json data is written into OutputStream.
      * @param action the consumer to run
@@ -237,8 +239,7 @@ public class DiscordWebhook implements Chain<DiscordWebhook> {
         }
 
         private String quote(String string) {
-            return "\"" + string + "\"";
+            return "\"" + string.replaceAll("\"", "'") + "\"";
         }
     }
-
 }
