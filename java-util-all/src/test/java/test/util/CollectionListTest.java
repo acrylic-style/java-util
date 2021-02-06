@@ -116,4 +116,10 @@ public class CollectionListTest {
         ICollectionList<String> list = CollectionList.of("Banana", "Orange", "Lemon", "Apple", "Mango").slice(1, 3);
         assert list.size() == 2 && list.contains("Orange") && list.contains("Lemon") : getAssertionErrorMessage(list);
     }
+
+    @Test
+    public void limits() {
+        assert CollectionList.of(1, 2, 3, 4, 5).limit(3).size() == 2;
+        assert CollectionList.of(1, 2, 3, 4, 5).max(3).size() == 3;
+    }
 }

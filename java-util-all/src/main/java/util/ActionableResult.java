@@ -47,15 +47,22 @@ public class ActionableResult<T> implements Chain<ActionableResult<T>> {
     @NotNull
     public static <V> ActionableResult<V> ofNullable(@Nullable V value) { return value == null ? empty() : new ActionableResult<>(value); }
 
+    /**
+     * @deprecated use {@link #getOrThrow()} instead
+     */
+    @Deprecated
     @NotNull
-    public T value() { return get(); }
+    public T value() { return getOrThrow(); }
 
+    /**
+     * @deprecated use {@link #get()} instead
+     */
+    @Deprecated
     @Nullable
     public T nullableValue() { return value; }
 
-    @NotNull
+    @Nullable
     public T get() {
-        if (value == null) throw new NoSuchElementException("No value present");
         return value;
     }
 

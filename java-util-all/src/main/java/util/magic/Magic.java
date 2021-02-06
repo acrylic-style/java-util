@@ -13,7 +13,7 @@ import java.lang.reflect.Modifier;
 
 public class Magic {
     @SuppressWarnings("OctalInteger")
-    public static final long VERSION = 0_13_01L;
+    public static final long VERSION = 0_14_00L;
 
     /**
      * Returns forbidden magic which is not guaranteed to work across java versions, or even java platform. No
@@ -63,7 +63,7 @@ public class Magic {
             }
             if (getUnsafe().isPresent()) {
                 // and try unsafe if possible
-                Unsafe unsafe = getUnsafe().get();
+                Unsafe unsafe = getUnsafe().getOrThrow();
                 try {
                     return (T) unsafe.allocateInstance(clazz);
                 } catch (InstantiationException e) {

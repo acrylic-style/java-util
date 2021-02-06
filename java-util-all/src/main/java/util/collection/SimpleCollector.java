@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 
 public class SimpleCollector<T, A, R> implements Collector<T, A, R> {
-    private static final Set<Characteristics> CH_ID = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
+    public static final Set<Characteristics> CH_ID = Collections.unmodifiableSet(EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
     private final Supplier<A> supplier;
     private final BiConsumer<A, T> accumulator;
     private final BinaryOperator<A> combiner;
@@ -58,7 +58,7 @@ public class SimpleCollector<T, A, R> implements Collector<T, A, R> {
 
     @Override
     public Set<Characteristics> characteristics() { return characteristics; }
-    
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Contract(value = "_ -> new", pure = true)
     @NotNull

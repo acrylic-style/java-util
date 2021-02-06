@@ -5,18 +5,18 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.NotFoundException;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
 
 public class ProxyGeneratorTransformer implements ClassFileTransformer {
     @Override
-    public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+    public byte[] transform(@NotNull ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
         if (!className.equals("sun/misc/ProxyGenerator")) return null;
         try {
-            System.out.println("[JavaAgent] Transforming " + className);
+            System.out.println("[Transformer: ProxyGenerator] Transforming " + className);
             ClassPool cp = ClassPool.getDefault();
             CtClass cc = cp.get("sun.misc.ProxyGenerator");
             CtMethod method = cc.getDeclaredMethod("checkReturnTypes", new CtClass[]{cp.get("java.util.List")});
@@ -39,7 +39,7 @@ public class ProxyGeneratorTransformer implements ClassFileTransformer {
                     "        }");
             byte[] buf = cc.toBytecode();
             cc.detach();
-            System.out.println("[JavaAgent] Successfully transformed " + className);
+            System.out.println("[Transformer: ProxyGenerator] Successfully transformed " + className);
             return buf;
         } catch (NotFoundException | CannotCompileException | IOException e) {
             e.printStackTrace();

@@ -1,4 +1,4 @@
-package util.experimental.javascript;
+package util.experimental;
 
 import util.Collection;
 

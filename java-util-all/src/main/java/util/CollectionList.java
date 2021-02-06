@@ -25,16 +25,16 @@ public class CollectionList<V> extends AbstractArrayCollectionList<V> implements
         super();
     }
 
-    public CollectionList(List<? extends V> list) {
+    public CollectionList(@NotNull List<? extends V> list) {
         super(list);
     }
 
     @SafeVarargs
-    public CollectionList(V... v) {
+    public CollectionList(@NotNull V... v) {
         super(v);
     }
 
-    public CollectionList(java.util.Collection<? extends V> list) {
+    public CollectionList(@NotNull java.util.Collection<? extends V> list) {
         super(list);
     }
 

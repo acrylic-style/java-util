@@ -79,7 +79,7 @@ public class RefClass<T> {
     @Contract(pure = true)
     @Nullable
     public RefConstructor<T> getDeclaredConstructorMaybe(Class<?>... classes) {
-        return ThrowableActionableResult.of(() -> getDeclaredConstructor(classes)).nullableValue();
+        return ThrowableActionableResult.of(() -> getDeclaredConstructor(classes)).get();
     }
 
     @Contract(pure = true)

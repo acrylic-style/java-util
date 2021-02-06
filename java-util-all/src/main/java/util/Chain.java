@@ -35,7 +35,7 @@ public interface Chain<T extends Chain<T>> {
     default <R> R let(@NotNull Function<T, R> mapFunction) { return mapFunction.apply((T) this); }
 
     @Nullable
-    default <R> R letCatching(@NotNull ThrowableFunction<T, R> function) { return function.apply((T) this).nullableValue(); }
+    default <R> R letCatching(@NotNull ThrowableFunction<T, R> function) { return function.apply((T) this).get(); }
 
     @Contract(pure = true)
     @NotNull

@@ -1,7 +1,7 @@
 package test.util;
 
 import org.junit.Test;
-import util.experimental.javascript.GeneratorFunction;
+import util.experimental.GeneratorFunction;
 
 import static util.javascript.JavaScript.If;
 import static util.javascript.JavaScript.parseInt;

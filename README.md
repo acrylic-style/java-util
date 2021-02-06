@@ -5,8 +5,8 @@ java-util includes Collection(not java.util.Collection!), CollectionList and som
 
 ### Classes
 
-- CollectionList<C, V> - replaces List, with many useful methods.
-- Collection<K, V> - replaces HashMap
+- CollectionList - replaces List, with many useful methods.
+- Collection - replaces HashMap
 - EventEmitter - Java implementation of Node.js EventEmitter
 - promise.Promise - Partial implementation of JavaScript Promise class.
 - javascript.JavaScript - Represents some keywords that can be found in javascript. Currently in development and not recommended.
@@ -17,15 +17,17 @@ java-util includes Collection(not java.util.Collection!), CollectionList and som
 - CollectionSet - HashSet implementation, with ICollectionList methods (Some methods aren't supported)
 - MathUtils - Provides some Math methods + methods
 - reflect.* - helps you use of reflection (unlike ReflectionHelper, it has more methods, though, some methods are missing)
-- reflector.* - Call internal class/methods without writing complex reflection code.
+- reflector.* - Call internal class/methods without writing complex reflection code. (See `java-util-all/src/main/java/reflector/ReflectorTest.java`, `java-util-agent/src/main/java/util/agent/reflector/PrivateClass.java`)
 
 ## Note about Reflector
 If it throws error like `java.lang.IllegalArgumentException: methods with same signature method() but incompatible return types: <some primitive type> and others`, you will need to do one of them to work properly.
 
 ### Method 1 (Easiest, and mostly it works)
-Use [java agent](https://um.acrylicstyle.xyz/13916272196/39163041/java-util-agent-0.11.43.jar) to workaround this.
+Use [java agent](https://um.acrylicstyle.xyz/17210489206/213710626/java-util-agent-0.13.3.jar) to workaround this.
 
-Then run: `java -javaagent:/path/to/agent.jar ...`
+This java agent is also useful for debugging your application, you can use jetbrains @NotNull to method parameter for non-null assertion at runtime.
+
+Then run: `java -javaagent:/path/to/agent.jar ...` or with args: `java -javaagent:/path/to/agent.jar=verbose,debug,NotNullAssertionTransformer ...`
 
 or create a file named `java` and add it to the PATH
 ```shell
@@ -35,7 +37,7 @@ absolute/path/to/java -javaagent:/path/to/agent.jar $@
 
 ### Method 2 (Hard, but it should work all the time)
 You have to insert these lines into the first line at sun/misc/ProxyGenerator.java#checkReturnTypes(List) to avoid errors.
-```java
+```
 if (true) {
     if (methods.size() == 0) return;
     ProxyMethod m = methods.get(0);

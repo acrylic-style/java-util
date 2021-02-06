@@ -362,7 +362,8 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable, Chain<IColle
     @NotNull
     default ICollectionList unchecked() { return this; }
 
-    default <A> A fixTypeEverywhere() { return (A) this; }
+    @NotNull
+    default <A> ICollectionList<A> fixTypeEverywhere() { return (ICollectionList<A>) this; }
 
     @NotNull
     default ICollectionList<V> thenAddAllIterable(@Nullable Iterable<V> iterable) {
@@ -374,7 +375,13 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable, Chain<IColle
 
     @NotNull
     default ICollectionList<V> limit(long max) {
-        return clone().filter((v, i) -> i > max);
+        return clone().filter((v, i) -> i >= max);
+    }
+
+    // opposite of #limit
+    @NotNull
+    default ICollectionList<V> max(long max) {
+        return clone().filter((v, i) -> i < max);
     }
 
     /**

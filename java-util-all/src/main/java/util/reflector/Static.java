@@ -7,6 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * Marks method to call static method or field.
+ * @see ReflectorOption#staticPrefix()
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

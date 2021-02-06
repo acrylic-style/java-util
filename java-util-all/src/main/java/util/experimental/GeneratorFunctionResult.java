@@ -1,4 +1,4 @@
-package util.experimental.javascript;
+package util.experimental;
 
 public class GeneratorFunctionResult<T> {
     public final T value;

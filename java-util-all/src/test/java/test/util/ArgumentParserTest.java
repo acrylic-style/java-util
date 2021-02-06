@@ -50,4 +50,11 @@ public class ArgumentParserTest {
         assert parser.contains("3") : "didn't contain 3";
         assert parser.contains("a b c") : "didn't contain 'a b c'";
     }
+
+    @Test
+    public void noDashes() {
+        ArgumentParser parser = new ArgumentParser("help aaa");
+        assert parser.contains("help") : "didn't contain help";
+        assert parser.contains("aaa") : "didn't contain aaa";
+    }
 }

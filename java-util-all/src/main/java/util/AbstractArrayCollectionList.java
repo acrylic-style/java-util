@@ -14,18 +14,18 @@ public abstract class AbstractArrayCollectionList<E> extends ArrayList<E> implem
         super();
     }
 
-    public AbstractArrayCollectionList(List<? extends E> list) {
+    public AbstractArrayCollectionList(@NotNull List<? extends E> list) {
         super();
         this.addAll(list);
     }
 
     @SafeVarargs
-    public AbstractArrayCollectionList(E... v) {
+    public AbstractArrayCollectionList(@NotNull E... v) {
         super();
         this.addAll(Arrays.asList(v));
     }
 
-    public AbstractArrayCollectionList(java.util.Collection<? extends E> list) {
+    public AbstractArrayCollectionList(@NotNull java.util.Collection<? extends E> list) {
         super();
         this.addAll(list);
     }

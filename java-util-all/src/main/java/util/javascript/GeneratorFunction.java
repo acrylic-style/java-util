@@ -11,7 +11,7 @@ import java.util.function.Consumer;
  *     <li>You cannot call infinite "while" loop.</li>
  *     <li>yield is actually a Consumer and you must call {@link Consumer#accept(Object) yield.accept(Object)}.</li>
  * </ul>
- * @deprecated Use {@link util.experimental.javascript.GeneratorFunction} instead
+ * @deprecated Use {@link util.experimental.GeneratorFunction} instead
  */
 @Deprecated
 public abstract class GeneratorFunction {

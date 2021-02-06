@@ -1,8 +1,8 @@
 package test.util;
 
 import org.junit.Test;
-import util.experimental.javascript.GeneratorFunction;
-import util.experimental.javascript.GeneratorFunctionResult;
+import util.experimental.GeneratorFunction;
+import util.experimental.GeneratorFunctionResult;
 
 public class ExperimentalTest {
     @Test
