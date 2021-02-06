@@ -9,7 +9,8 @@ class ReflectorTest {
         // CraftPlayer = impl of Player
         // CraftPlayerTest = abstraction of CraftPlayer
         // EntityPlayer4Test = abstraction of EntityPlayer4Test
-        CraftPlayerTest player = Reflector.newReflector(ClassLoader.getSystemClassLoader(), CraftPlayerTest.class, new ReflectorHandler(CraftPlayer.class, new CraftPlayer()));
+        Reflector.classLoader = ClassLoader.getSystemClassLoader();
+        CraftPlayerTest player = Reflector.newReflector(null, CraftPlayerTest.class, new ReflectorHandler(CraftPlayer.class, new CraftPlayer()));
         System.out.println("Locale: " + player.getLocale());
         EntityPlayer4Test ep = player.getHandle();
         System.out.println("ToString: " + ep.toString());
@@ -23,11 +24,19 @@ class ReflectorTest {
         System.out.println("'yes' (default method): " + yes + ", expected: 4848");
         EntityPlayer4Test newPlayer = Constructors.make().createEntityPlayer(1555);
         System.out.println("Ping of new constructor: " + newPlayer.getPing() + ", expected: 1555");
+        AnotherPlayer anotherPlayer = Reflector.newReflector(null, AnotherPlayer.class, new ReflectorHandler(CraftPlayer.class, Reflector.toUnproxiedInstanceIfPossible(player).getOrThrow()));
+        System.out.println("Another player #getTag: " + anotherPlayer.getTag() + ", expected: a");
+        System.out.println("Another player #getLocale: " + anotherPlayer.getLocale() + ", expected: en");
     }
 
     // org.bukkit.entity.Player
     private interface Player {
         String getLocale();
+    }
+
+    // abstraction of Player
+    private interface AnotherPlayer extends Player {
+        String getTag();
     }
 
     // obc.entity.CraftPlayer
@@ -39,6 +48,10 @@ class ReflectorTest {
 
         public EntityPlayer getHandle() {
             return new EntityPlayer(1212);
+        }
+
+        public String getTag() {
+            return "a";
         }
     }
 
@@ -96,7 +109,7 @@ class ReflectorTest {
         @ForwardMethod("getSomething") // invoke #getSomething in original method instead
         int getActualPing();
         String toString();
-        int getPingFor(@TransformParam EntityPlayer4Test player);
+        int getPingFor(@TransformParam @Type("util.reflector.ReflectorTest$EntityPlayer") EntityPlayer4Test player);
 
         default int yes() {
             return getActualPing();

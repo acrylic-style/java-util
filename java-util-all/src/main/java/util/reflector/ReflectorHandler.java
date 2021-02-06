@@ -96,17 +96,17 @@ public class ReflectorHandler implements InvocationHandler {
         String methodName = forwardMethod == null ? method.getName() : forwardMethod.value();
         Invocable<?> found = null;
         if (constructorCall == null) {
-            found = Invocable.of(findMethod(target, methodName, convertArgsList(method.getParameterTypes())));
+            found = Invocable.of(findMethod(target, methodName, convertArgsList(method, method.getParameterTypes())));
         }
         if (constructorCall != null || (methodName.equals("constructor") && found == null)) {
             Class<?> clazz = target;
             if (constructorCall != null && !constructorCall.value().equals(Object.class)) clazz = Reflector.reverseList.getOrDefault(constructorCall.value(), constructorCall.value());
-            found = Invocable.of(this.findConstructor(clazz, convertArgsList(method.getParameterTypes())).get());
+            found = Invocable.of(this.findConstructor(clazz, convertArgsList(method, method.getParameterTypes())).get());
             if (constructorCall != null && found == null) {
                 if (getOption(method).errorOption() == ReflectorOption.ErrorOption.RETURN_NULL) {
                     return null;
                 } else {
-                    throw new NoSuchMethodException(method.toGenericString() + " is annotated @ConstructorCall, but could not find constructor with classes: " + Arrays.toString(convertArgsList(method.getParameterTypes())));
+                    throw new NoSuchMethodException(method.toGenericString() + " is annotated @ConstructorCall, but could not find constructor with classes: " + Arrays.toString(convertArgsList(method, method.getParameterTypes())));
                 }
             }
         }
@@ -177,9 +177,20 @@ public class ReflectorHandler implements InvocationHandler {
         };
     }
 
-    private static Class<?>[] convertArgsList(Class<?>[] classes) {
+    private static Class<?>[] convertArgsList(Method method, Class<?>[] classes) {
         for (int i = 0; i < classes.length; i++) {
-            if (Reflector.reverseList.containsKey(classes[i])) classes[i] = Reflector.reverseList.get(classes[i]);
+            int finalI = i;
+            Annotation[] annotations = method.getParameterAnnotations()[i];
+            if (annotations != null && annotations.length != 0) {
+                ICollectionList<Annotation> list = ICollectionList.asList(annotations);
+                if (list.filter(annotation -> annotation.annotationType().equals(TransformParam.class))
+                        .length() > 0) {
+                    if (Reflector.reverseList.containsKey(classes[i])) classes[i] = Reflector.reverseList.get(classes[i]);
+                }
+                ActionableResult.ofNullable(list.filter(annotation -> annotation.annotationType().equals(Type.class)).first())
+                        .map(annotation -> (Type) annotation)
+                        .ifPresent(type -> classes[finalI] = Ref.forName(type.value()).getClazz());
+            }
         }
         return classes;
     }
