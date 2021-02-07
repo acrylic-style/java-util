@@ -111,7 +111,9 @@ public class Reflector {
     public static <U> U castTo(@Nullable ClassLoader classLoader, @NotNull Object proxy, @Nullable Object instance, @NotNull Class<U> target) {
         if (instance == null) return null;
         reverseList.add(target, instance.getClass());
-        reverseInstanceList.add(proxy, instance);
+        try {
+            reverseInstanceList.add(proxy, instance);
+        } catch (NullPointerException ignore) {}
         return newReflector(classLoader, target, new ReflectorHandler(instance.getClass(), instance));
     }
 
