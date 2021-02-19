@@ -18,5 +18,9 @@ public @interface CastTo {
     @NotNull
     Class<?> value();
 
+    /**
+     * Marks method to create instance of specified class. Target class is required to have constructor with exact
+     * 1 parameter count with Object.
+     */
     boolean createInstance() default false;
 }

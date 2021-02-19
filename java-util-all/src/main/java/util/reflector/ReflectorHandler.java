@@ -113,9 +113,17 @@ public class ReflectorHandler implements InvocationHandler {
         if (found != null) {
             if (castTo != null) {
                 if (castTo.createInstance()) {
-                    return castTo.value().getConstructor(Object.class).newInstance(found.execute(isStatic ? null : Reflector.reverseInstanceList.getOrDefault(instance, instance), args));
+                    try {
+                        return castTo.value().getConstructor(Object.class).newInstance(found.execute(isStatic ? null : Reflector.reverseInstanceList.getOrDefault(instance, instance), args));
+                    } catch (IllegalArgumentException | ClassCastException ex) {
+                        return castTo.value().getConstructor(Object.class).newInstance(found.execute(instance, args));
+                    }
                 } else {
-                    return Reflector.castTo(null, proxy, found.execute(isStatic ? null : Reflector.reverseInstanceList.getOrDefault(instance, instance), args), castTo.value());
+                    try {
+                        return Reflector.castTo(null, proxy, found.execute(isStatic ? null : Reflector.reverseInstanceList.getOrDefault(instance, instance), args), castTo.value());
+                    } catch (IllegalArgumentException | ClassCastException ex) {
+                        return Reflector.castTo(null, proxy, found.execute(instance, args), castTo.value());
+                    }
                     //return Reflector.castTo(null, method.getDeclaringClass(), proxy, methodName, method, castTo.value(), args);
                 }
             }
