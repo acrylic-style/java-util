@@ -23,7 +23,7 @@ java-util includes Collection(not java.util.Collection!), CollectionList and som
 If it throws error like `java.lang.IllegalArgumentException: methods with same signature method() but incompatible return types: <some primitive type> and others`, you will need to do one of them to work properly.
 
 ### Method 1 (Easiest, and mostly it works)
-Use [java agent](https://um.acrylicstyle.xyz/17210489206/213710626/java-util-agent-0.13.3.jar) to workaround this.
+Use [java agent](https://um.acrylicstyle.xyz/local/2021/02/10-25-01/java-util-agent-0.14.2a.jar) to workaround this.
 
 This java agent is also useful for debugging your application, you can use jetbrains @NotNull to method parameter for non-null assertion at runtime.
 

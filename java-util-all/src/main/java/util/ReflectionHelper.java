@@ -27,8 +27,12 @@ import java.util.NoSuchElementException;
 public final class ReflectionHelper {
     private ReflectionHelper() {}
 
-    public static final RefMethod<ClassLoader> getPackagesMethod = Ref.getDeclaredMethod(ClassLoader.class, "getPackages").accessible(true);
-    public static final RefMethod<ClassLoader> getPackageMethod = Ref.getDeclaredMethod(ClassLoader.class, "getPackage", String.class).accessible(true);
+    // These methods will break (Illegal access)
+    @Deprecated
+    public static final RefMethod<ClassLoader> getPackagesMethod = Ref.getDeclaredMethod(ClassLoader.class, "getPackages");
+
+    @Deprecated
+    public static final RefMethod<ClassLoader> getPackageMethod = Ref.getDeclaredMethod(ClassLoader.class, "getPackage", String.class);
 
     /**
      * Find method in class.
@@ -282,7 +286,7 @@ public final class ReflectionHelper {
     @NotNull
     public static ICollectionList<String> findPackages(@Nullable ClassLoader cl, @NotNull("prefix") String prefix, boolean recursive) {
         if (cl == null) return findPackages(prefix, recursive);
-        return ICollectionList.asList((Package[]) getPackagesMethod.invoke(cl))
+        return ICollectionList.asList((Package[]) getPackagesMethod.accessible(true).invoke(cl))
                 .map(Package::getName)
                 .filter(s -> {
                     if (recursive) return s.toLowerCase().startsWith(prefix.toLowerCase());
@@ -297,7 +301,7 @@ public final class ReflectionHelper {
 
     public static boolean isValidPackage(@Nullable ClassLoader cl, @NotNull("packageName") String packageName) {
         if (cl == null) return isValidPackage(packageName);
-        return getPackageMethod.invoke(cl, packageName) != null;
+        return getPackageMethod.accessible(true).invoke(cl, packageName) != null;
     }
 
     @NotNull
