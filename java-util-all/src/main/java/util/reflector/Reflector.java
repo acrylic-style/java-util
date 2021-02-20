@@ -52,7 +52,7 @@ public class Reflector {
     public static <T> @Nullable T newReflector(@Nullable ClassLoader classLoader, @NotNull Class<T> clazz, @NotNull String targetClassName, @Nullable Object instance) {
         Class<?> targetClass;
         try {
-            targetClass = Class.forName(targetClassName);
+            targetClass = Class.forName(targetClassName, true, classLoader != null ? classLoader : Reflector.classLoader);
         } catch (ClassNotFoundException ex) {
             return null;
         }
