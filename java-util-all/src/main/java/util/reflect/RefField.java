@@ -42,11 +42,20 @@ public class RefField<T> implements RefModifierEditor<RefField<T>, Field> {
 
     public void setObj(@Nullable Object obj, Object o) { try { this.field.set(obj, o); } catch (ReflectiveOperationException e) { SneakyThrow.sneaky(e); } }
 
+    public boolean isAccessible() {
+        return this.field.isAccessible();
+    }
+
     public void setAccessible(boolean flag) { this.field.setAccessible(flag); }
 
     @NotNull
     @Contract("_ -> this")
-    public RefField<T> accessible(boolean flag) { this.field.setAccessible(flag); return this; }
+    public RefField<T> accessible(boolean flag) {
+        if (!this.isAccessible()) {
+            this.setAccessible(flag);
+        }
+        return this;
+    }
 
     public void setBoolean(@Nullable T t, boolean flag) { try { this.field.setBoolean(t, flag); } catch (ReflectiveOperationException e) { SneakyThrow.sneaky(e); } }
 

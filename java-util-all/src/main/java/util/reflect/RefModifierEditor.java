@@ -26,6 +26,7 @@ public interface RefModifierEditor<T extends RefMember, U extends Member> extend
     @Contract("-> this")
     @NotNull
     default T addFinal() {
+        if (isFinal()) return (T) this;
         getModifiersField((Class<U>) this.getMember().getClass()).setObj(this.getMember(), this.getMember().getModifiers() & Modifier.FINAL);
         return (T) this;
     }
@@ -34,7 +35,12 @@ public interface RefModifierEditor<T extends RefMember, U extends Member> extend
     @Contract("-> this")
     @NotNull
     default T removeFinal() {
+        if (!isFinal()) return (T) this;
         getModifiersField((Class<U>) this.getMember().getClass()).setObj(this.getMember(), this.getMember().getModifiers() & ~Modifier.FINAL);
         return (T) this;
+    }
+
+    default boolean isFinal() {
+        return Modifier.isFinal(getMember().getModifiers());
     }
 }
