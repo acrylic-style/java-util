@@ -1,7 +1,7 @@
 package util;
 
 /**
- * @deprecated
+ * @deprecated use {@link util.function.ThrowableRunnable}
  */
 @Deprecated
 public interface ThrowableRunnable {
