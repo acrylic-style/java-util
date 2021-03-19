@@ -6,6 +6,7 @@ import util.ThrowableActionableResult;
 
 import java.util.function.Function;
 
+@FunctionalInterface
 public interface ThrowableFunction<T, R> extends Function<T, ThrowableActionableResult<R>>, Chain<ThrowableFunction<T, R>> {
     @Override
     @NotNull

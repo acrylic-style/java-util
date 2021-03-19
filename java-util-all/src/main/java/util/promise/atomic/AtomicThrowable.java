@@ -26,7 +26,12 @@ public class AtomicThrowable extends AtomicReference<Throwable> {
 
     @NotNull
     public AtomicThrowable throwAsRuntimeExceptionIfSet() {
-        if (this.get() != null) throw new RuntimeException(this.get());
+        Throwable throwable = this.get();
+        if (throwable != null) {
+            if (throwable instanceof RuntimeException) throw (RuntimeException) throwable;
+            if (throwable instanceof Error) throw (Error) throwable;
+            throw new RuntimeException(throwable);
+        }
         return this;
     }
 
