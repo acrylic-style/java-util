@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * An utility class to perform I/O operations such as copying InputStream to OutputStream.
  */
-public final class Bytes {
+public class Bytes {
     @Contract
     public static long copy(@NotNull InputStream from, @NotNull OutputStream to) throws IOException {
         Validate.notNull(from, "InputStream cannot be null");

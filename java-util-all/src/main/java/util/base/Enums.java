@@ -7,7 +7,7 @@ import util.Validate;
 
 import java.lang.reflect.Field;
 
-public final class Enums {
+public class Enums {
     @NotNull
     public static <E extends Enum<E>> ActionableResult<E> valueOf(@NotNull Class<E> clazz, @NotNull String s) {
         Validate.notNull(clazz, "class cannot be null");
