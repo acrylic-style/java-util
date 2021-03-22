@@ -1,6 +1,7 @@
 package util.nbs.v4;
 
 import org.jetbrains.annotations.NotNull;
+import util.base.Bytes;
 import util.nbs.InvalidNBSHeaderException;
 import util.nbs.NBSFile;
 import util.nbs.NBSHeader;
@@ -23,7 +24,7 @@ import java.util.List;
 
 public class NBS4Reader implements NBSReader {
     @Override
-    public byte getSupportedVersion() { return 4; }
+    public List<Byte> getSupportedVersions() { return Bytes.asList(4, 5); }
 
     @Override
     public @NotNull ByteOrder getFileByteOrder() { return ByteOrder.LITTLE_ENDIAN; }
@@ -47,7 +48,7 @@ public class NBS4Reader implements NBSReader {
         NBS4Header header = new NBS4Header();
         if (buffer.getShort() != 0) throw new InvalidNBSHeaderException("The specified file does not follow an modern *.NBS format.");
         byte version = buffer.get();
-        if (getSupportedVersion() != version) throw new InvalidNBSHeaderException(String.format("The specified file (Version %s) does not use a supported NBS version.", version));
+        if (!getSupportedVersions().contains(version)) throw new InvalidNBSHeaderException(String.format("The specified file (Version %s) does not use a supported NBS version.", version));
         header.setVersion(version);
         return header;
     }

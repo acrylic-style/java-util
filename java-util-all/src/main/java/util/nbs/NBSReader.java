@@ -6,13 +6,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.List;
 
 public interface NBSReader {
     /**
      * Returns what format version this reader supports.
      * @return the .nbs format version
      */
-    byte getSupportedVersion();
+    List<Byte> getSupportedVersions();
 
     /**
      * Returns the byte order this reader will use.

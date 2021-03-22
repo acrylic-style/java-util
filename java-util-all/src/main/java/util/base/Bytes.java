@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,6 +19,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * An utility class to perform I/O operations such as copying InputStream to OutputStream.
  */
 public class Bytes {
+    public static @NotNull List<Byte> asList(@NotNull Number @NotNull ... bytes) {
+        List<Byte> byteList = new ArrayList<>();
+        for (Number b : bytes) {
+            byteList.add(b.byteValue());
+        }
+        return byteList;
+    }
+
     @Contract
     public static long copy(@NotNull InputStream from, @NotNull OutputStream to) throws IOException {
         Validate.notNull(from, "InputStream cannot be null");
