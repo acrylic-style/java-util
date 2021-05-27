@@ -192,5 +192,11 @@ public class ActionableResult<T> implements Chain<ActionableResult<T>> {
             Validate.notNull(predicate, "predicate cannot be null");
             return predicate.test(value) ? this : empty();
         }
+
+        @Contract(pure = true)
+        @Nullable
+        public final E getValue() {
+            return value;
+        }
     }
 }
