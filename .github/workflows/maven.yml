@@ -16,4 +16,4 @@ jobs:
     - name: Build with Maven
       run: mvn deploy -DaltDeploymentRepository=acrylic-style::default::https://acrylic-style:$token@maven.pkg.github.com/acrylic-style/java-util -Dregistry=https://maven.pkg.github.com/acrylic-style/java-util -Dtoken=$token --file pom.xml
       env:
-        token: ${{ GITHUB_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}
