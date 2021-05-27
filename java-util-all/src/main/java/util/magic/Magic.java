@@ -1,5 +1,6 @@
 package util.magic;
 
+import net.blueberrymc.native_util.NativeUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import sun.misc.Unsafe;
@@ -12,8 +13,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
 public class Magic {
-    @SuppressWarnings("OctalInteger")
-    public static final long VERSION = 0_14_00L;
+    public static final long VERSION = 1405L;
 
     /**
      * Returns forbidden magic which is not guaranteed to work across java versions, or even java platform. No
@@ -30,7 +30,7 @@ public class Magic {
 
     /**
      * This class provides methods that may be specific to a runtime. Their existence and behavior is not
-     * guaranteed across future versions. They may be poorly named, throw exception, have misleading:
+     * guaranteed across future versions. They may be poorly named, throw exception, have misleading
      * parameters, or any other bad programming practice. Programmers should not rely on these methods, as
      * they may be removed at anytime in the future. Use with caution!
      * <p><strong>Remember: This is forbidden magic, don't expect methods to work.</strong>
@@ -58,6 +58,12 @@ public class Magic {
             try {
                 // first, try the normal reflection
                 return clazz.newInstance();
+            } catch (Throwable throwable) {
+                // ignore
+            }
+            try {
+                // then try native method
+                return NativeUtil.allocateInstance(clazz);
             } catch (Throwable throwable) {
                 // ignore
             }

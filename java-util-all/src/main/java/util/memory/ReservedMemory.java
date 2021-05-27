@@ -4,7 +4,6 @@ import com.google.common.annotations.Beta;
 
 /**
  * A small class that makes easier to allocate memory and free the memory after.
- * Also the small note: this class itself also consumes the very few memory.
  */
 @Beta
 public final class ReservedMemory {
@@ -23,12 +22,14 @@ public final class ReservedMemory {
     public void free() {
         if (reserve == null) return;
         reserve = null;
-        new Thread(System::gc).start(); // run gc in other thread and reduce lags on main thread
+        System.gc();
     }
 
+    /**
+     * @deprecated just an alias for {@link #free()}
+     */
+    @Deprecated
     public void freeImmediately() {
-        if (reserve == null) return;
-        reserve = null;
-        System.gc();
+        free();
     }
 }

@@ -20,10 +20,21 @@ public abstract class MoreExecutorService implements ExecutorService {
     @NotNull
     public abstract ExecutorService delegate();
 
-    @NotNull
-    public Future<?> submit(@NotNull IntConsumer idConsumer) {
+    public int submit(@NotNull IntConsumer idConsumer) {
         int id = nextId.incrementAndGet();
-        return submit(() -> idConsumer.accept(id));
+        delegate().submit(() -> idConsumer.accept(id));
+        return id;
+    }
+
+    public int submitDelayed(@NotNull IntConsumer idConsumer) {
+        return submit(id -> {
+            try {
+                Thread.sleep(2);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            idConsumer.accept(id);
+        });
     }
 
     @Override
