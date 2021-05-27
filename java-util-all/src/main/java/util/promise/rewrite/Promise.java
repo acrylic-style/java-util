@@ -106,7 +106,48 @@ public class Promise<T> {
 
     @NotNull
     public Promise<T> thenDo(@NotNull ThrowableConsumer<T> action) {
-        return then(action.toFunction());
+        if (error.get() != null) return setupExecutor(reject(error.get()));
+        this.max = this.executor.submit(id -> {
+            try {
+                current = id;
+                Throwable throwable = error.get();
+                if (throwable != null) {
+                    this.error.set(throwable);
+                    throw Cancel.INSTANCE;
+                }
+                action.accept(this.value.get());
+            } catch (Throwable throwable) {
+                if (throwable instanceof Cancel) return;
+                this.error.set(throwable);
+                if (max == current) {
+                    this.error.set(new UnhandledPromiseException(throwable));
+                }
+            }
+        });
+        return this;
+    }
+
+    @NotNull
+    public Promise<T> thenDo(@NotNull Promise<T> action) {
+        if (error.get() != null) return setupExecutor(reject(error.get()));
+        this.max = this.executor.submit(id -> {
+            try {
+                current = id;
+                Throwable throwable = error.get();
+                if (throwable != null) {
+                    this.error.set(throwable);
+                    throw Cancel.INSTANCE;
+                }
+                action.complete();
+            } catch (Throwable throwable) {
+                if (throwable instanceof Cancel) return;
+                this.error.set(throwable);
+                if (max == current) {
+                    this.error.set(new UnhandledPromiseException(throwable));
+                }
+            }
+        });
+        return this;
     }
 
     @NotNull
