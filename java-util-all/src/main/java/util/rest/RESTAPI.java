@@ -14,6 +14,7 @@ import util.promise.rewrite.Promise;
 import util.reflect.RefField;
 
 import java.io.BufferedReader;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -82,16 +83,22 @@ public class RESTAPI extends TypedEventEmitter<RESTAPI.RESTEvent> implements Cha
             }
             conn.connect();
             RESTAPI.this.emit(RESTEvent.POST_CONNECTION, conn);
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getResponseCode() != 200 ? conn.getErrorStream() : conn.getInputStream()));
+            InputStream in = conn.getResponseCode() != 200 ? conn.getErrorStream() : conn.getInputStream();
+            if (in == null && conn.getResponseCode() != 200) in = conn.getInputStream();
             StringBuilder sb = new StringBuilder();
-            RESTAPI.this.emit(RESTEvent.PRE_APPEND, sb);
-            String output;
-            while ((output = br.readLine()) != null) sb.append(output);
+            if (in != null) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(in));
+                RESTAPI.this.emit(RESTEvent.PRE_APPEND, sb);
+                String output;
+                while ((output = br.readLine()) != null) sb.append(output);
+            } else {
+                RESTAPI.this.emit(RESTEvent.PRE_APPEND, sb);
+            }
             RESTAPI.this.emit(RESTEvent.POST_APPEND, sb);
             try {
                 context.resolve(new Response<>(conn.getResponseCode(), jsonClass.getConstructor(String.class).newInstance(sb.toString()), sb.toString()));
             } catch (ReflectiveOperationException | RuntimeException e) {
-                e.printStackTrace();
+                if (Boolean.getBoolean("util.rest.RESTAPI.debug")) e.printStackTrace();
                 context.resolve(new Response<>(conn.getResponseCode(), null, sb.toString()));
             }
         });
