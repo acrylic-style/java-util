@@ -1,7 +1,11 @@
 package util.nbs;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public interface NBSFile {
     /**
@@ -17,6 +21,17 @@ public interface NBSFile {
      */
     @NotNull
     List<NBSTick> getTicks();
+
+    /**
+     * Returns last tick of the file. May be null if there are 0 ticks in the file.
+     * @return last tick
+     */
+    @Nullable
+    default NBSTick getLastTick() {
+        List<NBSTick> sorted = getTicks().stream().sorted(Comparator.comparingInt(NBSTick::getStartingTick)).collect(Collectors.toList());
+        if (sorted.size() == 0) return null;
+        return sorted.get(sorted.size() - 1);
+    }
 
     /**
      * Returns layers that holds information like layer name, volume, pitch etc.
