@@ -104,6 +104,12 @@ public class Promise<T> {
         });
     }
 
+    @Contract(pure = true)
+    @NotNull
+    public static <T> Promise<T> create(@NotNull ThrowableConsumer<PromiseContext<T>> runnable) {
+        return new Promise<>(runnable);
+    }
+
     @NotNull
     public Promise<T> thenDo(@NotNull ThrowableConsumer<T> action) {
         if (error.get() != null) return setupExecutor(reject(error.get()));

@@ -7,6 +7,7 @@ import util.SneakyThrow;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 public class RefMethod<T> extends RefExecutable implements RefModifierEditor<RefMethod<T>, Method> {
     @NotNull
@@ -15,13 +16,6 @@ public class RefMethod<T> extends RefExecutable implements RefModifierEditor<Ref
     @NotNull
     public Method getMethod() { return method; }
 
-    /**
-     * @deprecated obj is unchecked, may throw exception at runtime
-     * @param obj the object (unchecked type)
-     * @param args invoke arguments
-     * @return the return value
-     */
-    @Deprecated
     public Object invokeObj(Object obj, Object... args) {
         try {
             return this.method.invoke(obj, args);
@@ -43,8 +37,25 @@ public class RefMethod<T> extends RefExecutable implements RefModifierEditor<Ref
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public <R> R call(T obj, Object... args) {
+        return (R) invoke(obj, args);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <R> R callObj(Object obj, Object... args) {
+        return (R) invokeObj(obj, args);
+    }
+
     @Contract(pure = true)
-    public boolean isBridge() { return this.method.isBridge(); }
+    public boolean isBridge() {
+        return this.method.isBridge();
+    }
+
+    @Contract(pure = true)
+    public boolean isPublic() {
+        return Modifier.isPublic(this.method.getModifiers());
+    }
 
     @Override
     @NotNull
@@ -55,8 +66,12 @@ public class RefMethod<T> extends RefExecutable implements RefModifierEditor<Ref
 
     @Contract("_ -> this")
     @NotNull
-    public RefMethod<T> accessible(boolean flag) { setAccessible(flag); return this; }
+    public RefMethod<T> accessible(boolean flag) {
+        setAccessible(flag); return this;
+    }
 
     @Override
-    public @NotNull Member getMember() { return method; }
+    public @NotNull Member getMember() {
+        return method;
+    }
 }

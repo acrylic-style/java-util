@@ -149,11 +149,7 @@ public class RefClass<T> {
 
     @NotNull
     public T newInstance() {
-        try {
-            return this.clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            return SneakyThrow.sneaky(e);
-        }
+        return this.getDeclaredConstructor().newInstance();
     }
 
     @Nullable
@@ -178,7 +174,6 @@ public class RefClass<T> {
             }
         }).toArray();
         if ((constructor = getDeclaredConstructorMaybe(classes1)) != null) return new AbstractMap.SimpleImmutableEntry<>(constructor, args1);
-        System.out.println("Null'd");
         return null;
     }
 
@@ -189,7 +184,9 @@ public class RefClass<T> {
      * @throws ClassNotFoundException when class was not found by specified type.
      * @throws NullPointerException when null was provided to the type.
      * @return primitive class
+     * @deprecated Scheduled to be removed in 0.15. Please use {@link util.magic.Magic.ForbiddenMagic#getPrimitiveClass(String)}  Magic.getForbiddenMagic().getPrimitiveClass(String)} instead.
      */
+    @Deprecated
     @NotNull
     public static Class<?> getPrimitiveClass(@NotNull String type) throws ClassNotFoundException, NullPointerException {
         return Magic.getForbiddenMagic().getPrimitiveClass(type);
@@ -203,7 +200,9 @@ public class RefClass<T> {
      * @throws RuntimeException when class was not found by specified type.
      * @throws NullPointerException when null was provided to the type.
      * @return primitive class
+     * @deprecated Scheduled to be removed in 0.15. Please use {@link util.magic.Magic.ForbiddenMagic#getPrimitiveClassSneaky(String) Magic.getForbiddenMagic().getPrimitiveClassSneaky(String)} instead.
      */
+    @Deprecated
     @NotNull
     public static Class<?> getPrimitiveClassSneaky(@NotNull String type) throws NullPointerException {
         return Magic.getForbiddenMagic().getPrimitiveClassSneaky(type);

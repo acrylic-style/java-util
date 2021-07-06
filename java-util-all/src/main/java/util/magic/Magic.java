@@ -13,7 +13,20 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
 public class Magic {
-    public static final long VERSION = 1405L;
+    public static final long VERSION = 1500L;
+
+    private static int javaVersion = -1;
+
+    public static int getJavaVersion() {
+        if (javaVersion != -1) return javaVersion;
+        String version = System.getProperty("java.version");
+        String[] arr = version.split("\\.");
+        if (arr[0].equals("1")) {
+            return javaVersion = Integer.parseInt(arr[1]);
+        } else {
+            return javaVersion = Integer.parseInt(arr[0]);
+        }
+    }
 
     /**
      * Returns forbidden magic which is not guaranteed to work across java versions, or even java platform. No

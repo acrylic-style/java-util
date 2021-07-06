@@ -14,7 +14,7 @@ public interface ThrowableFunction<T, R> extends Function<T, ThrowableActionable
         try {
             return ThrowableActionableResult.success(run(t));
         } catch (Throwable throwable) {
-            return ThrowableActionableResult.failure(throwable);
+            return ThrowableActionableResult.error(throwable);
         }
     }
 

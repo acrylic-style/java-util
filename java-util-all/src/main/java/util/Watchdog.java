@@ -15,7 +15,7 @@ public class Watchdog {
     private final int timeout;
     private final Object lock = new Object();
     private final Runnable runnable;
-    private boolean silent = false;
+    private boolean silent = true;
 
     public Watchdog(@NotNull Runnable runnable, int timeout) { this(null, runnable, timeout, null); }
 
@@ -38,7 +38,7 @@ public class Watchdog {
                 public void run() {
                     if (!terminated) {
                         if (!silent) System.out.println("Thread " + thread.getName() + " has elapsed its timeout time, interrupting!");
-                        if (timedOutFunction != null ) new Thread(timedOutFunction).start();
+                        if (timedOutFunction != null) new Thread(timedOutFunction).start();
                         thread.interrupt();
                         synchronized (lock) {
                             lock.notifyAll();
@@ -123,15 +123,5 @@ public class Watchdog {
             }
         }
         return o.get();
-    }
-
-    // remove of this method causes dependencies to stop working, marking as @Deprecated instead.
-
-    /**
-     * @deprecated This method does exactly same as {@link #startAwait()} and does not throw InterruptedException, so use {@link #startAwait()} instead.
-     */
-    @Deprecated
-    public synchronized Object startAwaitWithoutException() {
-        return startAwait();
     }
 }

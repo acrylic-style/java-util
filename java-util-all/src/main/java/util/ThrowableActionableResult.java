@@ -3,7 +3,6 @@ package util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import util.function.DelegatingThrowableSupplier;
 import util.function.ThrowableSupplier;
 
 import java.util.function.Consumer;
@@ -31,15 +30,6 @@ public class ThrowableActionableResult<T> extends ActionableResult<T> {
     protected ThrowableActionableResult(@Nullable T value, @Nullable Throwable throwable) {
         super(value);
         this.throwable = throwable;
-    }
-
-    /**
-     * @deprecated less efficient method, consumes more resources than {@link #of(ThrowableSupplier)}
-     */
-    @Deprecated
-    protected ThrowableActionableResult(@NotNull ThrowableSupplier<T> supplier) {
-        this(DelegatingThrowableSupplier.getInstance(supplier).entry().getKey(), DelegatingThrowableSupplier.getInstance(supplier).entry().getValue());
-        DelegatingThrowableSupplier.removeCache(supplier); // remove from cache
     }
 
     @SuppressWarnings("unchecked")
@@ -82,9 +72,20 @@ public class ThrowableActionableResult<T> extends ActionableResult<T> {
     @NotNull
     public static <V> ThrowableActionableResult<V> success(V value) { return ofNullable(value); }
 
+    /**
+     * @deprecated use {@link #error(Throwable)}, which does exactly same as this method.
+     */
     @Contract(pure = true)
     @NotNull
+    @Deprecated
     public static <V> ThrowableActionableResult<V> failure(@NotNull Throwable throwable) {
+        Validate.notNull(throwable, "throwable cannot be null");
+        return new ThrowableActionableResult<>(null, throwable);
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    public static <V> ThrowableActionableResult<V> error(@NotNull Throwable throwable) {
         Validate.notNull(throwable, "throwable cannot be null");
         return new ThrowableActionableResult<>(null, throwable);
     }

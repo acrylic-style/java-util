@@ -6,6 +6,10 @@ import org.jetbrains.annotations.Nullable;
 import util.function.ThrowableSupplier;
 import util.reflect.Ref;
 
+/**
+ * @deprecated i have no idea why this exists
+ */
+@Deprecated
 public class Rethrow<T> {
     @NotNull
     private final util.function.ThrowableSupplier<T> runnable;

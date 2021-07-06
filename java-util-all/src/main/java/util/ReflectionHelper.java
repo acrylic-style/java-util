@@ -20,19 +20,36 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * Helps you using reflection.
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class ReflectionHelper {
     private ReflectionHelper() {}
 
-    // These methods will break (Illegal access)
-    @Deprecated
-    public static final RefMethod<ClassLoader> getPackagesMethod = Ref.getDeclaredMethod(ClassLoader.class, "getPackages");
+    // Java 8
+    private static final @NotNull Optional<RefMethod<ClassLoader>> getPackagesMethod = Ref.getDeclaredMethodOptional(ClassLoader.class, "getPackages");
+    private static final @NotNull Optional<RefMethod<ClassLoader>> getPackageMethod = Ref.getDeclaredMethodOptional(ClassLoader.class, "getPackage", String.class);
 
-    @Deprecated
-    public static final RefMethod<ClassLoader> getPackageMethod = Ref.getDeclaredMethod(ClassLoader.class, "getPackage", String.class);
+    // Java 9+
+    private static final @NotNull Optional<RefMethod<ClassLoader>> getDefinedPackagesMethod = Ref.getMethodOptional(ClassLoader.class, "getDefinedPackages");
+    private static final @NotNull Optional<RefMethod<ClassLoader>> getDefinedPackageMethod = Ref.getMethodOptional(ClassLoader.class, "getDefinedPackage", String.class);
+
+    @Nullable
+    public static Package getPackage(@NotNull("classLoader") ClassLoader cl, @NotNull("name") String name) {
+        RefMethod<ClassLoader> method = getDefinedPackageMethod.orElse(getPackageMethod.orElseThrow(NoSuchElementException::new));
+        if (!method.isPublic()) method.setAccessible(true);
+        return method.call(cl, name);
+    }
+
+    @NotNull
+    public static Package@NotNull[] getPackages(@NotNull("classLoader") ClassLoader cl) {
+        RefMethod<ClassLoader> method = getDefinedPackagesMethod.orElse(getPackagesMethod.orElseThrow(NoSuchElementException::new));
+        if (!method.isPublic()) method.setAccessible(true);
+        return method.call(cl);
+    }
 
     /**
      * Find method in class.
@@ -248,16 +265,16 @@ public final class ReflectionHelper {
         return findAllClasses(classLoader, packageName);
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     @NotNull
     public static CollectionList<Class<?>> findAllClasses(@Nullable ClassLoader classLoader, @NotNull("packageName") String packageName) {
-        try {
-            return new CollectionList<>(ClassPath.from(classLoader == null ? ClassLoader.getSystemClassLoader() : classLoader).getTopLevelClasses(packageName))
-                    .map(ClassPath.ClassInfo::load);
-        } catch (IOException e) {
-            SneakyThrow.sneaky(e);
-            return null;
-        }
+        CollectionList<Class<?>> classes = new CollectionList<>();
+        classes.addAll(new Reflections(
+                new ReflectionsConfigurationBuilder()
+                        .also(builder -> builder.setClassLoaders(new ClassLoader[] { classLoader, ClassLoader.getSystemClassLoader() }))
+                        .setUrls(ClasspathHelper.forClassLoader(classLoader))
+                        .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(packageName)))
+        ).getSubTypesOf(Object.class));
+        return classes;
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -286,7 +303,7 @@ public final class ReflectionHelper {
     @NotNull
     public static ICollectionList<String> findPackages(@Nullable ClassLoader cl, @NotNull("prefix") String prefix, boolean recursive) {
         if (cl == null) return findPackages(prefix, recursive);
-        return ICollectionList.asList((Package[]) getPackagesMethod.accessible(true).invoke(cl))
+        return ICollectionList.asList(getPackages(cl))
                 .map(Package::getName)
                 .filter(s -> {
                     if (recursive) return s.toLowerCase().startsWith(prefix.toLowerCase());
@@ -301,7 +318,7 @@ public final class ReflectionHelper {
 
     public static boolean isValidPackage(@Nullable ClassLoader cl, @NotNull("packageName") String packageName) {
         if (cl == null) return isValidPackage(packageName);
-        return getPackageMethod.accessible(true).invoke(cl, packageName) != null;
+        return getPackage(cl, packageName) != null;
     }
 
     @NotNull

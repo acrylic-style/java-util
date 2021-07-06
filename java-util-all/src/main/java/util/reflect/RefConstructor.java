@@ -29,7 +29,6 @@ public class RefConstructor<T> extends RefExecutable implements RefModifierEdito
 
     public boolean equals(@NotNull RefConstructor<?> o) { return this.constructor.equals(o.constructor); }
 
-    @Contract("!null -> this; null -> fail")
     @NotNull
     public RefConstructor<T> ifEquals(@NotNull RefConstructor<?> refConstructor) {
         if (!this.constructor.equals(refConstructor.constructor)) throw new IllegalStateException("Constructor isn't equals another constructor!");

@@ -1,6 +1,5 @@
 package util.rest;
 
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +22,6 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
-@ApiStatus.Experimental
 @SuppressWarnings({ "unused", "RedundantSuppression" })
 public class RESTAPI extends TypedEventEmitter<RESTAPI.RESTEvent> implements Chain<RESTAPI> {
     public final URL url;

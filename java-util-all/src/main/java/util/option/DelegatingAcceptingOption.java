@@ -21,20 +21,20 @@ public class DelegatingAcceptingOption<T> extends AcceptingOption<T> {
 
     @Override
     public @NotNull AcceptingOption<T> required() {
-        delegate.required();
+        delegate().required();
         return this;
     }
 
     @Override
-    public boolean isRequired() { return delegate.isRequired(); }
+    public boolean isRequired() { return delegate().isRequired(); }
 
     @SuppressWarnings("unchecked")
     @Override
     public @Nullable T getDefaultValue() {
-        Object o = delegate.getDefaultValue();
+        Object o = delegate().getDefaultValue();
         if (o instanceof String) {
             T t = converter.convert((String) o);
-            delegate.defaultsTo(t);
+            delegate().defaultsTo(t);
             return t;
         }
         return (T) o;
@@ -42,36 +42,36 @@ public class DelegatingAcceptingOption<T> extends AcceptingOption<T> {
 
     @Override
     public @NotNull AcceptingOption<T> defaultsTo(T t) {
-        delegate.defaultsTo(t);
+        delegate().defaultsTo(t);
         return this;
     }
 
     @Override
     public boolean isRequiredArg() {
-        return delegate.isRequiredArg();
+        return delegate().isRequiredArg();
     }
 
     @Override
     public @NotNull AcceptingOption<T> withRequiredArg() {
-        delegate.withRequiredArg();
+        delegate().withRequiredArg();
         return this;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public @NotNull StringConverter<T> getConverter() {
-        return (StringConverter<T>) delegate.getConverter();
+        return (StringConverter<T>) delegate().getConverter();
     }
 
     @Override
     public AcceptingOption<T> description(@Nullable String description) {
-        delegate.description(description);
+        delegate().description(description);
         return this;
     }
 
     @Override
     public @Nullable String getDescription() {
-        return delegate.getDescription();
+        return delegate().getDescription();
     }
 
     @SuppressWarnings("unchecked")

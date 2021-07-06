@@ -26,13 +26,16 @@ public abstract class DelegatingThrowableSupplier<T> implements ThrowableSupplie
     @Override
     public final T evaluate() throws Throwable { return delegate().evaluate(); }
 
+    @Deprecated
     public final void unregister() { removeCache(this.delegate()); }
 
     @NotNull
+    @Deprecated
     private static final Collection<ThrowableSupplier<?>, DelegatingThrowableSupplier<?>> cache = new Collection<>();
 
     @SuppressWarnings("unchecked")
     @NotNull
+    @Deprecated
     public static <T> DelegatingThrowableSupplier<T> getInstance(@NotNull ThrowableSupplier<T> supplier) {
         if (cache.containsKey(supplier)) return (DelegatingThrowableSupplier<T>) cache.get(supplier);
         DelegatingThrowableSupplier<T> instance = new DelegatingThrowableSupplier<T>() {
@@ -45,6 +48,7 @@ public abstract class DelegatingThrowableSupplier<T> implements ThrowableSupplie
         return instance;
     }
 
+    @Deprecated
     public static void removeCache(@NotNull ThrowableSupplier<?> supplier) {
         cache.remove(supplier);
     }
