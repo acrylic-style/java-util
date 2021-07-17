@@ -69,6 +69,20 @@ public final class ReflectionHelper {
         }
     }
 
+    @Nullable
+    public static <T> Method findMethodRecursively(@NotNull("clazz") Class<? extends T> clazz, @NotNull("methodName") String methodName, @Nullable Class<?>... args) {
+        Method m = findMethod(clazz, methodName, args);
+        if (m != null) return m;
+        for (Class<?> cl : getSupers(clazz)) {
+            try {
+                Method method = cl.getDeclaredMethod(methodName, args);
+                method.setAccessible(true);
+                return method;
+            } catch (NoSuchMethodException ignore) {}
+        }
+        return null;
+    }
+
     /**
      * Invokes method.
      * @param clazz Class that will invoke method on
@@ -84,6 +98,14 @@ public final class ReflectionHelper {
         List<Class<?>> classes = new ArrayList<>();
         for (Object arg : args) classes.add(arg.getClass());
         Method method = findMethod(clazz, methodName, classes.toArray(new Class[0]));
+        if (method == null) throw new NoSuchMethodException();
+        return method.invoke(instance, args);
+    }
+
+    public static <T> Object invokeMethodRecursively(@NotNull("clazz") Class<? extends T> clazz, @Nullable T instance, @NotNull("methodName") String methodName, @NotNull("args") Object... args) throws InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+        List<Class<?>> classes = new ArrayList<>();
+        for (Object arg : args) classes.add(arg.getClass());
+        Method method = findMethodRecursively(clazz, methodName, classes.toArray(new Class[0]));
         if (method == null) throw new NoSuchMethodException();
         return method.invoke(instance, args);
     }
@@ -122,6 +144,20 @@ public final class ReflectionHelper {
         }
     }
 
+    @Nullable
+    public static <T> Field findFieldRecursively(@NotNull("clazz") Class<? extends T> clazz, @NotNull("field") String fieldName) {
+        Field f = findField(clazz, fieldName);
+        if (f != null) return f;
+        for (Class<?> cl : getSupers(clazz)) {
+            try {
+                Field field = cl.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                return field;
+            } catch (NoSuchFieldException ignore) {}
+        }
+        return null;
+    }
+
     /**
      * Get value in field in class.
      * @param clazz Class that will get field on
@@ -131,9 +167,15 @@ public final class ReflectionHelper {
      * @throws NoSuchFieldException If couldn't find field
      * @throws IllegalAccessException If the operation isn't allowed
      */
-    @NotNull
     public static <T> Object getField(@NotNull("clazz") Class<? extends T> clazz, @Nullable T instance, @NotNull("field") String fieldName) throws NoSuchFieldException, IllegalAccessException {
         Field field = findField(clazz, fieldName);
+        if (field == null) throw new NoSuchFieldException();
+        field.setAccessible(true);
+        return field.get(instance);
+    }
+
+    public static <T> Object getFieldRecursively(@NotNull("clazz") Class<? extends T> clazz, @Nullable T instance, @NotNull("field") String fieldName) throws NoSuchFieldException, IllegalAccessException {
+        Field field = findFieldRecursively(clazz, fieldName);
         if (field == null) throw new NoSuchFieldException();
         field.setAccessible(true);
         return field.get(instance);

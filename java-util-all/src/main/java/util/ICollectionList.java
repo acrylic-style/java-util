@@ -640,11 +640,11 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable, Chain<IColle
 
     /**
      * Just returns list.
-     * @return Returns java.util.List so it can be used to something you want to use list for any reason you specify.
+     * @return Returns list.
      */
     @NotNull
     @Contract("-> this")
-    default List<V> toList() { return this; }
+    default List<V> toList() { return this.clone(); }
 
     /**
      * Converts list into map.
