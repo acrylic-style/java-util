@@ -3,10 +3,13 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>xyz.acrylicstyle</groupId>
+    <parent>
+        <artifactId>util</artifactId>
+        <groupId>xyz.acrylicstyle</groupId>
+        <version>0.15.2</version>
+    </parent>
+
     <artifactId>java-util-kotlin</artifactId>
-    <version>0.15.1</version>
-    <packaging>jar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
