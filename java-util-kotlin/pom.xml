@@ -6,7 +6,7 @@
     <parent>
         <artifactId>util</artifactId>
         <groupId>xyz.acrylicstyle</groupId>
-        <version>0.15.2</version>
+        <version>0.15.3</version>
     </parent>
 
     <artifactId>java-util-kotlin</artifactId>
@@ -27,6 +27,7 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
