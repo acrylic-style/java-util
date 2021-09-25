@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 /**
- * @deprecated uses broken promise, please use {@link util.rest.RESTAPI}.
+ * @deprecated Breaks on Java 9+, uses broken promise, so please please please please please use {@link util.rest.RESTAPI}.
  */
 @Deprecated
 @SuppressWarnings({ "unused", "RedundantSuppression" })

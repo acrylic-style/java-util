@@ -17,6 +17,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
+/**
+ * @deprecated Breaks on Java 9+
+ */
+@Deprecated
 @SuppressWarnings({ "unused", "RedundantSuppression" })
 public class JSONAPI extends EventEmitter {
     private final URL url;

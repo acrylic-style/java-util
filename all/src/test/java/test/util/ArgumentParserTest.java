@@ -32,8 +32,8 @@ public class ArgumentParserTest {
 
     @Test
     public void weirdLiteralTest() {
-        ArgumentParser parser = new ArgumentParser("--special=\"=!%&!()\"");
-        assert parser.containsKey("special") && parser.getString("special").equals("=!%&!()") : parser.getString("special");
+        ArgumentParser parser = new ArgumentParser("--special=\"=!%&!()\\\"\"");
+        assert parser.containsKey("special") && parser.getString("special").equals("=!%&!()\"") : parser.getString("special");
     }
 
     @Test
@@ -52,9 +52,10 @@ public class ArgumentParserTest {
     }
 
     @Test
-    public void noDashes() {
-        ArgumentParser parser = new ArgumentParser("help aaa");
+    public void arguments2() {
+        ArgumentParser parser = new ArgumentParser("--help aaa -a");
         assert parser.contains("help") : "didn't contain help";
         assert parser.contains("aaa") : "didn't contain aaa";
+        assert parser.contains("-a") : "didn't contain -a";
     }
 }

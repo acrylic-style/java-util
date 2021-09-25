@@ -9,10 +9,10 @@
     <packaging>pom</packaging>
     <version>0.15.4</version>
     <modules>
-        <module>java-util-all</module>
-        <module>util-annotations</module>
-        <module>java-util-agent</module>
-        <module>java-util-kotlin</module>
+        <module>all</module>
+        <module>annotations</module>
+        <module>agent</module>
+        <module>kotlin</module>
     </modules>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
