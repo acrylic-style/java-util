@@ -12,6 +12,6 @@ jobs:
       with:
         java-version: 1.8
     - name: Deploy with Gradle
-      run: ./gradlew publish -Dgpr.key=$token
+      run: ./gradlew publish
       env:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
