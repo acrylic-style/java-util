@@ -42,6 +42,17 @@ subprojects {
     }
 
     publishing {
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/acrylic-style/java-util")
+                credentials {
+                    username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME") ?: "acrylic-style"
+                    password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                }
+            }
+        }
+
         publications {
             create<MavenPublication>("mavenJava") {
                 from(components["java"])
