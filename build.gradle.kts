@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "xyz.acrylicstyle.util"
-version = "0.16.0"
+version = "0.16.1"
 
 repositories {
     mavenLocal()
@@ -97,8 +97,8 @@ subprojects {
         implementation("org.json:json:20210307")
         implementation("net.blueberrymc:native-util:1.2.4")
         implementation("com.google.guava:guava:30.1.1-jre")
-        compileOnly("org.projectlombok:lombok:1.18.10")
-        annotationProcessor("org.projectlombok:lombok:1.18.10")
+        compileOnly("org.projectlombok:lombok:1.18.20")
+        annotationProcessor("org.projectlombok:lombok:1.18.20")
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.5.31")
         testImplementation("org.junit.jupiter:junit-jupiter:5.8.0")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
