@@ -7,7 +7,7 @@ import javassist.CtMethod;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 import org.jetbrains.annotations.NotNull;
-import util.base.Arrays;
+import util.base.MoreArrays;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -42,7 +42,7 @@ public class NotNullAssertionTransformer implements ClassFileTransformer {
             boolean modified = false;
             for (CtMethod method : cc.getDeclaredMethods()) {
                 try {
-                    List<List<Annotation>> annotations = Arrays.toList(method.getAvailableParameterAnnotations());
+                    List<List<Annotation>> annotations = MoreArrays.toList(method.getAvailableParameterAnnotations());
                     Set<Integer> params = new HashSet<>();
                     Map<Integer, String> messages = new HashMap<>();
                     AtomicInteger curr = new AtomicInteger(1);
