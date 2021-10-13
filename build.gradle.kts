@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "xyz.acrylicstyle.util"
-version = "0.16.3"
+version = "0.16.4"
 
 repositories {
     mavenLocal()

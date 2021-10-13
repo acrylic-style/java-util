@@ -28,7 +28,7 @@ public class Promise<T> {
     private int max = 0;
 
     private Promise(@Nullable T value, boolean pending) {
-        this.executor = MoreExecutorService.of(newSingleThreadExecutor());
+        this.executor = MoreExecutorService.of(newSingleThreadExecutor("Promise Worker #%d"));
         this.value.set(value);
         if (!pending) {
             this.max = this.executor.submit(id -> current = id);
@@ -36,7 +36,7 @@ public class Promise<T> {
     }
 
     private Promise(@Nullable Throwable throwable) {
-        this.executor = MoreExecutorService.of(newSingleThreadExecutor());
+        this.executor = MoreExecutorService.of(newSingleThreadExecutor("Promise Worker #%d"));
         this.error.set(throwable);
         this.max = this.executor.submit(id -> {
             current = id;
@@ -58,7 +58,7 @@ public class Promise<T> {
 
     private Promise(@Nullable ExecutorService executor, @NotNull ThrowableFunction<PromiseContext<T>, T> supplier) {
         Validate.notNull(supplier, "supplier cannot be null");
-        this.executor = MoreExecutorService.of(executor != null ? executor : newSingleThreadExecutor());
+        this.executor = MoreExecutorService.of(executor != null ? executor : newSingleThreadExecutor("Promise Worker #%d"));
         boolean converted = supplier instanceof ThrowableConsumer.ThrowableConsumerFunction;
         AtomicBoolean resolved = new AtomicBoolean(false);
         this.max = this.executor.submit(id -> {
@@ -105,14 +105,21 @@ public class Promise<T> {
         });
     }
 
-    private static ExecutorService newSingleThreadExecutor() {
-        return Executors.newSingleThreadExecutor(r -> new Thread(r, "Promise Worker #" + PROMISE_THREAD_ID.incrementAndGet()));
+    private static ExecutorService newSingleThreadExecutor(String format) {
+        String name = String.format(format, PROMISE_THREAD_ID.incrementAndGet());
+        return Executors.newSingleThreadExecutor(r -> new Thread(r, name));
     }
 
     @Contract(pure = true)
     @NotNull
     public static <T> Promise<T> create(@NotNull ThrowableConsumer<PromiseContext<T>> runnable) {
         return new Promise<>(runnable);
+    }
+
+    @Contract(pure = true)
+    @NotNull
+    public static <T> Promise<T> create(@NotNull String format, @NotNull ThrowableConsumer<PromiseContext<T>> runnable) {
+        return new Promise<>(newSingleThreadExecutor(format), runnable);
     }
 
     @NotNull
