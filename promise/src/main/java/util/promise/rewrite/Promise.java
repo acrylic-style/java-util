@@ -15,10 +15,12 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 // TODO: throw/show unhandled promise exception
 public class Promise<T> {
+    private static final AtomicLong PROMISE_THREAD_ID = new AtomicLong();
     private MoreExecutorService executor;
     private final AtomicReference<T> value = new AtomicReference<>();
     private final AtomicReference<Throwable> error = new AtomicReference<>();
@@ -26,7 +28,7 @@ public class Promise<T> {
     private int max = 0;
 
     private Promise(@Nullable T value, boolean pending) {
-        this.executor = MoreExecutorService.of(Executors.newSingleThreadExecutor());
+        this.executor = MoreExecutorService.of(newSingleThreadExecutor());
         this.value.set(value);
         if (!pending) {
             this.max = this.executor.submit(id -> current = id);
@@ -34,7 +36,7 @@ public class Promise<T> {
     }
 
     private Promise(@Nullable Throwable throwable) {
-        this.executor = MoreExecutorService.of(Executors.newSingleThreadExecutor());
+        this.executor = MoreExecutorService.of(newSingleThreadExecutor());
         this.error.set(throwable);
         this.max = this.executor.submit(id -> {
             current = id;
@@ -56,7 +58,7 @@ public class Promise<T> {
 
     private Promise(@Nullable ExecutorService executor, @NotNull ThrowableFunction<PromiseContext<T>, T> supplier) {
         Validate.notNull(supplier, "supplier cannot be null");
-        this.executor = MoreExecutorService.of(executor != null ? executor : Executors.newSingleThreadExecutor());
+        this.executor = MoreExecutorService.of(executor != null ? executor : newSingleThreadExecutor());
         boolean converted = supplier instanceof ThrowableConsumer.ThrowableConsumerFunction;
         AtomicBoolean resolved = new AtomicBoolean(false);
         this.max = this.executor.submit(id -> {
@@ -101,6 +103,10 @@ public class Promise<T> {
                 }
             }
         });
+    }
+
+    private static ExecutorService newSingleThreadExecutor() {
+        return Executors.newSingleThreadExecutor(r -> new Thread(r, "Promise Worker #" + PROMISE_THREAD_ID.incrementAndGet()));
     }
 
     @Contract(pure = true)
