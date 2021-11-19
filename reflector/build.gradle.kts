@@ -1,3 +1,3 @@
 dependencies {
-    implementation(project(":reflect"))
+    api(project(":reflect"))
 }

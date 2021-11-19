@@ -132,13 +132,14 @@ public class ReflectorHandler implements InvocationHandler {
             try {
                 return found.execute(isStatic ? null : instance, args);
             } catch (IllegalArgumentException ex) {
-                new IllegalArgumentException(ex.getMessage() + ", missing @TransformParam, @FieldGetter, or @ForwardMethod?", ex).printStackTrace(); // this is most likely wrong with something
+                ex.addSuppressed(new IllegalArgumentException(ex.getMessage() + ", missing @TransformParam, @FieldGetter, or @ForwardMethod?", ex));
                 try {
                     return found.execute(isStatic ? null : Reflector.reverseInstanceList.getOrDefault(instance, instance), args);
                 } catch (IllegalArgumentException ex1) {
                     if (getOption(method).errorOption() == ReflectorOption.ErrorOption.RETURN_NULL) {
                         return null;
                     } else {
+                        ex1.addSuppressed(ex);
                         throw ex1;
                     }
                 }
@@ -270,7 +271,7 @@ public class ReflectorHandler implements InvocationHandler {
                     }
                 }
             }
-            if (arg == null) return null;
+            if (arg == null) continue;
             FieldGetter getter = method.getParameters()[i].getAnnotation(FieldGetter.class);
             ForwardMethod forwardMethod = method.getParameters()[i].getAnnotation(ForwardMethod.class);
             if (getter == null && forwardMethod == null) continue;

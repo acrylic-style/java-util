@@ -22,7 +22,7 @@ public class StringReader {
 
     @NotNull
     public StringReader setIndex(int index) {
-        if (index >= text.length() || index <= -text.length()) {
+        if (index > text.length() || index < 0) {
             throw new IndexOutOfBoundsException("Index: " + index + " >= Size: " + text.length());
         }
         this.index = index;
@@ -40,6 +40,19 @@ public class StringReader {
             idx = text.length() - 1 - index;
         }
         return text.charAt(idx);
+    }
+
+    /**
+     * Reads the next <code>n</code> character. Does not update the current index.
+     */
+    @NotNull
+    public String peek(int amount) {
+        if (amount == 0) return "";
+        if (amount < 0) {
+            return text.substring(Math.max(0, index + amount), index);
+        } else {
+            return text.substring(index, Math.min(text.length() - 1, index + amount));
+        }
     }
 
     /**
@@ -67,15 +80,41 @@ public class StringReader {
     }
 
     /**
-     * Reads the text by provided amount. Updates the index by `amount`.
+     * Reads the first character from text. Updates the index by 1.
+     * @return read char
+     * @throws IllegalArgumentException if index is negative
+     */
+    public char readFirstAsChar() {
+        return readFirst().charAt(0);
+    }
+
+    /**
+     * Reads the text by provided amount. Updates the index by <code>amount</code>.
      * @param amount the amount to read text
      * @return read string
-     * @throws IllegalArgumentException if index is negative
+     * @throws IllegalArgumentException if amount is out of range
      */
     @NotNull
     public String read(int amount) {
-        if (index < 0) throw new IllegalArgumentException("Index is negative");
         String substr = text.substring(index, index + amount);
+        index += amount;
+        return substr;
+    }
+
+    /**
+     * Reads the text by provided amount. Updates the index by <code>amount</code>.
+     * Does not throw exception when amount exceeds the string length.
+     * @param amount the amount to read text
+     * @return read string
+     */
+    @NotNull
+    public String readSafe(int amount) {
+        String substr;
+        if (amount < 0) {
+            substr = text.substring(Math.max(0, index + amount), index);
+        } else {
+            substr = text.substring(index, Math.min(text.length(), index + amount));
+        }
         index += amount;
         return substr;
     }
@@ -102,5 +141,12 @@ public class StringReader {
      */
     public boolean isEOF() {
         return index >= text.length();
+    }
+
+    @NotNull
+    public StringReader copy() {
+        StringReader reader = new StringReader(text);
+        reader.index = this.index;
+        return reader;
     }
 }

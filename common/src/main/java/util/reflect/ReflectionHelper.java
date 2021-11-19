@@ -309,7 +309,7 @@ public final class ReflectionHelper {
                 new ReflectionsConfigurationBuilder()
                         .also(builder -> builder.setClassLoaders(new ClassLoader[] { classLoader, ClassLoader.getSystemClassLoader() }))
                         .setUrls(ClasspathHelper.forClassLoader(classLoader))
-                        .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(packageName)))
+                        .filterInputsBy(new FilterBuilder().includePackage(packageName))
         ).getTypesAnnotatedWith(annotation));
     }
 
@@ -325,7 +325,7 @@ public final class ReflectionHelper {
                 new ReflectionsConfigurationBuilder()
                         .also(builder -> builder.setClassLoaders(new ClassLoader[] { classLoader, ClassLoader.getSystemClassLoader() }))
                         .setUrls(ClasspathHelper.forClassLoader(classLoader))
-                        .filterInputsBy(new FilterBuilder().include(FilterBuilder.prefix(packageName)))
+                        .filterInputsBy(new FilterBuilder().includePackage(packageName))
         ).getSubTypesOf(Object.class);
     }
 

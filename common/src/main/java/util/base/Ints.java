@@ -1,20 +1,17 @@
 package util.base;
 
-import net.blueberrymc.native_util.NativeUtil;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Ints {
+    @SuppressWarnings("unchecked")
     @Contract(pure = true)
     public static int[] toArray(Iterable<? extends Number> iterable) {
         if (iterable instanceof List) {
-            try {
-                return (int[]) NativeUtil.invokeObject(Class.forName("util.collection.ICollectionList").getMethod("toIntArray", List.class), null, iterable);
-            } catch (ReflectiveOperationException ex) {
-                throw new AssertionError(ex);
-            }
+            return toIntArray((List<? extends Number>) iterable);
         }
         final int[][] bytes = { new int[8] };
         AtomicInteger index = new AtomicInteger();
@@ -27,5 +24,18 @@ public class Ints {
             bytes[0][index.get()] = number.byteValue();
         });
         return bytes[0];
+    }
+
+    /**
+     * Converts the list of number into primitive int array.
+     * @param list the list to convert
+     * @return int array
+     */
+    @Contract(pure = true)
+    public static int@NotNull [] toIntArray(@NotNull List<? extends Number> list) {
+        int[] bytes = new int[list.size()];
+        AtomicInteger i = new AtomicInteger();
+        list.forEach(number -> bytes[i.getAndIncrement()] = number.intValue());
+        return bytes;
     }
 }

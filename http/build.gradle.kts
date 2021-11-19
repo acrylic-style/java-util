@@ -1,4 +1,5 @@
 dependencies {
-    implementation(project(":event-emitter"))
-    implementation(project(":promise"))
+    api(project(":event-emitter"))
+    api(project(":promise"))
+    api("org.json:json:20210307")
 }

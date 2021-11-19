@@ -1,5 +1,9 @@
 package util.promise;
 
+/**
+ * @deprecated Will be removed in 0.17
+ */
+@Deprecated
 public interface IPromise<T, R> {
     R apply(T o) throws Throwable;
 

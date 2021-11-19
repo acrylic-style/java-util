@@ -1,10 +1,10 @@
 package util.base;
 
-import net.blueberrymc.native_util.NativeUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import util.Validate;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * An utility class to perform I/O operations such as copying InputStream to OutputStream.
+ * A utility class to perform I/O operations such as copying InputStream to OutputStream.
  */
 public class Bytes {
     public static @NotNull List<Byte> asList(@NotNull Number @NotNull ... bytes) {
@@ -48,14 +48,11 @@ public class Bytes {
         return copy(from, new FileOutputStream(to));
     }
 
+    @SuppressWarnings("unchecked")
     @Contract(pure = true)
     public static byte[] toArray(Iterable<? extends Number> iterable) {
         if (iterable instanceof List) {
-            try {
-                return (byte[]) NativeUtil.invokeObject(Class.forName("util.collection.ICollectionList").getMethod("toByteArray", List.class), null, iterable);
-            } catch (ReflectiveOperationException ex) {
-                throw new AssertionError(ex);
-            }
+            return toByteArray((List<? extends Number>) iterable);
         }
         final byte[][] bytes = { new byte[8] };
         AtomicInteger index = new AtomicInteger();
@@ -68,5 +65,32 @@ public class Bytes {
             bytes[0][index.get()] = number.byteValue();
         });
         return bytes[0];
+    }
+
+    /**
+     * Converts the list of number into primitive byte array.
+     * @param list the list to convert
+     * @return byte array
+     */
+    @Contract(pure = true)
+    public static byte@NotNull[] toByteArray(@NotNull List<? extends Number> list) {
+        byte[] bytes = new byte[list.size()];
+        AtomicInteger i = new AtomicInteger();
+        list.forEach(number -> bytes[i.getAndIncrement()] = number.byteValue());
+        return bytes;
+    }
+
+    /**
+     * Read all bytes from the input stream.
+     * @param in input stream
+     * @return byte array
+     */
+    @Contract(pure = true)
+    public static byte@NotNull[] readFully(@NotNull InputStream in) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024 * 16];
+        int read;
+        while ((read = in.read(buffer)) > 0) out.write(buffer, 0, read);
+        return out.toByteArray();
     }
 }

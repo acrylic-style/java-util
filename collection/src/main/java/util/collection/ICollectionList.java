@@ -4,6 +4,8 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Range;
+import util.base.Bytes;
+import util.base.Ints;
 import util.function.BiBiConsumer;
 import util.Chain;
 import util.DeepCloneable;
@@ -831,20 +833,22 @@ public interface ICollectionList<V> extends List<V>, DeepCloneable, Chain<IColle
 
     // ===== Static Methods
 
+    /**
+     * @deprecated Use {@link Bytes#toByteArray(List)} instead
+     */
+    @Deprecated
     @Contract(pure = true)
     static byte@NotNull[] toByteArray(@NotNull List<? extends Number> list) {
-        byte[] bytes = new byte[list.size()];
-        AtomicInteger i = new AtomicInteger();
-        list.forEach(number -> bytes[i.getAndIncrement()] = number.byteValue());
-        return bytes;
+        return Bytes.toByteArray(list);
     }
 
+    /**
+     * @deprecated Use {@link Ints#toIntArray(List)} instead
+     */
+    @Deprecated
     @Contract(pure = true)
     static int@NotNull[] toIntArray(@NotNull List<? extends Number> list) {
-        int[] bytes = new int[list.size()];
-        AtomicInteger i = new AtomicInteger();
-        list.forEach(number -> bytes[i.getAndIncrement()] = number.intValue());
-        return bytes;
+        return Ints.toIntArray(list);
     }
 
     /**

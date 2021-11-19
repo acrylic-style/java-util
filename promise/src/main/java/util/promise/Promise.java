@@ -16,7 +16,9 @@ import java.util.function.Consumer;
 /**
  * Represents partial implementation of JavaScript Promise.
  * @param <T> Promise return type
+ * @deprecated Will be removed in 0.17
  */
+@Deprecated
 public abstract class Promise<T> implements IPromise<Object, T>, Chain<Promise<T>> {
     public static final Promise<?> EMPTY_RESOLVED_PROMISE;
     public static final Promise<?> EMPTY_REJECTED_PROMISE;

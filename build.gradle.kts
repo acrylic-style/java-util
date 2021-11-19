@@ -1,11 +1,12 @@
 plugins {
     java
-    kotlin("jvm") version "1.5.31"
+    kotlin("jvm") version "1.6.0"
     `maven-publish`
+    `java-library`
 }
 
 group = "xyz.acrylicstyle.util"
-version = "0.16.4"
+version = "0.16.5"
 
 repositories {
     mavenLocal()
@@ -29,6 +30,7 @@ subprojects {
         plugin("java")
         plugin("org.jetbrains.kotlin.jvm")
         plugin("maven-publish")
+        plugin("java-library")
     }
 
     java {
@@ -97,12 +99,8 @@ subprojects {
 
 subprojects {
     dependencies {
-        if (name != "common") implementation(project(":common"))
-        implementation("org.jetbrains.kotlin:kotlin-stdlib:1.5.31")
-        implementation("org.jetbrains:annotations:22.0.0")
-        implementation("org.json:json:20210307")
-        implementation("net.blueberrymc:native-util:1.2.4")
-        implementation("com.google.guava:guava:30.1.1-jre")
+        if (name != "common" && name != "maven") api(project(":common"))
+        compileOnly("org.jetbrains:annotations:22.0.0")
         compileOnly("org.projectlombok:lombok:1.18.20")
         annotationProcessor("org.projectlombok:lombok:1.18.20")
         testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.5.31")
