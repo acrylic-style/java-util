@@ -6,13 +6,13 @@ plugins {
 }
 
 group = "xyz.acrylicstyle.util"
-version = "0.16.5"
+version = "0.16.6"
 
 repositories {
-    mavenLocal()
+    // mavenLocal()
     mavenCentral()
     maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
-    maven { url = uri("https://repo2.acrylicstyle.xyz") }
+    maven { url = uri("https://repo.acrylicstyle.xyz") }
 }
 
 subprojects {
@@ -20,10 +20,10 @@ subprojects {
     version = parent!!.version
 
     repositories {
-        mavenLocal()
+        // mavenLocal()
         mavenCentral()
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
-        maven { url = uri("https://repo2.acrylicstyle.xyz") }
+        maven { url = uri("https://repo.acrylicstyle.xyz") }
     }
 
     apply {
@@ -46,12 +46,14 @@ subprojects {
     publishing {
         repositories {
             maven {
-                name = "GitHubPackages"
-                url = uri("https://maven.pkg.github.com/acrylic-style/java-util")
-                credentials {
-                    username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME") ?: "acrylic-style"
-                    password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
-                }
+                name = "repo"
+                credentials(PasswordCredentials::class)
+                url = uri(
+                    if (project.version.toString().endsWith("SNAPSHOT"))
+                        project.findProperty("deploySnapshotURL") ?: System.getProperty("deploySnapshotURL", "")
+                    else
+                        project.findProperty("deployReleasesURL") ?: System.getProperty("deployReleasesURL", "")
+                )
             }
         }
 

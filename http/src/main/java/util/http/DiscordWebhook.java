@@ -165,34 +165,34 @@ public class DiscordWebhook implements Chain<DiscordWebhook> {
             return this;
         }
 
-        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-        private static class Footer {
-            @Getter(AccessLevel.PRIVATE) private final String text;
-            @Getter(AccessLevel.PRIVATE) private final String iconUrl;
+        @RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+        public static class Footer {
+            @Getter private final String text;
+            @Getter private final String iconUrl;
         }
 
-        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-        private static class Thumbnail {
-            @Getter(AccessLevel.PRIVATE) private final String url;
+        @RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+        public static class Thumbnail {
+            @Getter private final String url;
         }
 
-        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-        private static class Image {
-            @Getter(AccessLevel.PRIVATE) private final String url;
+        @RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+        public static class Image {
+            @Getter(AccessLevel.PRIVATE) public final String url;
         }
 
-        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-        private static class Author {
-            @Getter(AccessLevel.PRIVATE) private final String name;
-            @Getter(AccessLevel.PRIVATE) private final String url;
-            @Getter(AccessLevel.PRIVATE) private final String iconUrl;
+        @RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+        public static class Author {
+            @Getter private final String name;
+            @Getter private final String url;
+            @Getter private final String iconUrl;
         }
 
-        @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-        private static class Field {
-            @Getter(AccessLevel.PRIVATE) private final String name;
-            @Getter(AccessLevel.PRIVATE) private final String value;
-            @Getter(AccessLevel.PRIVATE) private final boolean inline;
+        @RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+        public static class Field {
+            @Getter private final String name;
+            @Getter private final String value;
+            @Getter private final boolean inline;
         }
     }
 }
