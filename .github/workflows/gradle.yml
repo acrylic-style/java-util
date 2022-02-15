@@ -12,4 +12,4 @@ jobs:
       with:
         java-version: 1.8
     - name: Deploy to GitHub Packages with Gradle
-      run: ./gradlew -DdeploySnapshotURL=https://maven.pkg.github.com/acrylic-style/java-util -DdeployReleasesURL=https://maven.pkg.github.com/acrylic-style/java-util -DrepoUsername=acrylic-style -DrepoPassword=${{ secrets.GITHUB_TOKEN }} publish
+      run: ./gradlew -DdeploySnapshotURL=https://maven.pkg.github.com/acrylic-style/java-util -DdeployReleasesURL=https://maven.pkg.github.com/acrylic-style/java-util -PrepoUsername=acrylic-style -PrepoPassword=${{ secrets.GITHUB_TOKEN }} publish
