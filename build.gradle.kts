@@ -12,7 +12,7 @@ repositories {
     // mavenLocal()
     mavenCentral()
     maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
-    maven { url = uri("https://repo.acrylicstyle.xyz") }
+    maven { url = uri("https://repo.blueberrymc.net/repository/maven-public/") }
 }
 
 subprojects {
@@ -23,7 +23,7 @@ subprojects {
         // mavenLocal()
         mavenCentral()
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
-        maven { url = uri("https://repo.acrylicstyle.xyz") }
+        maven { url = uri("https://repo.blueberrymc.net/repository/maven-public/") }
     }
 
     apply {
