@@ -4,7 +4,7 @@ plugins {
     `java-library`
 }
 
-group = "xyz.acrylicstyle"
+group = "xyz.acrylicstyle.java-util"
 version = "1.0.0-SNAPSHOT"
 
 repositories {
