@@ -75,7 +75,7 @@ public interface StringReader extends Iterable<@NotNull Character> {
         try {
             index(index() + 1);
         } catch (IndexOutOfBoundsException e) {
-            throw InvalidArgumentException.createUnexpectedEOF();
+            throw InvalidArgumentException.createUnexpectedEOF().withContext(this);
         }
     }
 
