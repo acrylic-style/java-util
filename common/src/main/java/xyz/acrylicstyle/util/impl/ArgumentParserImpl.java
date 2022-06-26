@@ -88,7 +88,12 @@ public class ArgumentParserImpl implements ArgumentParser {
         }
         if (reader.peek() == '=') {
             reader.skip();
-            String value = reader.readQuotableString(literalBackslash, allowedEscapedCharacters);
+            String value;
+            if (reader.isEOF()) {
+                value = "";
+            } else {
+                value = reader.readQuotableString(literalBackslash, allowedEscapedCharacters);
+            }
             builder.put(key, value);
         }
     }
