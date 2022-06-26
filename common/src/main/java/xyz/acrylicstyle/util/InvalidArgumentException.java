@@ -6,13 +6,20 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
+/**
+ * An exception thrown when an argument is invalid. {@link #toString()} outputs the multiple lines when context is provided.
+ */
 public class InvalidArgumentException extends Exception {
+    private static final int SHOW_BEFORE_AFTER = 15;
     private StringReader context;
     private int length = 1;
+    private String toString = null;
 
+    /*
     public InvalidArgumentException() {
         super();
     }
+    */
 
     public InvalidArgumentException(@Nullable String message) {
         super(message);
@@ -57,13 +64,18 @@ public class InvalidArgumentException extends Exception {
     @Contract(value = "-> new", pure = true)
     @NotNull
     public static InvalidArgumentException createUnexpectedEOF() {
-        return new InvalidArgumentException("Encountered unexpected EOF");
+        return new InvalidArgumentException("Unexpected EOF");
     }
 
     @Contract(value = "_ -> new", pure = true)
     @NotNull
     public static InvalidArgumentException createUnexpectedEOF(char c) {
-        return new InvalidArgumentException("Encountered unexpected EOF while looking for '" + c + "'");
+        return new InvalidArgumentException("Unexpected EOF while looking for '" + c + "'");
+    }
+
+    @Contract("_ -> new")
+    public static @NotNull InvalidArgumentException invalidEscape(char c) {
+        return new InvalidArgumentException("Invalid escape sequence: '\\" + c + "'");
     }
 
     @NotNull
@@ -81,19 +93,22 @@ public class InvalidArgumentException extends Exception {
 
     @Override
     public String toString() {
+        if (toString != null) {
+            return toString;
+        }
         if (context == null) {
-            return super.toString();
+            return toString = super.toString();
         }
         try {
             StringBuilder sb = new StringBuilder(super.toString());
-            String prev = context.peekWithAmount(-Math.min(context.index(), 10));
-            String next = context.peekWithAmount(Math.min(context.readableCharacters(), Math.max(10, length)));
-            int cursor = Math.min(10, context.index());
+            String prev = context.peekWithAmount(-Math.min(context.index(), SHOW_BEFORE_AFTER));
+            String next = context.peekWithAmount(Math.min(context.readableCharacters(), Math.max(SHOW_BEFORE_AFTER, length)));
+            int cursor = Math.min(SHOW_BEFORE_AFTER, context.index());
             sb.append("\n").append(prev).append(next);
             sb.append("\n").append(repeat(" ", cursor)).append("^").append(repeat("~", length - 1));
-            return sb.toString();
+            return toString = sb.toString();
         } catch (Throwable t) {
-            return super.toString() + " [ERROR GENERATING MESSAGE: " + t.getClass().getTypeName() + ": " + t.getMessage() + "]: " + Arrays.toString(t.getStackTrace());
+            return toString = super.toString() + " [ERROR GENERATING MESSAGE: " + t.getClass().getTypeName() + ": " + t.getMessage() + "]: " + Arrays.toString(t.getStackTrace());
         }
     }
 

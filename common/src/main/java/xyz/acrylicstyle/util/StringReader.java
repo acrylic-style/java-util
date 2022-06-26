@@ -2,9 +2,12 @@ package xyz.acrylicstyle.util;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.acrylicstyle.util.impl.StringReaderImpl;
 
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -66,29 +69,37 @@ public interface StringReader extends Iterable<@NotNull Character> {
 
     /**
      * Increments the <code>index</code> by 1.
-     * @throws IndexOutOfBoundsException if <code>index + 1</code> is out of bounds
+     * @throws InvalidArgumentException if <code>index + 1</code> is out of bounds
      */
-    default void skip() {
-        index(index() + 1);
+    default void skip() throws InvalidArgumentException {
+        try {
+            index(index() + 1);
+        } catch (IndexOutOfBoundsException e) {
+            throw InvalidArgumentException.createUnexpectedEOF();
+        }
     }
 
     /**
      * Increments the <code>index</code> by <code>amount</code>.
      * @param amount the amount
-     * @throws IndexOutOfBoundsException if <code>index + amount</code> is out of bounds
+     * @throws InvalidArgumentException if <code>index + amount</code> is out of bounds
      */
-    default void skip(int amount) {
-        index(index() + amount);
+    default void skip(int amount) throws InvalidArgumentException {
+        try {
+            index(index() + amount);
+        } catch (IndexOutOfBoundsException e) {
+            throw new InvalidArgumentException("Unexpected EOF while skipping " + amount + " characters", e).withContext(this);
+        }
     }
 
     /**
      * Returns the character at the current index and increments the <code>index</code> by 1.
      * @return a character
-     * @throws IndexOutOfBoundsException if <code>index + 1</code> is out of bounds
+     * @throws InvalidArgumentException if <code>index + 1</code> is out of bounds
      */
-    default char read() {
+    default char read() throws InvalidArgumentException {
         int i = index();
-        skip(1);
+        skip();
         return content().charAt(i);
     }
 
@@ -96,31 +107,43 @@ public interface StringReader extends Iterable<@NotNull Character> {
      * Reads the all remaining characters.
      * @return a string
      */
-    @Contract(pure = true)
     @NotNull
     default String readAll() {
         int index = index();
-        index(content().length() - 1);
+        index(content().length());
         return content().substring(index);
     }
 
     /**
-     * Reads the non-whitespace characters.
+     * Reads the non-whitespace and non-newline characters.
      * @return a string
+     * @see #readQuotedString() for quoted strings
      */
     @NotNull
     default String readToken() {
-        return readUntilIf(c -> !Character.isWhitespace(c));
+        return readUntilIf(c -> !Character.isWhitespace(c) && c != '\n' && c != '\r');
+    }
+
+    /**
+     * Skips all line terminators (<code>\n</code> and <code>\r</code>).
+     * @return count of skipped characters
+     */
+    default int skipLineTerminators() throws InvalidArgumentException {
+        int i = index();
+        while (peek() == '\n' || peek() == '\r') {
+            skip();
+        }
+        return index() - i;
     }
 
     /**
      * Returns the character at the current index and increments the <code>index</code> by 1. This method is equivalent
      * to <code>read(1)</code>.
      * @return a single character string
-     * @throws IndexOutOfBoundsException if <code>index + 1</code> is out of bounds
+     * @throws InvalidArgumentException if <code>index + 1</code> is out of bounds
      */
     @NotNull
-    default String readString() {
+    default String readString() throws InvalidArgumentException {
         return read(1);
     }
 
@@ -128,10 +151,10 @@ public interface StringReader extends Iterable<@NotNull Character> {
      * Reads the string from <code>index</code> until <code>index + amount</code>.
      * @param amount the length of the string to read
      * @return the string
-     * @throws IndexOutOfBoundsException if <code>index + amount</code> is out of bounds
+     * @throws InvalidArgumentException if <code>index + amount</code> is out of bounds
      */
     @NotNull
-    default String read(int amount) {
+    default String read(int amount) throws InvalidArgumentException {
         int index = this.index();
         this.skip(amount);
         return content().substring(index, index + amount);
@@ -144,6 +167,7 @@ public interface StringReader extends Iterable<@NotNull Character> {
      */
     @NotNull
     default String readUntilIf(@NotNull Predicate<@NotNull Character> predicate) {
+        if (isEOF()) return "";
         int originalIndex = index();
         int index = originalIndex;
         while (index < content().length() && predicate.test(content().charAt(index))) {
@@ -175,12 +199,12 @@ public interface StringReader extends Iterable<@NotNull Character> {
 
     /**
      * Skips all whitespace characters until non-whitespace character is found.
-     * @return <code>true</code> if at least one whitespace character was found, <code>false</code> otherwise
+     * @return count of skipped characters
      */
-    default boolean skipWhitespace() {
+    default int skipWhitespace() {
         int index = this.index();
         skipUntilIf(Character::isWhitespace);
-        return index != this.index();
+        return this.index() - index;
     }
 
     /**
@@ -205,6 +229,164 @@ public interface StringReader extends Iterable<@NotNull Character> {
      */
     default int readableCharacters() {
         return content().length() - index();
+    }
+
+    /**
+     * Reads a quoted string. Allows all escape sequences.
+     * @return string, without surrounding quotes
+     * @throws InvalidArgumentException if the string is not quoted
+     * @see #readToken() for reading unquoted string
+     * @see #readAll() for reading the rest of the content
+     */
+    @NotNull
+    default String readQuotedString() throws InvalidArgumentException {
+        return readQuotedString(false, (char[]) null);
+    }
+
+    /**
+     * Reads a quoted string.
+     * @param allowedEscapes set of allowed escape sequences. See {@link #readQuotedString(boolean, char...)} for valid characters.
+     * @return string, without surrounding quotes
+     * @throws InvalidArgumentException if the string is not quoted
+     * @see #readToken() for reading unquoted string
+     * @see #readAll() for reading the rest of the content
+     */
+    @NotNull
+    default String readQuotedString(char @Nullable ... allowedEscapes) throws InvalidArgumentException {
+        return readQuotedString(false, allowedEscapes);
+    }
+
+    /**
+     * Reads a quoted string.
+     * @param literalBackslash whether to interpret backslash as literal backslash. Effectively disables escape
+     *                         sequences and makes <code>allowedEscapes</code> no-op.
+     * @param allowedEscapes set of allowed escape sequences. Valid characters are: <code>['\n', '\t', '\r', '\\', '"']</code>
+     * @return string, without surrounding quotes
+     * @throws InvalidArgumentException if the string is not quoted
+     * @see #readToken() for reading unquoted string
+     * @see #readAll() for reading the rest of the content
+     */
+    @NotNull
+    default String readQuotedString(boolean literalBackslash, char @Nullable ... allowedEscapes) throws InvalidArgumentException {
+        if (peek() != '"') {
+            throw InvalidArgumentException.expected('"', peek()).withContext(this);
+        }
+        Set<Character> escapes = new HashSet<>();
+        if (allowedEscapes != null) {
+            for (char c : allowedEscapes) {
+                escapes.add(c);
+            }
+        }
+        skip();
+        StringBuilder sb = new StringBuilder();
+        while (hasNext()) {
+            char read = read();
+            if (read == '"') {
+                return sb.toString();
+            } else if (read == '\\') {
+                if (literalBackslash) {
+                    sb.append(read); // add backslash
+                    continue;
+                }
+                read = read();
+                if (read == 'n' && (allowedEscapes == null || escapes.contains('\n'))) {
+                    sb.append('\n');
+                } else if (read == 't' && (allowedEscapes == null || escapes.contains('\t'))) {
+                    sb.append('\t');
+                } else if (read == 'r' && (allowedEscapes == null || escapes.contains('\r'))) {
+                    sb.append('\r');
+                } else if (read == '\\' && (allowedEscapes == null || escapes.contains('\\'))) {
+                    sb.append('\\');
+                } else if (read == '"' && (allowedEscapes == null || escapes.contains('"'))) {
+                    sb.append('"');
+                } else {
+                    throw InvalidArgumentException.invalidEscape(read).withContext(this, -2, 2);
+                }
+            } else {
+                sb.append(read);
+            }
+        }
+        throw InvalidArgumentException.createUnexpectedEOF('"').withContext(this);
+    }
+
+    /**
+     * Reads a quoted or unquoted string. If a string starts with double quotes, it will be read as a quoted string.
+     * Allows all escape sequences when using {@link #readQuotedString()}.
+     * @return a string
+     * @throws InvalidArgumentException if the string is quoted and the content is not a valid string
+     * @see #readQuotableString(char...) for reading a quoted string with allowed escape sequences
+     */
+    @NotNull
+    default String readQuotableString() throws InvalidArgumentException {
+        return readQuotableString(false, (char[]) null);
+    }
+
+    /**
+     * Reads a quoted or unquoted string. If a string starts with double quotes, it will be read as a quoted string.
+     * Passes the allowed escape sequences to {@link #readQuotedString(boolean, char...)}.
+     * @param allowedEscapes set of allowed escape sequences. See {@link #readQuotedString(char[])} for valid characters.
+     * @return a string
+     * @throws InvalidArgumentException if the string is quoted and the content is not a valid string
+     * @see #readQuotableString() for reading a quoted string with all escape sequences allowed
+     */
+    @NotNull
+    default String readQuotableString(char @Nullable ... allowedEscapes) throws InvalidArgumentException {
+        return readQuotableString(false, allowedEscapes);
+    }
+
+    /**
+     * Reads a quoted or unquoted string. If a string starts with double quotes, it will be read as a quoted string.
+     * Passes the allowed escape sequences to {@link #readQuotedString(boolean, char...)} )}.
+     * @param literalBackslash whether to interpret backslash as literal backslash. Effectively disables escape
+     *                         sequences and makes <code>allowedEscapes</code> no-op.
+     * @param allowedEscapes set of allowed escape sequences. See {@link #readQuotedString(char[])} for valid characters.
+     * @return a string
+     * @throws InvalidArgumentException if the string is quoted and the content is not a valid string
+     * @see #readQuotableString() for reading a quoted string with all escape sequences allowed
+     */
+    @NotNull
+    default String readQuotableString(boolean literalBackslash, char @Nullable ... allowedEscapes) throws InvalidArgumentException {
+        if (peek() == '"') {
+            return readQuotedString(literalBackslash, allowedEscapes);
+        } else {
+            return readToken();
+        }
+    }
+
+    /**
+     * Reads a string until <code>c</code> is found.
+     * @param c the character to stop at
+     * @return a string
+     */
+    @NotNull
+    default String readUntil(char c) {
+        int originalIndex = index();
+        int index = originalIndex;
+        while (index < content().length() && content().charAt(index) != c) {
+            index++;
+        }
+        index(index);
+        return content().substring(originalIndex, index);
+    }
+
+    /**
+     * Reads a string until one of <code>chars</code> is found.
+     * @param chars set of characters to stop at
+     * @return a string
+     */
+    @NotNull
+    default String readUntil(char @NotNull ... chars) {
+        Set<Character> set = new HashSet<>();
+        for (char c : chars) {
+            set.add(c);
+        }
+        int originalIndex = index();
+        int index = originalIndex;
+        while (index < content().length() && !set.contains(content().charAt(index))) {
+            index++;
+        }
+        index(index);
+        return content().substring(originalIndex, index);
     }
 
     /**

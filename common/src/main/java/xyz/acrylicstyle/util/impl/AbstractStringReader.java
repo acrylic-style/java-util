@@ -2,6 +2,7 @@ package xyz.acrylicstyle.util.impl;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import xyz.acrylicstyle.util.InvalidArgumentException;
 import xyz.acrylicstyle.util.StringReader;
 
 import java.util.Iterator;
@@ -61,7 +62,11 @@ public abstract class AbstractStringReader implements StringReader {
             if (isEOF()) {
                 throw new NoSuchElementException("index: " + index() + ", length: " + content().length());
             }
-            return read();
+            try {
+                return read();
+            } catch (InvalidArgumentException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
