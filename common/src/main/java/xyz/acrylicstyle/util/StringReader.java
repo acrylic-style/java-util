@@ -129,6 +129,9 @@ public interface StringReader extends Iterable<@NotNull Character> {
      * @return count of skipped characters
      */
     default int skipLineTerminators() throws InvalidArgumentException {
+        if (isEOF()) {
+            return 0;
+        }
         int i = index();
         while (peek() == '\n' || peek() == '\r') {
             skip();
@@ -181,6 +184,9 @@ public interface StringReader extends Iterable<@NotNull Character> {
      * Skips the string until the end of the content or until predicate returns false.
      */
     default void skipUntilIf(@NotNull Predicate<@NotNull Character> predicate) {
+        if (isEOF()) {
+            return;
+        }
         int index = this.index();
         while (index < content().length() && predicate.test(content().charAt(index))) {
             index++;
@@ -202,6 +208,9 @@ public interface StringReader extends Iterable<@NotNull Character> {
      * @return count of skipped characters
      */
     default int skipWhitespace() {
+        if (isEOF()) {
+            return 0;
+        }
         int index = this.index();
         skipUntilIf(Character::isWhitespace);
         return this.index() - index;

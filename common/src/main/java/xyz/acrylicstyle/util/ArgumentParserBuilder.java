@@ -63,6 +63,15 @@ public interface ArgumentParserBuilder {
     ArgumentParserBuilder literalBackslash();
 
     /**
+     * Parses arguments without the <code>--</code> prefix. Default is false. If true, the parser will attempt to parse
+     * <code>key=value</code> to <code>{key=value}</code> (in arguments). If false, <code>key=value</code> will be put
+     * into the unhandled arguments.
+     */
+    @Contract("-> this")
+    @NotNull
+    ArgumentParserBuilder parseOptionsWithoutDash();
+
+    /**
      * Create a new instance of {@link ArgumentParser}.
      * @return the instance
      */

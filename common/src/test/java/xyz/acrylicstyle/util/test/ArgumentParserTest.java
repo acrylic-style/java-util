@@ -12,12 +12,14 @@ import java.util.Arrays;
 public class ArgumentParserTest {
     @Test
     public void testSimple() throws InvalidArgumentException {
-        ArgumentParsedResult result = ArgumentParser.create().parse("--test=abc -abc=def --abc= --abc");
+        ArgumentParsedResult result = ArgumentParser.create().parse("--test=abc -abc=def --abc= --abc a=s if ");
         //System.err.println(result);
         assert result.getArgumentOrThrow("test").equals("abc") : result.getArgumentOrThrow("test");
         assert result.getArgumentOrThrow("abc").isEmpty() : result.getArgumentOrThrow("abc");
         assert result.shortArguments().containsAll(Arrays.asList('a', 'b', 'c', '=', 'd', 'e', 'f')) : result.shortArguments();
         assert result.containsUnhandledArgument("abc") : result.unhandledArguments();
+        assert result.containsUnhandledArgument("a=s") : result;
+        assert result.containsUnhandledArgument("if") : result.unhandledArguments();
 
         // check toString output
         InvalidArgumentException ex = Assertions.assertThrows(InvalidArgumentException.class, () -> {
@@ -36,6 +38,13 @@ public class ArgumentParserTest {
                 .parse("--dupe-key=1 --dupe-key=2")
                 .getArgumentOrThrow("dupe-key")
                 .equals("2");
+
+        result = ArgumentParserBuilder.builder()
+                .parseOptionsWithoutDash()
+                .create()
+                .parse(" a=s if ");
+        assert result.getArgumentOrThrow("a").equals("s") : result;
+        assert result.containsUnhandledArgument("if") : result.unhandledArguments();
     }
 
     @Test

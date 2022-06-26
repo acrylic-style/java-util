@@ -14,6 +14,7 @@ public class ArgumentParserImpl implements ArgumentParser {
     private final boolean allowDuplicateKey;
     private final char @Nullable [] allowedEscapedCharacters;
     private final boolean literalBackslash;
+    private final boolean parseOptionsWithoutDash;
 
     public ArgumentParserImpl() {
         this(new ArgumentParserBuilderImpl());
@@ -23,6 +24,7 @@ public class ArgumentParserImpl implements ArgumentParser {
         this.allowDuplicateKey = builder.allowDuplicateKey;
         this.allowedEscapedCharacters = toCharArray(builder.allowedEscapedCharacters);
         this.literalBackslash = builder.literalBackslash;
+        this.parseOptionsWithoutDash = builder.parseOptionsWithoutDash;
     }
 
     @Override
@@ -44,28 +46,7 @@ public class ArgumentParserImpl implements ArgumentParser {
                         builder.addUnhandled("--");
                         continue;
                     }
-                    String key;
-                    int read;
-                    if (reader.peek() == '\"') {
-                        key = reader.readQuotedString(literalBackslash, allowedEscapedCharacters);
-                        read = key.length() + 2;
-                    } else {
-                        key = reader.readUntil('=', ' ', '\n', '\r');
-                        read = key.length();
-                    }
-                    if (reader.isEOF()) {
-                        builder.addUnhandled(key);
-                        continue;
-                    }
-                    if (!allowDuplicateKey && builder.containsKey(key)) {
-                        throw new InvalidArgumentException("Duplicate key: " + key + " (Set allowDuplicateKey to true to overwrite the value)")
-                                .withContext(reader, -read, read);
-                    }
-                    if (reader.peek() == '=') {
-                        reader.skip();
-                        String value = reader.readQuotableString(literalBackslash, allowedEscapedCharacters);
-                        builder.put(key, value);
-                    }
+                    parseOption(builder, reader);
                 } else {
                     // short argument (-)
                     if (reader.isEOF() || reader.skipWhitespace() >= 1 || reader.skipLineTerminators() >= 1) {
@@ -77,9 +58,39 @@ public class ArgumentParserImpl implements ArgumentParser {
                         builder.addShort(c1);
                     }
                 }
+            } else if (parseOptionsWithoutDash) {
+                reader.skip(-1);
+                parseOption(builder, reader);
+            } else {
+                builder.addUnhandled(c + reader.readToken());
             }
         }
         return builder.build();
+    }
+
+    private void parseOption(@NotNull ArgumentParsedResultImpl.Builder builder, @NotNull StringReader reader) throws InvalidArgumentException {
+        String key;
+        int read;
+        if (reader.peek() == '\"') {
+            key = reader.readQuotedString(literalBackslash, allowedEscapedCharacters);
+            read = key.length() + 2;
+        } else {
+            key = reader.readUntil('=', ' ', '\n', '\r');
+            read = key.length();
+        }
+        if (reader.isEOF() || reader.skipWhitespace() >= 1 || reader.skipLineTerminators() >= 1) {
+            builder.addUnhandled(key);
+            return;
+        }
+        if (!allowDuplicateKey && builder.containsKey(key)) {
+            throw new InvalidArgumentException("Duplicate key: " + key + " (Set allowDuplicateKey to true to overwrite the value)")
+                    .withContext(reader, -read, read);
+        }
+        if (reader.peek() == '=') {
+            reader.skip();
+            String value = reader.readQuotableString(literalBackslash, allowedEscapedCharacters);
+            builder.put(key, value);
+        }
     }
 
     @Contract("null -> null; !null -> !null")

@@ -17,6 +17,7 @@ public class ArgumentParserBuilderImpl implements ArgumentParserBuilder {
     boolean allowDuplicateKey = false;
     @Nullable Set<@NotNull Character> allowedEscapedCharacters = null;
     boolean literalBackslash = false;
+    boolean parseOptionsWithoutDash = false;
 
     @Override
     public @NotNull ArgumentParserBuilder allowDuplicateKey() {
@@ -77,6 +78,12 @@ public class ArgumentParserBuilderImpl implements ArgumentParserBuilder {
     @Override
     public @NotNull ArgumentParserBuilder literalBackslash() {
         literalBackslash = true;
+        return this;
+    }
+
+    @Override
+    public @NotNull ArgumentParserBuilder parseOptionsWithoutDash() {
+        parseOptionsWithoutDash = true;
         return this;
     }
 
