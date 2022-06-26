@@ -10,7 +10,7 @@ import java.util.Arrays;
  * An exception thrown when an argument is invalid. {@link #toString()} outputs the multiple lines when context is provided.
  */
 public class InvalidArgumentException extends Exception {
-    private static final int SHOW_BEFORE_AFTER = 15;
+    public static final int SHOW_BEFORE_AFTER = 15;
     private StringReader context;
     private int length = 1;
     private String toString = null;
@@ -89,6 +89,15 @@ public class InvalidArgumentException extends Exception {
         this.context.index(Math.min(this.context.content().length(), Math.max(0, this.context.index() + offset)));
         this.length = Math.max(1, length);
         return this;
+    }
+
+    @Nullable
+    public StringReader getContext() {
+        return context;
+    }
+
+    public int getLength() {
+        return length;
     }
 
     @Override
