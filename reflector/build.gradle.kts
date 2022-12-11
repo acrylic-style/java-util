@@ -3,8 +3,6 @@ repositories {
 }
 
 dependencies {
-    //api(project(":common"))
-    compileOnly("org.jetbrains:annotations:23.0.0")
+    api(project(":common"))
     compileOnly("net.blueberrymc:native-util:2.1.0")
-    testCompileOnly("org.jetbrains:annotations:23.0.0")
 }
