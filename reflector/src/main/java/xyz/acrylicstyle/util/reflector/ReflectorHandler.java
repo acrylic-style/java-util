@@ -80,6 +80,10 @@ public class ReflectorHandler implements InvocationHandler {
             }
             return Object.class.getMethod("getClass").invoke(instance);
         }
+        if (instance == null && method.getName().equals("hashCode") && (args == null || args.length == 0)) {
+            // Attempt to call hashCode in static context
+            return this.hashCode();
+        }
         FieldGetter getter = method.getAnnotation(FieldGetter.class);
         FieldSetter setter = method.getAnnotation(FieldSetter.class);
         ForwardMethod forwardMethod = method.getAnnotation(ForwardMethod.class);
