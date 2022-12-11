@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "xyz.acrylicstyle.java-util"
-version = "1.0.0-SNAPSHOT"
+version = "1.1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
