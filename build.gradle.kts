@@ -27,7 +27,8 @@ subprojects {
     }
 
     java {
-        withJavadocJar()
+        toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+        //withJavadocJar()
         withSourcesJar()
     }
 
@@ -56,14 +57,6 @@ subprojects {
             }
         }
     }
-}
-
-subprojects {
-    java {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of("8"))
-        }
-    }
 
     tasks {
         test {
@@ -79,6 +72,10 @@ subprojects {
             filteringCharset = "UTF-8"
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
             from(projectDir) { include("LICENSE") }
+        }
+
+        javadoc {
+            options.source = "8"
         }
 
         compileJava {
