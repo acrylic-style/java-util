@@ -2,10 +2,10 @@ package xyz.acrylicstyle.util.impl;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import xyz.acrylicstyle.util.CharIterator;
 import xyz.acrylicstyle.util.InvalidArgumentException;
 import xyz.acrylicstyle.util.StringReader;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -32,7 +32,7 @@ public abstract class AbstractStringReader implements StringReader {
     @Contract(value = " -> new", pure = true)
     @NotNull
     @Override
-    public final Iterator<@NotNull Character> iterator() {
+    public final CharIterator iterator() {
         return new Itr();
     }
 
@@ -50,15 +50,14 @@ public abstract class AbstractStringReader implements StringReader {
         return Objects.hash(content);
     }
 
-    private class Itr implements Iterator<Character> {
+    private class Itr implements CharIterator {
         @Override
         public boolean hasNext() {
             return !isEOF();
         }
 
-        @NotNull
         @Override
-        public Character next() {
+        public char nextChar() {
             if (isEOF()) {
                 throw new NoSuchElementException("index: " + index() + ", length: " + content().length());
             }

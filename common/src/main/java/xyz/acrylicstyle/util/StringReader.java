@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 import xyz.acrylicstyle.util.impl.StringReaderImpl;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -404,7 +403,7 @@ public interface StringReader extends Iterable<@NotNull Character> {
     @Contract(pure = true)
     @NotNull
     @Override
-    Iterator<@NotNull Character> iterator();
+    CharIterator iterator();
 
     /**
      * Creates a new {@link StringReader} with same content and same index.
