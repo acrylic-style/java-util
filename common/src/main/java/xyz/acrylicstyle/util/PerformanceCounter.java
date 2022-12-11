@@ -6,28 +6,18 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
-/**
- * @deprecated Performance counter itself is performance intensive
- */
-@Deprecated
 public final class PerformanceCounter {
     private static final String ERROR_PREFIX = "[PERFORMANCE COUNTER STACK CORRUPTION] ";
-    private final ConcurrentLinkedQueue<Map.Entry<Double, Double>> times = new ConcurrentLinkedQueue<>();
+    private final List<Map.Entry<Double, Double>> times = Collections.synchronizedList(new ArrayList<>());
     private final ThreadLocal<Double> startTime = new ThreadLocal<>();
     private final Unit unit;
-    private final int maxCount;
-
-    public PerformanceCounter(@NotNull Unit unit, int maxCount) {
-        this.unit = unit;
-        this.maxCount = maxCount;
-    }
 
     public PerformanceCounter(@NotNull Unit unit) {
-        this(unit, 100000);
+        this.unit = unit;
     }
 
     @Contract(pure = true)
@@ -45,9 +35,6 @@ public final class PerformanceCounter {
     public void recordEnd() {
         if (startTime.get() == null) {
             throw new IllegalStateException(ERROR_PREFIX + "recordStart() was not called before calling recordEnd()");
-        }
-        if (times.size() > maxCount) {
-            times.poll();
         }
         times.add(new AbstractMap.SimpleImmutableEntry<>(startTime.get(), getCurrentTime()));
         startTime.set(null);
