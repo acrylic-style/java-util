@@ -317,12 +317,12 @@ public class ReflectorHandler implements InvocationHandler {
     }
 
     @Nullable
-    private static <T> Method findMethod(@NotNull Class<? extends T> clazz, @NotNull String methodName, @Nullable Class<?>... args) {
+    private static <T> Method findMethod(@NotNull Class<? extends T> clazz, @NotNull String methodName, @NotNull Class<?>... args) {
         Method method = null;
         Method implMethod = null;
         for (Class<?> cl : getSupers(clazz, true)) {
             try {
-                Method m = cl.getDeclaredMethod(methodName, args);
+                Method m = findAssignableMethod(cl, methodName, args);
                 if (m.isDefault() || (m.getModifiers() & Modifier.ABSTRACT) == Modifier.ABSTRACT) {
                     implMethod = m;
                 }
@@ -334,6 +334,30 @@ public class ReflectorHandler implements InvocationHandler {
             return implMethod;
         }
         return method;
+    }
+
+    @Contract(pure = true)
+    private static @NotNull Method findAssignableMethod(@NotNull Class<?> clazz, @NotNull String methodName, @NotNull Class<?> @NotNull ... args) throws NoSuchMethodException {
+        NoSuchMethodException ex;
+        try {
+            // try exact match
+            return clazz.getDeclaredMethod(methodName, args);
+        } catch (NoSuchMethodException e) {
+            ex = e; // throw later if no match found
+        }
+        for (Method method : clazz.getDeclaredMethods()) {
+            if (method.getName().equals(methodName) && method.getParameterCount() == args.length) {
+                boolean match = true;
+                for (int i = 0; i < args.length; i++) {
+                    if (!method.getParameterTypes()[i].isAssignableFrom(args[i])) {
+                        match = false;
+                        break;
+                    }
+                }
+                if (match) return method;
+            }
+        }
+        throw ex;
     }
 
     @NotNull
