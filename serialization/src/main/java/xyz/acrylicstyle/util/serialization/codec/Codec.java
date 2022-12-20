@@ -72,6 +72,11 @@ public abstract class Codec<A> implements Encoder<A>, Decoder<A> {
         return of((value, encoder) -> encode(setter.apply(value), encoder), decoder -> getter.apply(decode(decoder)), this + "[xmapped]");
     }
 
+    @Contract(value = "_ -> new", pure = true)
+    public final @NotNull Codec<A> named(@NotNull String name) {
+        return of(this, this, name);
+    }
+
     // --- Builtin types
 
     // Primitive types
