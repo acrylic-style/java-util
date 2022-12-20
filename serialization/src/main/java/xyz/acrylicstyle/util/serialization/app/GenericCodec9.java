@@ -45,15 +45,15 @@ final class GenericCodec9<P1, P2, P3, P4, P5, P6, P7, P8, P9, T> extends Codec<T
 
     @Override
     public T decode(@NotNull ValueDecoder decoder) {
-        P1 p1 = decoder.pushPop(this.p1::decodeValue).getValue();
-        P2 p2 = decoder.pushPop(this.p2::decodeValue).getValue();
-        P3 p3 = decoder.pushPop(this.p3::decodeValue).getValue();
-        P4 p4 = decoder.pushPop(this.p4::decodeValue).getValue();
-        P5 p5 = decoder.pushPop(this.p5::decodeValue).getValue();
-        P6 p6 = decoder.pushPop(this.p6::decodeValue).getValue();
-        P7 p7 = decoder.pushPop(this.p7::decodeValue).getValue();
-        P8 p8 = decoder.pushPop(this.p8::decodeValue).getValue();
-        P9 p9 = decoder.pushPop(this.p9::decodeValue).getValue();
+        P1 p1 = decoder.pushPop(this.p1.getName(), this.p1::decodeValue);
+        P2 p2 = decoder.pushPop(this.p2.getName(), this.p2::decodeValue);
+        P3 p3 = decoder.pushPop(this.p3.getName(), this.p3::decodeValue);
+        P4 p4 = decoder.pushPop(this.p4.getName(), this.p4::decodeValue);
+        P5 p5 = decoder.pushPop(this.p5.getName(), this.p5::decodeValue);
+        P6 p6 = decoder.pushPop(this.p6.getName(), this.p6::decodeValue);
+        P7 p7 = decoder.pushPop(this.p7.getName(), this.p7::decodeValue);
+        P8 p8 = decoder.pushPop(this.p8.getName(), this.p8::decodeValue);
+        P9 p9 = decoder.pushPop(this.p9.getName(), this.p9::decodeValue);
         return constructor.create(p1, p2, p3, p4, p5, p6, p7, p8, p9);
     }
 

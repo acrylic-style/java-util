@@ -20,8 +20,8 @@ final class GenericCodec2<P1, P2, T> extends Codec<T> {
 
     @Override
     public T decode(@NotNull ValueDecoder decoder) {
-        P1 p1 = decoder.pushPop(this.p1::decodeValue).getValue();
-        P2 p2 = decoder.pushPop(this.p2::decodeValue).getValue();
+        P1 p1 = decoder.pushPop(this.p1.getName(), this.p1::decodeValue);
+        P2 p2 = decoder.pushPop(this.p2.getName(), this.p2::decodeValue);
         return constructor.create(p1, p2);
     }
 

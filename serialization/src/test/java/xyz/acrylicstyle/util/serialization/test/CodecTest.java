@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import xyz.acrylicstyle.util.serialization.codec.Codec;
 import xyz.acrylicstyle.util.serialization.decoder.ByteBufferValueDecoder;
 import xyz.acrylicstyle.util.serialization.decoder.ListValueDecoder;
+import xyz.acrylicstyle.util.serialization.decoder.MapValueDecoder;
 import xyz.acrylicstyle.util.serialization.encoder.ByteBufferValueEncoder;
 import xyz.acrylicstyle.util.serialization.encoder.ListValueEncoder;
 import xyz.acrylicstyle.util.serialization.encoder.MapValueEncoder;
@@ -26,14 +27,11 @@ public class CodecTest {
     @Test
     public void mapTest() {
         MapValueEncoder encoder = new MapValueEncoder();
-        encoder.push("l");
-        Codec.LONG.encode(100L, encoder);
-        encoder.pop();
-//        System.out.println(new Yaml().dumpAsMap(encoder.getCurrentMap()));
-        encoder.getCurrentMap().clear();
         UUID uuid = UUID.randomUUID();
         PlayerData.CODEC.encode(new PlayerData(uuid, "CodecTest"), encoder);
-//        System.out.println(new Yaml().dumpAsMap(encoder.getCurrentMap()));
+        PlayerData data = PlayerData.CODEC.decode(new MapValueDecoder(encoder.getCurrentMap()));
+        assert data.uuid.equals(uuid) : "Expected: " + uuid + ", Actual: " + data.uuid;
+        assert data.name.equals("CodecTest") : data.name;
     }
 
     @Test

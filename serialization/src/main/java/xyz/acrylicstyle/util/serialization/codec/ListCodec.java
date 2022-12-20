@@ -6,7 +6,6 @@ import xyz.acrylicstyle.util.serialization.encoder.ValueEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ListCodec<A> extends Codec<List<A>> {
     private final Codec<A> codec;
@@ -21,18 +20,10 @@ public class ListCodec<A> extends Codec<List<A>> {
 
     @Override
     public List<A> decode(@NotNull ValueDecoder decoder) {
-        Map.Entry<String, Integer> sizeEntry = decoder.pushPop(ValueDecoder::decodeInt);
-        if (!"size".equals(sizeEntry.getKey())) {
-            throw new IllegalStateException("Incorrect label: " + sizeEntry.getKey() + " (expected: size)");
-        }
-        int size = sizeEntry.getValue();
+        int size = decoder.pushPop("size", ValueDecoder::decodeInt);
         List<A> list = new ArrayList<>(size);
         for (int i = 0; i < size; i++) {
-            Map.Entry<String, A> entry = decoder.pushPop(codec::decode);
-            if (!("e" + i).equals(entry.getKey())) {
-                throw new IllegalStateException("Incorrect label: " + entry.getKey() + " (expected: e" + i + ")");
-            }
-            list.add(entry.getValue());
+            list.add(decoder.pushPop("e" + i, codec::decode));
         }
         return list;
     }

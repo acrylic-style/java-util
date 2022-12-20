@@ -1,6 +1,5 @@
 package xyz.acrylicstyle.util.serialization.encoder;
 
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -14,10 +13,7 @@ import java.util.Stack;
  * value alone like {@link xyz.acrylicstyle.util.serialization.codec.Codec#INT}. In other words, this encoder can only
  * encode values only if the "label" is set during encoding which can be done via {@link #push(String)} or
  * {@link #pushPop(String, Runnable)}.
- * <p>
- * <b>Note: Decoder is not implemented and the value of the map is subject to change.</b>
  */
-@ApiStatus.Experimental
 public class MapValueEncoder implements ValueEncoder {
     private final Stack<Map<String, Object>> stack = new Stack<>();
     private final Stack<String> label = new Stack<>();
