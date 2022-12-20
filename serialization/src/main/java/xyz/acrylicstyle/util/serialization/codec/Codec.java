@@ -27,7 +27,7 @@ public abstract class Codec<A> implements Encoder<A>, Decoder<A> {
 
             @Override
             public @NotNull String toString() {
-                return Objects.requireNonNull(name, "name");
+                return "Codec(" + Objects.requireNonNull(name, "name") + ")";
             }
         };
     }
@@ -80,154 +80,20 @@ public abstract class Codec<A> implements Encoder<A>, Decoder<A> {
     // --- Builtin types
 
     // Primitive types
-    public static final Codec<Character> CHAR = new Codec<Character>() {
-        @Override
-        public Character decode(@NotNull ValueDecoder decoder) {
-            return decoder.decodeChar();
-        }
-
-        @Override
-        public void encode(@NotNull Character value, @NotNull ValueEncoder encoder) {
-            encoder.encodeChar(value);
-        }
-
-        @Override
-        public String toString() {
-            return "Codec(char)";
-        }
-    };
-    public static final Codec<Integer> INT = new Codec<Integer>() {
-        @Override
-        public Integer decode(@NotNull ValueDecoder decoder) {
-            return decoder.decodeInt();
-        }
-
-        @Override
-        public void encode(@NotNull Integer value, @NotNull ValueEncoder encoder) {
-            encoder.encodeInt(value);
-        }
-
-        @Override
-        public String toString() {
-            return "Codec(int)";
-        }
-    };
-    public static final Codec<Long> LONG = new Codec<Long>() {
-        @Override
-        public Long decode(@NotNull ValueDecoder decoder) {
-            return decoder.decodeLong();
-        }
-
-        @Override
-        public void encode(@NotNull Long value, @NotNull ValueEncoder encoder) {
-            encoder.encodeLong(value);
-        }
-
-        @Override
-        public String toString() {
-            return "Codec(long)";
-        }
-    };
-    public static final Codec<Short> SHORT = new Codec<Short>() {
-        @Override
-        public Short decode(@NotNull ValueDecoder decoder) {
-            return decoder.decodeShort();
-        }
-
-        @Override
-        public void encode(@NotNull Short value, @NotNull ValueEncoder encoder) {
-            encoder.encodeShort(value);
-        }
-
-        @Override
-        public String toString() {
-            return "Codec(short)";
-        }
-    };
-    public static final Codec<Byte> BYTE = new Codec<Byte>() {
-        @Override
-        public Byte decode(@NotNull ValueDecoder decoder) {
-            return decoder.decodeByte();
-        }
-
-        @Override
-        public void encode(@NotNull Byte value, @NotNull ValueEncoder encoder) {
-            encoder.encodeByte(value);
-        }
-
-        @Override
-        public String toString() {
-            return "Codec(byte)";
-        }
-    };
-    public static final Codec<Boolean> BOOLEAN = new Codec<Boolean>() {
-        @Override
-        public Boolean decode(@NotNull ValueDecoder decoder) {
-            return decoder.decodeBoolean();
-        }
-
-        @Override
-        public void encode(@NotNull Boolean value, @NotNull ValueEncoder encoder) {
-            encoder.encodeBoolean(value);
-        }
-
-        @Override
-        public String toString() {
-            return "Codec(boolean)";
-        }
-    };
-    public static final Codec<Float> FLOAT = new Codec<Float>() {
-        @Override
-        public Float decode(@NotNull ValueDecoder decoder) {
-            return decoder.decodeFloat();
-        }
-
-        @Override
-        public void encode(@NotNull Float value, @NotNull ValueEncoder encoder) {
-            encoder.encodeFloat(value);
-        }
-
-        @Override
-        public String toString() {
-            return "Codec(float)";
-        }
-    };
-    public static final Codec<Double> DOUBLE = new Codec<Double>() {
-        @Override
-        public Double decode(@NotNull ValueDecoder decoder) {
-            return decoder.decodeDouble();
-        }
-
-        @Override
-        public void encode(@NotNull Double value, @NotNull ValueEncoder encoder) {
-            encoder.encodeDouble(value);
-        }
-
-        @Override
-        public String toString() {
-            return "Codec(double)";
-        }
-    };
-    public static final Codec<String> STRING = new Codec<String>() {
-        @Override
-        public String decode(@NotNull ValueDecoder decoder) {
-            return decoder.decodeString();
-        }
-
-        @Override
-        public void encode(@NotNull String value, @NotNull ValueEncoder encoder) {
-            encoder.encodeString(value);
-        }
-
-        @Override
-        public String toString() {
-            return "Codec(String)";
-        }
-    };
+    public static final Codec<Character> CHAR = of((o, e) -> e.encodeChar(o), ValueDecoder::decodeChar, "char");
+    public static final Codec<Integer> INT = of((o, e) -> e.encodeInt(o), ValueDecoder::decodeInt, "int");
+    public static final Codec<Long> LONG = of((o, e) -> e.encodeLong(o), ValueDecoder::decodeLong, "long");
+    public static final Codec<Short> SHORT = of((o, e) -> e.encodeShort(o), ValueDecoder::decodeShort, "short");
+    public static final Codec<Byte> BYTE = of((o, e) -> e.encodeByte(o), ValueDecoder::decodeByte, "byte");
+    public static final Codec<Boolean> BOOLEAN = of((o, e) -> e.encodeBoolean(o), ValueDecoder::decodeBoolean, "boolean");
+    public static final Codec<Float> FLOAT = of((o, e) -> e.encodeFloat(o), ValueDecoder::decodeFloat, "float");
+    public static final Codec<Double> DOUBLE = of((o, e) -> e.encodeDouble(o), ValueDecoder::decodeDouble, "double");
+    public static final Codec<String> STRING = of((o, e) -> e.encodeString(o), ValueDecoder::decodeString, "String");
 
     // Extra types
     public static final Codec<java.util.UUID> UUID =
             Codec.<UUID>builder()
                     .group(LONG.fieldOf("most").getter(java.util.UUID::getMostSignificantBits), LONG.fieldOf("least").getter(java.util.UUID::getLeastSignificantBits))
-                    .build(java.util.UUID::new);
+                    .build(java.util.UUID::new)
+                    .named("UUID");
 }
