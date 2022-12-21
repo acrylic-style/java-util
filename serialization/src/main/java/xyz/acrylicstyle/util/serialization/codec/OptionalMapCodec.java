@@ -18,7 +18,7 @@ public final class OptionalMapCodec<A, T> extends MapCodec<A, T> {
     }
 
     public @Nullable A decodeValue(@NotNull ValueDecoder decoder) {
-        if (decoder.decodeBoolean()) {
+        if (decoder.pushPop("present", ValueDecoder::decodeBoolean)) {
             return codec.decode(decoder);
         } else {
             return null;
@@ -28,7 +28,7 @@ public final class OptionalMapCodec<A, T> extends MapCodec<A, T> {
     @Override
     public void encode(@NotNull T value, @NotNull ValueEncoder encoder) {
         Optional<A> opt = getter.apply(value);
-        encoder.encodeBoolean(opt.isPresent());
+        encoder.pushPop("present", () -> encoder.encodeBoolean(opt.isPresent()));
         opt.ifPresent(a -> codec.encode(a, encoder));
     }
 
