@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -76,8 +77,9 @@ public class ReflectorHandler implements InvocationHandler {
 
         // convert arguments
         Object[] args = parseFieldGetterParameter(method, args_);
+        List<Object> argsList = asList(args);
         // find value from cache if it is cached
-        Optional<Object> cache = valueCache.get(hashCode(), method.toGenericString(), args);
+        Optional<Object> cache = valueCache.get(hashCode(), method.toGenericString(), argsList);
         //noinspection OptionalAssignedToNull
         if (cache != null) {
             return cache.orElse(null);
@@ -85,7 +87,7 @@ public class ReflectorHandler implements InvocationHandler {
         boolean isPure = pureAnnotationCache.computeIfAbsent(() -> method.isAnnotationPresent(Pure.class), method);
         if (method.isDefault()) {
             Object value = Reflector.methodExecutor.invokeSpecial(method, proxy, args_);
-            if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), args_);
+            if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), argsList);
             return value;
         }
         if (method.equals(ClazzGetter.METHOD) && (args == null || args.length == 0)) {
@@ -107,7 +109,7 @@ public class ReflectorHandler implements InvocationHandler {
         if (getter != null) {
             if (args != null && args.length > 0) throw new IllegalArgumentException("Requires exactly zero argument on method when applying @FieldGetter");
             Object value = getField(isStatic ? null : instance, proxy, getter, castTo, target, method);
-            if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), args_);
+            if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), argsList);
             return value;
         }
         if (setter != null) {
@@ -143,7 +145,7 @@ public class ReflectorHandler implements InvocationHandler {
                         value = Reflector.methodExecutor.execute(found, instance, args);
                     }
                     Object inst = Reflector.methodExecutor.newInstance(castTo.value().getConstructor(Object.class), value);
-                    if (isPure) valueCache.put(Optional.of(inst), hashCode(), method.toGenericString(), args_);
+                    if (isPure) valueCache.put(Optional.of(inst), hashCode(), method.toGenericString(), argsList);
                     return inst;
                 } else {
                     Object value;
@@ -153,20 +155,20 @@ public class ReflectorHandler implements InvocationHandler {
                         value = Reflector.methodExecutor.execute(found, instance, args);
                     }
                     Object inst = Reflector.castTo(null, proxy, value, castTo.value());
-                    if (isPure) valueCache.put(Optional.ofNullable(inst), hashCode(), method.toGenericString(), args_);
+                    if (isPure) valueCache.put(Optional.ofNullable(inst), hashCode(), method.toGenericString(), argsList);
                     return inst;
                     //return Reflector.castTo(null, method.getDeclaringClass(), proxy, methodName, method, castTo.value(), args);
                 }
             }
             try {
                 Object value = Reflector.methodExecutor.execute(found, isStatic ? null : instance, args);
-                if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), args_);
+                if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), argsList);
                 return value;
             } catch (IllegalArgumentException ex) {
                 ex.addSuppressed(new IllegalArgumentException(ex.getMessage() + ", missing @TransformParam, @FieldGetter, or @ForwardMethod?", ex));
                 try {
                     Object value = Reflector.methodExecutor.execute(found, isStatic ? null : Reflector.reverseInstanceList.getOrDefault(instance, instance), args);
-                    if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), args_);
+                    if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), argsList);
                     return value;
                 } catch (IllegalArgumentException ex1) {
                     if (getOption(method).errorOption() == ReflectorOption.ErrorOption.RETURN_NULL) {
@@ -180,7 +182,7 @@ public class ReflectorHandler implements InvocationHandler {
         } else {
             if (method.getName().startsWith("get") && method.getName().length() >= 4 && (args == null || args.length == 0)) {
                 Object value = getField(isStatic ? null : instance, proxy, null, castTo, target, method);
-                if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), args_);
+                if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), argsList);
                 return value;
             } else if (method.getName().startsWith("set") && method.getName().length() >= 4 && args != null && args.length == 1) {
                 setField(isStatic ? null : instance, null, target, method, args[0]);
@@ -356,7 +358,7 @@ public class ReflectorHandler implements InvocationHandler {
     private static final Memoize<Optional<Method>> methodCache = Memoize.of(3);
 
     private static <T> @Nullable Method findMethod(@NotNull Class<? extends T> clazz, @NotNull String methodName, @NotNull Class<?>... args) {
-        Optional<Method> cache = methodCache.get(clazz, methodName, args);
+        Optional<Method> cache = methodCache.get(clazz, methodName, Arrays.asList(args));
         // This is intentional because Memoize#get could return null
         //noinspection OptionalAssignedToNull
         if (cache != null) {
@@ -377,7 +379,7 @@ public class ReflectorHandler implements InvocationHandler {
             // prefer implMethod
             method = implMethod;
         }
-        methodCache.put(Optional.ofNullable(method), clazz, methodName, args);
+        methodCache.put(Optional.ofNullable(method), clazz, methodName, Arrays.asList(args));
         return method;
     }
 
@@ -385,7 +387,7 @@ public class ReflectorHandler implements InvocationHandler {
 
     @Contract(pure = true)
     private static @NotNull Method findAssignableMethod(@NotNull Class<?> clazz, @NotNull String methodName, @NotNull Class<?> @NotNull ... args) throws NoSuchMethodException {
-        Object cache = assignableMethodCache.get(clazz, methodName, args);
+        Object cache = assignableMethodCache.get(clazz, methodName, Arrays.asList(args));
         if (cache instanceof Method) {
             return (Method) cache;
         } else if (cache instanceof Throwable) {
@@ -410,12 +412,12 @@ public class ReflectorHandler implements InvocationHandler {
                     }
                 }
                 if (match) {
-                    assignableMethodCache.put(method, clazz, methodName, args);
+                    assignableMethodCache.put(method, clazz, methodName, Arrays.asList(args));
                     return method;
                 }
             }
         }
-        assignableMethodCache.put(ex, clazz, methodName, args);
+        assignableMethodCache.put(ex, clazz, methodName, Arrays.asList(args));
         throw ex;
     }
 
@@ -482,6 +484,13 @@ public class ReflectorHandler implements InvocationHandler {
             list.addAll(getSupers(anInterface, true));
         }
         return list;
+    }
+
+    private static <T> List<T> asList(T @Nullable [] array) {
+        if (array == null) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(array);
     }
 
     public interface ClazzGetter {
