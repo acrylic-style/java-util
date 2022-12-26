@@ -12,6 +12,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+/**
+ * @deprecated significant performance issues, use {@link xyz.acrylicstyle.util.memoize.Memoize} instead
+ */
+@Deprecated
 public class Memoize<T> {
     private final List<Map.Entry<Object[], T>> cache = Collections.synchronizedList(new ArrayList<>());
 

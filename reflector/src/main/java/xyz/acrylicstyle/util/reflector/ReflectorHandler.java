@@ -3,7 +3,7 @@ package xyz.acrylicstyle.util.reflector;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import xyz.acrylicstyle.util.Memoize;
+import xyz.acrylicstyle.util.memoize.Memoize;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -65,7 +65,7 @@ public class ReflectorHandler implements InvocationHandler {
         this.instance = instance;
     }
 
-    private static final Memoize<Optional<Object>> valueCache = new Memoize<>();
+    private static final Memoize<Optional<Object>> valueCache = Memoize.of(3);
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args_) throws Throwable {
@@ -299,13 +299,13 @@ public class ReflectorHandler implements InvocationHandler {
         return field;
     }
 
-    private static final Memoize<Annotation[]> paramAnnotationCache = new Memoize<>();
-    private static final Memoize<FieldGetter> fieldGetterAnnotationCache = new Memoize<>();
-    private static final Memoize<FieldSetter> fieldSetterAnnotationCache = new Memoize<>();
-    private static final Memoize<ForwardMethod> forwardMethodAnnotationCache = new Memoize<>();
-    private static final Memoize<CastTo> castToAnnotationCache = new Memoize<>();
-    private static final Memoize<ConstructorCall> constructorCallAnnotationCache = new Memoize<>();
-    private static final Memoize<Boolean> pureAnnotationCache = new Memoize<>();
+    private static final Memoize<Annotation[]> paramAnnotationCache = Memoize.of(2);
+    private static final Memoize<FieldGetter> fieldGetterAnnotationCache = Memoize.of(1);
+    private static final Memoize<FieldSetter> fieldSetterAnnotationCache = Memoize.of(1);
+    private static final Memoize<ForwardMethod> forwardMethodAnnotationCache = Memoize.of(1);
+    private static final Memoize<CastTo> castToAnnotationCache = Memoize.of(1);
+    private static final Memoize<ConstructorCall> constructorCallAnnotationCache = Memoize.of(1);
+    private static final Memoize<Boolean> pureAnnotationCache = Memoize.of(1);
 
     @Contract("_, _ -> param2")
     private static Object @Nullable [] parseFieldGetterParameter(@NotNull Method method, @Nullable Object[] args) throws Throwable {
@@ -353,7 +353,7 @@ public class ReflectorHandler implements InvocationHandler {
         return findField(target, fieldName(method));
     }
 
-    private static final Memoize<Optional<Method>> methodCache = new Memoize<>();
+    private static final Memoize<Optional<Method>> methodCache = Memoize.of(3);
 
     private static <T> @Nullable Method findMethod(@NotNull Class<? extends T> clazz, @NotNull String methodName, @NotNull Class<?>... args) {
         Optional<Method> cache = methodCache.get(clazz, methodName, args);
@@ -381,7 +381,7 @@ public class ReflectorHandler implements InvocationHandler {
         return method;
     }
 
-    private static final Memoize<Object /* = Method | Throwable */> assignableMethodCache = new Memoize<>();
+    private static final Memoize<Object /* = Method | Throwable */> assignableMethodCache = Memoize.of(3);
 
     @Contract(pure = true)
     private static @NotNull Method findAssignableMethod(@NotNull Class<?> clazz, @NotNull String methodName, @NotNull Class<?> @NotNull ... args) throws NoSuchMethodException {
@@ -429,7 +429,7 @@ public class ReflectorHandler implements InvocationHandler {
         }
     }
 
-    private static final Memoize<Optional<Field>> fieldCache = new Memoize<>();
+    private static final Memoize<Optional<Field>> fieldCache = Memoize.of(2);
 
     @Contract(pure = true)
     @Nullable
