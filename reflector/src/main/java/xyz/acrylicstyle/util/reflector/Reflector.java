@@ -188,7 +188,7 @@ public class Reflector {
      * @param o the object
      * @return the unwrapped instance or the passed object
      */
-    @Contract("null -> null; !null -> !null")
+    @Contract("null -> null")
     public static Object unwrapOrObject(@Nullable Object o) {
         if (o == null) {
             return null;

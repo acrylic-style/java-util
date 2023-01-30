@@ -53,7 +53,9 @@ public class ReflectorHandler implements InvocationHandler {
         return target;
     }
 
-    public Object getInstance() { return instance; }
+    public @Nullable Object getInstance() {
+        return instance;
+    }
 
     /**
      * Creates new ReflectorHandler instance.
