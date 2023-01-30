@@ -3,6 +3,8 @@ package xyz.acrylicstyle.util.reflector;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import xyz.acrylicstyle.util.InvalidArgumentException;
+import xyz.acrylicstyle.util.StringReader;
 import xyz.acrylicstyle.util.memoize.Memoize;
 
 import java.lang.annotation.Annotation;
@@ -12,6 +14,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,6 +51,7 @@ public class ReflectorHandler implements InvocationHandler {
     private final Class<?> target;
     private final Object instance;
     private ReflectorOption option;
+    private final int hashCode;
 
     @NotNull
     public Class<?> getTarget() {
@@ -66,9 +71,15 @@ public class ReflectorHandler implements InvocationHandler {
         Objects.requireNonNull(target, "target");
         this.target = target;
         this.instance = instance;
+        hashCode = Objects.hash(target, instance);
     }
 
     private static final Memoize<Optional<Object>> valueCache = Memoize.of(3);
+
+    @Override
+    public int hashCode() {
+        return hashCode;
+    }
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args_) throws Throwable {
@@ -80,41 +91,63 @@ public class ReflectorHandler implements InvocationHandler {
         // convert arguments
         Object[] args = parseFieldGetterParameter(method, args_);
         List<Object> argsList = asList(args);
-        // find value from cache if it is cached
-        Optional<Object> cache = valueCache.get(hashCode(), method.toGenericString(), argsList);
-        //noinspection OptionalAssignedToNull
-        if (cache != null) {
-            return cache.orElse(null);
+
+        boolean isPure = method.isAnnotationPresent(Pure.class);
+        if (isPure) {
+            // handle cache
+            // find value from cache if it is cached and method is pure
+            Optional<Object> cache = valueCache.get(hashCode(), method.toGenericString(), argsList);
+            //noinspection OptionalAssignedToNull
+            if (cache != null) {
+                return cache.orElse(null);
+            }
         }
-        boolean isPure = pureAnnotationCache.computeIfAbsent(() -> method.isAnnotationPresent(Pure.class), method);
+
+        // handle default methods
         if (method.isDefault()) {
             Object value = Reflector.methodExecutor.invokeSpecial(method, proxy, args_);
             if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), argsList);
             return value;
         }
-        if (method.equals(ClazzGetter.METHOD) && (args == null || args.length == 0)) {
+
+        // handle getClass()
+        if ((args == null || args.length == 0) && method.equals(ClazzGetter.METHOD)) {
             if (instance == null) {
                 throw new IllegalArgumentException("Cannot invoke Object#getClass with static ReflectorHandler");
             }
             return Object.class.getMethod("getClass").invoke(instance);
         }
-        if (instance == null && method.getName().equals("hashCode") && (args == null || args.length == 0)) {
+
+        // handle static hashCode()
+        if (instance == null && (args == null || args.length == 0) && method.getName().equals("hashCode")) {
             // Attempt to call hashCode in static context
             return this.hashCode();
         }
-        FieldGetter getter = fieldGetterAnnotationCache.computeIfAbsent(() -> method.getAnnotation(FieldGetter.class), method);
-        FieldSetter setter = fieldSetterAnnotationCache.computeIfAbsent(() -> method.getAnnotation(FieldSetter.class), method);
-        ForwardMethod forwardMethod = forwardMethodAnnotationCache.computeIfAbsent(() -> method.getAnnotation(ForwardMethod.class), method);
-        CastTo castTo = castToAnnotationCache.computeIfAbsent(() -> method.getAnnotation(CastTo.class), method);
-        ConstructorCall constructorCall = constructorCallAnnotationCache.computeIfAbsent(() -> method.getAnnotation(ConstructorCall.class), method);
+
+        Target targetAnnotation = method.getAnnotation(Target.class);
+        Class<?> targetClass = target;
+        if (targetAnnotation != null) {
+            if (!targetAnnotation.value().equals("")) {
+                targetClass = Class.forName(targetAnnotation.value());
+            } else if (targetAnnotation.clazz() != Object.class) {
+                targetClass = targetAnnotation.clazz();
+            }
+        }
+        FieldGetter getter = method.getAnnotation(FieldGetter.class);
+        FieldSetter setter = method.getAnnotation(FieldSetter.class);
+        ForwardMethod forwardMethod = method.getAnnotation(ForwardMethod.class);
+        CastTo castTo = method.getAnnotation(CastTo.class);
+        ConstructorCall constructorCall = method.getAnnotation(ConstructorCall.class);
         boolean isStatic = method.getName().startsWith(getOption(method).staticPrefix()) || method.isAnnotationPresent(Static.class);
         if (getter != null) {
+            // field getter
             if (args != null && args.length > 0) throw new IllegalArgumentException("Requires exactly zero argument on method when applying @FieldGetter");
-            Object value = getField(isStatic ? null : instance, proxy, getter, castTo, target, method);
+            Object value = getField(isStatic ? null : instance, proxy, getter, castTo, targetClass, method);
             if (isPure) valueCache.put(Optional.ofNullable(value), hashCode(), method.toGenericString(), argsList);
             return value;
         }
         if (setter != null) {
+            // field setter
             if ((args == null || args.length == 0) || (args.length > 1)) throw new IllegalArgumentException("Requires exactly one argument on method when applying @FieldSetter");
             setField(isStatic ? null : instance, setter, target, method, args[0]);
             return null;
@@ -229,22 +262,17 @@ public class ReflectorHandler implements InvocationHandler {
 
     private static Class<?>[] convertArgsList(Method method, Class<?>[] classes) {
         for (int i = 0; i < classes.length; i++) {
-            int finalI = i;
-            Annotation[] annotations = paramAnnotationCache.computeIfAbsent(() -> method.getParameterAnnotations()[finalI], method, finalI);
-            if (annotations != null && annotations.length != 0) {
-                List<Annotation> list = Arrays.asList(annotations);
-                if (list.stream().anyMatch(annotation -> annotation.annotationType().equals(TransformParam.class))) {
-                    if (Reflector.reverseList.containsKey(classes[i])) classes[i] = Reflector.reverseList.get(classes[i]);
+            Parameter parameter = method.getParameters()[i];
+            if (parameter.isAnnotationPresent(TransformParam.class) && Reflector.reverseList.containsKey(classes[i])) {
+                classes[i] = Reflector.reverseList.get(classes[i]);
+            }
+            Type type = parameter.getAnnotation(Type.class);
+            if (type != null) {
+                try {
+                    classes[i] = Class.forName(type.value());
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
                 }
-                list.stream().filter(annotation -> annotation.annotationType().equals(Type.class)).findFirst()
-                        .map(annotation -> (Type) annotation)
-                        .ifPresent(type -> {
-                            try {
-                                classes[finalI] = Class.forName(type.value());
-                            } catch (ClassNotFoundException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
             }
         }
         return classes;
@@ -303,40 +331,27 @@ public class ReflectorHandler implements InvocationHandler {
         return field;
     }
 
-    private static final Memoize<Annotation[]> paramAnnotationCache = Memoize.of(2);
-    private static final Memoize<FieldGetter> fieldGetterAnnotationCache = Memoize.of(1);
-    private static final Memoize<FieldSetter> fieldSetterAnnotationCache = Memoize.of(1);
-    private static final Memoize<ForwardMethod> forwardMethodAnnotationCache = Memoize.of(1);
-    private static final Memoize<CastTo> castToAnnotationCache = Memoize.of(1);
-    private static final Memoize<ConstructorCall> constructorCallAnnotationCache = Memoize.of(1);
-    private static final Memoize<Boolean> pureAnnotationCache = Memoize.of(1);
-
     @Contract("_, _ -> param2")
     private static Object @Nullable [] parseFieldGetterParameter(@NotNull Method method, @Nullable Object[] args) throws Throwable {
         if (args == null) return null;
-        for (int i = 0; i < method.getParameters().length; i++) {
-            int idx = i;
+        Parameter[] parameters = method.getParameters();
+        for (int i = 0; i < parameters.length; i++) {
+            // get raw argument
             Object arg = args[i];
-            Annotation[] annotations = paramAnnotationCache.computeIfAbsent(() -> method.getParameterAnnotations()[idx], method, idx);
-            if (annotations != null && annotations.length != 0) {
-                if (Arrays.stream(annotations).anyMatch(annotation -> annotation.annotationType().equals(TransformParam.class))) {
-                    Optional<Object> unproxiedInstance = Reflector.unwrap(arg);
-                    if (unproxiedInstance.isPresent()) {
-                        args[i] = arg = unproxiedInstance.get();
-                    }
-                }
+            Parameter parameter = parameters[i];
+            if (parameter.isAnnotationPresent(TransformParam.class)) {
+                args[i] = arg = Reflector.unwrapOrObject(arg);
             }
             if (arg == null) continue;
-            FieldGetter getter = fieldGetterAnnotationCache.computeIfAbsent(() -> method.getParameters()[idx].getAnnotation(FieldGetter.class), method);
-            ForwardMethod forwardMethod = forwardMethodAnnotationCache.computeIfAbsent(() -> method.getParameters()[idx].getAnnotation(ForwardMethod.class), method);
-            if (getter == null && forwardMethod == null) continue;
             Class<?> target = arg.getClass();
+            FieldGetter getter = parameter.getAnnotation(FieldGetter.class);
             if (getter != null) {
                 if (!getter.target().equals(Object.class)) target = getter.target();
                 Field field = findField(target, getter.value());
                 if (field == null) throw new NoSuchFieldException("Could not find field " + target.getCanonicalName() + "#" + getter.value());
                 args[i] = Reflector.methodExecutor.getFieldValue(field, arg);
             }
+            ForwardMethod forwardMethod = parameter.getAnnotation(ForwardMethod.class);
             if (forwardMethod != null) {
                 if (!forwardMethod.target().equals(Object.class)) target = forwardMethod.target();
                 Method m = findMethod(target, forwardMethod.value());
@@ -360,15 +375,73 @@ public class ReflectorHandler implements InvocationHandler {
     private static final Memoize<Optional<Method>> methodCache = Memoize.of(3);
 
     private static <T> @Nullable Method findMethod(@NotNull Class<? extends T> clazz, @NotNull String methodName, @NotNull Class<?>... args) {
-        Optional<Method> cache = methodCache.get(clazz, methodName, Arrays.asList(args));
+        Optional<Method> cache = methodCache.get(clazz.getTypeName(), methodName, Arrays.asList(args));
         // This is intentional because Memoize#get could return null
         //noinspection OptionalAssignedToNull
         if (cache != null) {
             return cache.orElse(null);
         }
+
+        if (methodName.contains("(")) {
+            if (methodName.contains("()")) {
+                try {
+                    return clazz.getDeclaredMethod(methodName.substring(0, methodName.indexOf('(')));
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            List<Class<?>> parametersList = new ArrayList<>();
+            StringReader reader = StringReader.create(methodName, methodName.indexOf('(') + 1);
+            try {
+                while (reader.peek() != ')') {
+                    char c = reader.read();
+                    if (c == 'I') {
+                        parametersList.add(int.class);
+                    } else if (c == 'J') {
+                        parametersList.add(long.class);
+                    } else if (c == 'F') {
+                        parametersList.add(float.class);
+                    } else if (c == 'D') {
+                        parametersList.add(double.class);
+                    } else if (c == 'B') {
+                        parametersList.add(byte.class);
+                    } else if (c == 'S') {
+                        parametersList.add(short.class);
+                    } else if (c == 'C') {
+                        parametersList.add(char.class);
+                    } else if (c == 'Z') {
+                        parametersList.add(boolean.class);
+                    } else if (c == 'V') {
+                        throw new IllegalArgumentException("Invalid method signature (cannot use void as parameter type): " + methodName);
+                    } else if (c == 'L') {
+                        String name = reader.readUntil(';');
+                        reader.skip(); // skip ";" character
+                        parametersList.add(Class.forName(name.replace('/', '.')));
+                    } else {
+                        throw new IllegalArgumentException("Invalid method signature (unknown type " + c + "): " + methodName);
+                    }
+                }
+            } catch (InvalidArgumentException e) {
+                throw new RuntimeException("Invalid method signature (parser error): " + methodName, e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Invalid method signature (missing class): " + methodName, e);
+            }
+            try {
+                Method m = clazz.getDeclaredMethod(methodName.substring(0, methodName.indexOf('(')), parametersList.toArray(new Class[0]));
+                methodCache.put(Optional.of(m), clazz.getTypeName(), methodName, Arrays.asList(args));
+                return m;
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
         Method method = null;
         Method implMethod = null;
-        for (Class<?> cl : getSupers(clazz, true)) {
+        try {
+            method = implMethod = findAssignableMethod(clazz, methodName, args);
+            methodCache.put(Optional.of(method), clazz.getTypeName(), methodName, Arrays.asList(args));
+            return method;
+        } catch (NoSuchMethodException ignore) {}
+        for (Class<?> cl : getSupers(clazz, false)) {
             try {
                 Method m = findAssignableMethod(cl, methodName, args);
                 if (m.isDefault() || (m.getModifiers() & Modifier.ABSTRACT) == Modifier.ABSTRACT) {
@@ -381,7 +454,7 @@ public class ReflectorHandler implements InvocationHandler {
             // prefer implMethod
             method = implMethod;
         }
-        methodCache.put(Optional.ofNullable(method), clazz, methodName, Arrays.asList(args));
+        methodCache.put(Optional.ofNullable(method), clazz.getTypeName(), methodName, Arrays.asList(args));
         return method;
     }
 
@@ -389,7 +462,7 @@ public class ReflectorHandler implements InvocationHandler {
 
     @Contract(pure = true)
     private static @NotNull Method findAssignableMethod(@NotNull Class<?> clazz, @NotNull String methodName, @NotNull Class<?> @NotNull ... args) throws NoSuchMethodException {
-        Object cache = assignableMethodCache.get(clazz, methodName, Arrays.asList(args));
+        Object cache = assignableMethodCache.get(clazz.getTypeName(), methodName, Arrays.asList(args));
         if (cache instanceof Method) {
             return (Method) cache;
         } else if (cache instanceof Throwable) {
@@ -399,7 +472,7 @@ public class ReflectorHandler implements InvocationHandler {
         try {
             // try exact match
             Method method = clazz.getDeclaredMethod(methodName, args);
-            assignableMethodCache.put(method, clazz, methodName, args);
+            assignableMethodCache.put(method, clazz.getTypeName(), methodName, Arrays.asList(args));
             return method;
         } catch (NoSuchMethodException e) {
             ex = e; // throw later if no match found
@@ -414,12 +487,12 @@ public class ReflectorHandler implements InvocationHandler {
                     }
                 }
                 if (match) {
-                    assignableMethodCache.put(method, clazz, methodName, Arrays.asList(args));
+                    assignableMethodCache.put(method, clazz.getTypeName(), methodName, Arrays.asList(args));
                     return method;
                 }
             }
         }
-        assignableMethodCache.put(ex, clazz, methodName, Arrays.asList(args));
+        assignableMethodCache.put(ex, clazz.getTypeName(), methodName, Arrays.asList(args));
         throw ex;
     }
 
@@ -443,7 +516,13 @@ public class ReflectorHandler implements InvocationHandler {
         if (cache != null) {
             return cache.orElse(null);
         }
-        for (Class<?> cl : getSupers(clazz, true)) {
+        try {
+            Field selfField = clazz.getDeclaredField(fieldName);
+            fieldCache.put(Optional.of(selfField), clazz, fieldName);
+            return selfField;
+        } catch (NoSuchFieldException ignore) {}
+
+        for (Class<?> cl : getSupers(clazz, false)) {
             try {
                 Field f = cl.getDeclaredField(fieldName);
                 fieldCache.put(Optional.of(f), clazz, fieldName);

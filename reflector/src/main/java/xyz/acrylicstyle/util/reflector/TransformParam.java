@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Marks parameter to transform proxied instance (ReflectorHandler) into object form. Without it, ReflectorHandler will
+ * Marks parameter to transform proxied instance (ReflectorHandler) into unwrapped form. Without it, ReflectorHandler will
  * try to invoke method with ReflectorHandler.
  */
 @Target(ElementType.PARAMETER)

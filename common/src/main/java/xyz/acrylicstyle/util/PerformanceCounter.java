@@ -33,12 +33,18 @@ public final class PerformanceCounter {
     }
 
     public void recordEnd() {
+        recordEndWithTime();
+    }
+
+    public double recordEndWithTime() {
         double time = getCurrentTime();
-        if (startTime.get() == null) {
+        Double start = startTime.get();
+        if (start == null) {
             throw new IllegalStateException(ERROR_PREFIX + "recordStart() was not called before calling recordEnd()");
         }
-        times.add(new AbstractMap.SimpleImmutableEntry<>(startTime.get(), time));
+        times.add(new AbstractMap.SimpleImmutableEntry<>(start, time));
         startTime.set(null);
+        return time - start;
     }
 
     public @NotNull String getDetails(boolean multiline) {

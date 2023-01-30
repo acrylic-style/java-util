@@ -13,6 +13,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.PARAMETER})
 public @interface ForwardMethod {
+    /**
+     * The method to call. This can be a method name or a method signature (like <code>method(Ljava/lang/Object;)V</code>).
+     * @return method name or signature
+     */
     String value();
     Class<?> target() default Object.class;
 }
