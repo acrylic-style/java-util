@@ -57,9 +57,9 @@ public final class PerformanceCounter {
         double upper = Math.round(confidenceInterval[1] * 1000.0) / 1000.0;
         double error = Math.round((upper - lower) / 2.0 * 1000.0) / 1000.0;
         if (multiline) {
-            return  "  average = " + avg + "±(95%) " + error + " " + unit.getName() + "/op" +
-                    "  (min, avg, max) = (" + min + ", " + avg + ", " + max + ")" +
-                    "  CI (95%) = [" + lower + ", " + upper + "]" +
+            return  "  average = " + avg + "±(95%) " + error + " " + unit.getName() + "/op\n" +
+                    "  (min, avg, max) = (" + min + ", " + avg + ", " + max + ")\n" +
+                    "  CI (95%) = [" + lower + ", " + upper + "]\n" +
                     "  count = " + durations.size();
         } else {
             return String.format("min: %s, avg: %s, max: %s, 95%% confidence interval: [%s, %s], error: %s", unit.format(min), unit.format(avg), unit.format(max), unit.format(lower), unit.format(upper), unit.format(error));
