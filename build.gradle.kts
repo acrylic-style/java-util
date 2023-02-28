@@ -57,7 +57,7 @@ subprojects {
                         project.findProperty("azisabaDeploySnapshotURL")
                             ?: System.getProperty("azisabaDeploySnapshotURL", "https://repo.azisaba.net/repository/third-party/")
                     else
-                        project.findProperty("azisabaDeployReleasesURL"
+                        project.findProperty("azisabaDeployReleasesURL")
                             ?: System.getProperty("azisabaDeployReleasesURL", "https://repo.azisaba.net/repository/third-party/")
                 )
             }
