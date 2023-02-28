@@ -49,6 +49,18 @@ subprojects {
                         project.findProperty("deployReleasesURL") ?: System.getProperty("deployReleasesURL", "https://repo.acrylicstyle.xyz/repository/maven-releases/")
                 )
             }
+            maven {
+                name = "azisaba"
+                credentials(PasswordCredentials::class)
+                url = uri(
+                    if (project.version.toString().endsWith("SNAPSHOT"))
+                        project.findProperty("azisabaDeploySnapshotURL")
+                            ?: System.getProperty("azisabaDeploySnapshotURL", "https://repo.azisaba.net/repository/third-party/")
+                    else
+                        project.findProperty("azisabaDeployReleasesURL"
+                            ?: System.getProperty("azisabaDeployReleasesURL", "https://repo.azisaba.net/repository/third-party/")
+                )
+            }
         }
 
         publications {
