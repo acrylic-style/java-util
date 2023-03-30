@@ -1,6 +1,5 @@
 package xyz.acrylicstyle.util.reflector;
 
-import net.blueberrymc.nativeutil.NativeUtil;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -124,7 +123,7 @@ public class Reflector {
         Object inst;
         Class<?> cl = Objects.requireNonNull(reverseList.get(clazz));
         try {
-            inst = NativeUtil.invoke(cl.getDeclaredMethod(methodName, method.getParameterTypes()), handler.getInstance(), args);
+            inst = methodExecutor.invoke(cl.getDeclaredMethod(methodName, method.getParameterTypes()), handler.getInstance(), args);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -155,7 +154,7 @@ public class Reflector {
         ReflectorHandler handler = (ReflectorHandler) Proxy.getInvocationHandler(instance);
         Class<?> cl = Objects.requireNonNull(reverseList.get(clazz));
         try {
-            inst = NativeUtil.get(cl.getDeclaredField(field), handler.getInstance());
+            inst = methodExecutor.getFieldValue(cl.getDeclaredField(field), handler.getInstance());
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
@@ -177,7 +176,7 @@ public class Reflector {
         try {
             InvocationHandler handler = Proxy.getInvocationHandler(o);
             if (handler instanceof ReflectorHandler) {
-                return Optional.of(((ReflectorHandler) handler).getInstance());
+                return Optional.ofNullable(((ReflectorHandler) handler).getInstance());
             }
         } catch (IllegalArgumentException ignore) {}
         return Optional.empty();

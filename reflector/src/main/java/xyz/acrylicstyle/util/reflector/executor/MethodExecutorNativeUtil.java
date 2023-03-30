@@ -42,6 +42,12 @@ public class MethodExecutorNativeUtil implements MethodExecutor {
         return UNAVAILABLE_REASON;
     }
 
+    public MethodExecutorNativeUtil() {
+        if (!isAvailable()) {
+            throw new RuntimeException("NativeUtil is unavailable", UNAVAILABLE_REASON);
+        }
+    }
+
     @Override
     public Object invoke(@NotNull Method method, Object instance, Object... args) {
         return NativeUtil.invoke(method, instance, args == null ? new Object[0] : args);
