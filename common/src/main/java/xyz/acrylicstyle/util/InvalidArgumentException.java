@@ -91,6 +91,12 @@ public class InvalidArgumentException extends Exception {
         return this;
     }
 
+    @NotNull
+    public InvalidArgumentException withCause(@Nullable Throwable throwable) {
+        initCause(throwable);
+        return this;
+    }
+
     @Nullable
     public StringReader getContext() {
         return context;

@@ -38,32 +38,58 @@ public interface StringReader extends Iterable<@NotNull Character> {
     /**
      * Returns the character at the current index.
      * @return a character
+     * @throws InvalidArgumentException if unexpected end of file was encountered
      */
-    default char peek() {
+    default char peek() throws InvalidArgumentException {
+        if (isEOF()) {
+            throw InvalidArgumentException.createUnexpectedEOF().withContext(this);
+        }
         return content().charAt(index());
+    }
+
+    /**
+     * Checks if {@link #peek()} equals char (c).
+     * @param c char
+     * @return true if peek() == c; false otherwise
+     * @throws InvalidArgumentException if unexpected end of file was encountered
+     */
+    default boolean peekEquals(char c) throws InvalidArgumentException {
+        if (isEOF()) {
+            throw InvalidArgumentException.createUnexpectedEOF(c).withContext(this);
+        }
+        return peek() == c;
     }
 
     /**
      * Returns the character at the current index + offset.
      * @param offset the offset
      * @return a character
+     * @throws InvalidArgumentException if index + offset is out of bounds
      */
-    default char peek(int offset) {
-        return content().charAt(index() + offset);
+    default char peek(int offset) throws InvalidArgumentException {
+        try {
+            return content().charAt(index() + offset);
+        } catch (IndexOutOfBoundsException e) {
+            throw InvalidArgumentException.createUnexpectedEOF().withContext(this).withCause(e);
+        }
     }
 
     /**
      * Returns the string at the between the current index and the index + amount.
      * @param amount the amount to read
      * @return a string
-     * @throws IndexOutOfBoundsException if the index + amount is out of bounds
+     * @throws InvalidArgumentException if the index + amount is out of bounds
      */
     @NotNull
-    default String peekWithAmount(int amount) {
-        if (amount < 0) {
-            return content().substring(index() + amount, index());
+    default String peekWithAmount(int amount) throws InvalidArgumentException {
+        try {
+            if (amount < 0) {
+                return content().substring(index() + amount, index());
+            }
+            return content().substring(index(), index() + amount);
+        } catch (IndexOutOfBoundsException e) {
+            throw InvalidArgumentException.createUnexpectedEOF().withContext(this, 0, amount).withCause(e);
         }
-        return content().substring(index(), index() + amount);
     }
 
     /**
