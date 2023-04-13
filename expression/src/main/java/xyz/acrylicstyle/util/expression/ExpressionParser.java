@@ -2,6 +2,7 @@ package xyz.acrylicstyle.util.expression;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import xyz.acrylicstyle.util.InvalidArgumentException;
 import xyz.acrylicstyle.util.StringReader;
 import xyz.acrylicstyle.util.expression.instruction.DummyInstTypeInfo;
@@ -29,10 +30,11 @@ import java.util.Set;
 public class ExpressionParser {
     @Contract("_, _ -> new")
     public static @NotNull InstructionSet compile(@NotNull String source, @NotNull CompileData compileData) throws InvalidArgumentException {
-        return compile(new InstructionSet(), StringReader.create(source), compileData);
+        return compile(null, StringReader.create(source), compileData);
     }
 
-    public static @NotNull InstructionSet compile(@NotNull InstructionSet instructionSet, @NotNull StringReader source, @NotNull CompileData compileData) throws InvalidArgumentException {
+    private static @NotNull InstructionSet compile(@Nullable InstructionSet _instructionSet, @NotNull StringReader source, @NotNull CompileData compileData) throws InvalidArgumentException {
+        InstructionSet instructionSet = _instructionSet == null ? new InstructionSet() : _instructionSet;
         source.skipWhitespace();
         if (source.peek() == '{') {
             source.skip();
@@ -43,16 +45,17 @@ public class ExpressionParser {
                 String quoted = source.readQuotedString('\n', '\r', '\t');
                 instructionSet.add(new InstStoreString(quoted));
                 instructionSet.add(new DummyInstTypeInfo(String.class));
-                if (!source.isEOF()) source.skip();
+                if (_instructionSet != null) break;
                 continue;
             }
+            if (!source.isEOF() && source.peek() == '.') source.skip();
             String token = source.readUntil(' ', '.', ',', '(', ')', '{', '}', '|', ':', ';', '=', '"', '\'', '\n', '\r');
             if (token.isEmpty()) {
                 throw InvalidArgumentException.expected("token", "").withContext(source);
             }
-            if (!source.isEOF()) source.skip();
             source.skipWhitespace();
-            if (!source.isEOF() && source.peek(-1) == '(') {
+            if (!source.isEOF() && source.peek() == '(') {
+                source.skip();
                 int methodIndex = source.index() - 1 - token.length();
                 Class<?> type;
                 if (instructionSet.lastOrNull() instanceof DummyInstTypeInfo) {
@@ -63,7 +66,9 @@ public class ExpressionParser {
                 List<Class<?>> args = new ArrayList<>();
                 while (!source.peekEquals(')')) {
                     compile(instructionSet, source, compileData);
-                    source.skip(-1);
+                    if (source.peek() == '.') {
+                        source.skip(-1);
+                    }
                     if (instructionSet.lastOrNull() instanceof DummyInstTypeInfo) {
                         Class<?> clazz = ((DummyInstTypeInfo) Objects.requireNonNull(instructionSet.lastOrNull())).getClazz();
                         args.add(clazz);
@@ -81,9 +86,9 @@ public class ExpressionParser {
                     }
                 }
                 if (!source.isEOF()) source.skip();
-                if (!source.isEOF() && source.peek() == '.') source.skip();
                 try {
                     resolveMethod(instructionSet, type, token, args);
+                    if (_instructionSet != null) break;
                     continue;
                 } catch (NoSuchMethodException e) {
                     throw new InvalidArgumentException("No such method " + token + " in " + type.getTypeName() + " (args: " + args + ")")
@@ -92,12 +97,13 @@ public class ExpressionParser {
                 }
             }
             resolveToken(instructionSet, source, compileData, token);
+            if (_instructionSet != null) break;
         }
         return instructionSet;
     }
 
     private static void resolveToken(@NotNull InstructionSet instructionSet, @NotNull StringReader source, @NotNull CompileData compileData, @NotNull String token) throws InvalidArgumentException {
-        if (source.index() > token.length() + 1 && source.peek(-token.length() - 2) == '.') {
+        if (source.index() > token.length() + 1 && source.peek(-token.length() - 1) == '.') {
             if (instructionSet.lastOrNull() instanceof DummyInstTypeInfo) {
                 Class<?> clazz = ((DummyInstTypeInfo) Objects.requireNonNull(instructionSet.lastOrNull())).getClazz();
                 resolveToken(instructionSet, clazz, token);
@@ -163,7 +169,7 @@ public class ExpressionParser {
                 }
             }
         }
-        throw new IllegalArgumentException("Could not resolve " + token + " in " + type.getTypeName());
+        throw new IllegalArgumentException("Could not resolve " + token + " in " + type.getTypeName() + " (inst: " + instructionSet + ")");
     }
 
     private static void resolveMethod(@NotNull InstructionSet instructionSet, @NotNull Class<?> type, @NotNull String name, @NotNull List<Class<?>> args) throws NoSuchMethodException {

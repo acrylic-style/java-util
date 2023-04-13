@@ -46,7 +46,7 @@ public final class InstructionSet {
 
     @Override
     public @NotNull String toString() {
-        return "InstructionSet[" + list.stream().map(i -> i.getClass().getSimpleName()).collect(Collectors.joining(", ")) + "]";
+        return "InstructionSet[" + list.stream().map(Object::toString).collect(Collectors.joining(", ")) + "]";
     }
 
     public void write(@NotNull ByteBuffer buf) {
