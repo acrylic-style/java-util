@@ -45,7 +45,7 @@ public class AbstractFinder<T extends Executable> {
     }
 
     public boolean isValid(@NotNull T t) {
-        return Modifier.isPublic(t.getModifiers()) && t.getName().equals(this.name);
+        return /*Modifier.isPublic(t.getModifiers()) && */t.getName().equals(this.name);
     }
 
     public boolean isAssignable(Class<?>[] min, Class<?>[] max) {

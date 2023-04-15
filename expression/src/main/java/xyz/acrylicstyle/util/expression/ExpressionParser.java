@@ -87,7 +87,7 @@ public class ExpressionParser {
                 }
                 if (!source.isEOF()) source.skip();
                 try {
-                    resolveMethod(instructionSet, type, token, args);
+                    resolveMethod(instructionSet, type, token, args, compileData.isAllowPrivate());
                     if (_instructionSet != null) break;
                     continue;
                 } catch (NoSuchMethodException e) {
@@ -106,7 +106,7 @@ public class ExpressionParser {
         if (source.index() > token.length() + 1 && source.peek(-token.length() - 1) == '.') {
             if (instructionSet.lastOrNull() instanceof DummyInstTypeInfo) {
                 Class<?> clazz = ((DummyInstTypeInfo) Objects.requireNonNull(instructionSet.lastOrNull())).getClazz();
-                resolveToken(instructionSet, clazz, token);
+                resolveToken(instructionSet, clazz, token, compileData.isAllowPrivate());
             } else {
                 throw new AssertionError("type info is missing");
             }
@@ -151,17 +151,19 @@ public class ExpressionParser {
         }
     }
 
-    private static void resolveToken(@NotNull InstructionSet instructionSet, @NotNull Class<?> type, @NotNull String token) {
+    private static void resolveToken(@NotNull InstructionSet instructionSet, @NotNull Class<?> type, @NotNull String token, boolean allowPrivate) {
         String capitalizedSymbol = token.substring(0, 1).toUpperCase(Locale.ROOT) + token.substring(1);
         for (Class<?> clazz : getSupers(type)) {
-            for (Method method : clazz.getMethods()) {
+            Method[] methods = allowPrivate ? clazz.getDeclaredMethods() : clazz.getMethods();
+            for (Method method : methods) {
                 if ((method.getName().equals(token) || method.getName().equals("get" + capitalizedSymbol)) && method.getParameterCount() == 0) {
                     instructionSet.add(new InstInvokeVirtual(method));
                     instructionSet.add(new DummyInstTypeInfo(method.getReturnType()));
                     return;
                 }
             }
-            for (Field field : clazz.getFields()) {
+            Field[] fields = allowPrivate ? clazz.getDeclaredFields() : clazz.getFields();
+            for (Field field : fields) {
                 if (field.getName().equals(token)) {
                     instructionSet.add(new InstGetField(field));
                     instructionSet.add(new DummyInstTypeInfo(field.getType()));
@@ -172,11 +174,15 @@ public class ExpressionParser {
         throw new IllegalArgumentException("Could not resolve " + token + " in " + type.getTypeName() + " (inst: " + instructionSet + ")");
     }
 
-    private static void resolveMethod(@NotNull InstructionSet instructionSet, @NotNull Class<?> type, @NotNull String name, @NotNull List<Class<?>> args) throws NoSuchMethodException {
+    private static void resolveMethod(@NotNull InstructionSet instructionSet, @NotNull Class<?> type, @NotNull String name, @NotNull List<Class<?>> args, boolean allowPrivate) throws NoSuchMethodException {
         AbstractFinder<Method> finder = new AbstractFinder<>(name, args.toArray(new Class[0]));
         Set<Method> methods = new LinkedHashSet<>();
         for (Class<?> clazz : getSupers(type)) {
-            methods.addAll(Arrays.asList(clazz.getMethods()));
+            if (allowPrivate) {
+                methods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+            } else {
+                methods.addAll(Arrays.asList(clazz.getMethods()));
+            }
         }
         Method method = finder.find(methods.toArray(new Method[0]));
         instructionSet.add(new InstInvokeVirtual(method));

@@ -6,6 +6,7 @@ import xyz.acrylicstyle.util.expression.Opcodes;
 import xyz.acrylicstyle.util.expression.RuntimeData;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.Deque;
 
@@ -49,8 +50,16 @@ public class InstGetField extends Instruction {
     @Override
     public Object execute(@NotNull RuntimeData runtimeData, @NotNull Deque<Object> stack) {
         try {
-            return Class.forName(this.clazz).getField(this.name).get(stack.removeLast());
-        } catch (ReflectiveOperationException e) {
+            if (runtimeData.isAllowPrivate()) {
+                Field field = Class.forName(this.clazz).getDeclaredField(this.name);
+                if (!Modifier.isPublic(field.getModifiers())) {
+                    field.setAccessible(true);
+                }
+                return field.get(stack.removeLast());
+            } else {
+                return Class.forName(this.clazz).getField(this.name).get(stack.removeLast());
+            }
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

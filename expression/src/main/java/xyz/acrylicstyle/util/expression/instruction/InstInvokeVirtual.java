@@ -9,6 +9,7 @@ import xyz.acrylicstyle.util.expression.util.ReflectionUtil;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -69,10 +70,18 @@ public class InstInvokeVirtual extends Instruction {
             }
             Collections.reverse(args);
             Object instance = stack.removeLast();
-            return MethodHandles.publicLookup()
-                    .findVirtual(clazz, name, type)
-                    .bindTo(instance)
-                    .invokeWithArguments(args.toArray());
+            if (runtimeData.isAllowPrivate()) {
+                Method method = clazz.getDeclaredMethod(name, type.parameterArray());
+                if (!Modifier.isPublic(method.getModifiers())) {
+                    method.setAccessible(true);
+                }
+                return method.invoke(instance, args.toArray());
+            } else {
+                return MethodHandles.publicLookup()
+                        .findVirtual(clazz, name, type)
+                        .bindTo(instance)
+                        .invokeWithArguments(args.toArray());
+            }
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

@@ -9,9 +9,11 @@ import java.util.Map;
 
 public class RuntimeData {
     private final Map<String, Object> variables;
+    private final boolean allowPrivate;
 
-    public RuntimeData(@NotNull Map<String, Object> variables) {
+    public RuntimeData(@NotNull Map<String, Object> variables, boolean allowPrivate) {
         this.variables = Collections.unmodifiableMap(variables);
+        this.allowPrivate = allowPrivate;
     }
 
     public Object getVariable(@NotNull String name) {
@@ -21,6 +23,10 @@ public class RuntimeData {
         return variables.get(name);
     }
 
+    public boolean isAllowPrivate() {
+        return allowPrivate;
+    }
+
     @Contract(" -> new")
     public static @NotNull Builder builder() {
         return new Builder();
@@ -28,6 +34,7 @@ public class RuntimeData {
 
     public static final class Builder {
         private final Map<String, Object> variables = new HashMap<>();
+        private boolean allowPrivate = false;
 
         private Builder() {}
 
@@ -37,9 +44,15 @@ public class RuntimeData {
             return this;
         }
 
+        @Contract("_ -> this")
+        public @NotNull Builder allowPrivate(boolean allowPrivate) {
+            this.allowPrivate = allowPrivate;
+            return this;
+        }
+
         @Contract(value = " -> new", pure = true)
         public @NotNull RuntimeData build() {
-            return new RuntimeData(variables);
+            return new RuntimeData(variables, allowPrivate);
         }
     }
 }

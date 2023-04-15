@@ -10,9 +10,11 @@ import java.util.Objects;
 
 public class CompileData {
     private final Map<String, Class<?>> variables;
+    private final boolean allowPrivate;
 
-    public CompileData(@NotNull Map<String, Class<?>> variables) {
+    public CompileData(@NotNull Map<String, Class<?>> variables, boolean allowPrivate) {
         this.variables = Collections.unmodifiableMap(variables);
+        this.allowPrivate = allowPrivate;
     }
 
     public @NotNull Class<?> getVariable(@NotNull String name) {
@@ -22,6 +24,10 @@ public class CompileData {
         return Objects.requireNonNull(variables.get(name));
     }
 
+    public boolean isAllowPrivate() {
+        return allowPrivate;
+    }
+
     @Contract(" -> new")
     public static @NotNull Builder builder() {
         return new Builder();
@@ -29,6 +35,7 @@ public class CompileData {
 
     public static final class Builder {
         private final Map<String, Class<?>> variables = new HashMap<>();
+        private boolean allowPrivate = false;
 
         private Builder() {}
 
@@ -38,9 +45,15 @@ public class CompileData {
             return this;
         }
 
+        @Contract("_ -> this")
+        public @NotNull Builder allowPrivate(boolean allowPrivate) {
+            this.allowPrivate = allowPrivate;
+            return this;
+        }
+
         @Contract(value = " -> new", pure = true)
         public @NotNull CompileData build() {
-            return new CompileData(variables);
+            return new CompileData(variables, allowPrivate);
         }
     }
 }
