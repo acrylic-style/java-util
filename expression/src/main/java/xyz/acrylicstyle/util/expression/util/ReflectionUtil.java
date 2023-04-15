@@ -16,15 +16,22 @@ public class ReflectionUtil {
     }
 
     public static @NotNull String signature(@NotNull Class<?> clazz) {
-        if (clazz == void.class) return "V";
-        if (clazz == int.class) return "I";
-        if (clazz == char.class) return "C";
-        if (clazz == double.class) return "D";
-        if (clazz == float.class) return "F";
-        if (clazz == long.class) return "J";
-        if (clazz == boolean.class) return "Z";
-        if (clazz == byte.class) return "B";
-        if (clazz == short.class) return "S";
-        return "L" + clazz.getTypeName().replaceAll("\\.", "/") + ";";
+        return signature(clazz, "");
+    }
+
+    private static @NotNull String signature(@NotNull Class<?> clazz, String prefix) {
+        if (clazz.isArray()) {
+            return signature(clazz.getComponentType(), prefix + "[");
+        }
+        if (clazz == void.class) return prefix + "V";
+        if (clazz == int.class) return prefix + "I";
+        if (clazz == char.class) return prefix + "C";
+        if (clazz == double.class) return prefix + "D";
+        if (clazz == float.class) return prefix + "F";
+        if (clazz == long.class) return prefix + "J";
+        if (clazz == boolean.class) return prefix + "Z";
+        if (clazz == byte.class) return prefix + "B";
+        if (clazz == short.class) return prefix + "S";
+        return prefix + "L" + clazz.getTypeName().replaceAll("\\.", "/") + ";";
     }
 }
