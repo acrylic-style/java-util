@@ -6,9 +6,9 @@ import xyz.acrylicstyle.util.expression.Opcodes;
 import xyz.acrylicstyle.util.expression.RuntimeData;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -34,7 +34,7 @@ public final class InstructionSet {
     }
 
     public Object execute(@NotNull RuntimeData runtimeData) {
-        Deque<Object> stack = new ArrayDeque<>();
+        Deque<Object> stack = new LinkedList<>();
         for (Instruction inst : list) {
             try {
                 Object obj = inst.execute(runtimeData, stack);
