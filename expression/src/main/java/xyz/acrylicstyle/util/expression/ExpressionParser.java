@@ -66,8 +66,9 @@ public class ExpressionParser {
                 List<Class<?>> args = new ArrayList<>();
                 while (!source.peekEquals(')')) {
                     compile(instructionSet, source, compileData);
-                    if (source.peek() == '.') {
-                        source.skip(-1);
+                    if (!source.isEOF() && source.peek() == '.') {
+                        //source.skip(-1);
+                        continue;
                     }
                     if (instructionSet.lastOrNull() instanceof DummyInstTypeInfo) {
                         Class<?> clazz = ((DummyInstTypeInfo) Objects.requireNonNull(instructionSet.lastOrNull())).getClazz();
@@ -85,7 +86,7 @@ public class ExpressionParser {
                         throw InvalidArgumentException.expected("',' or ')'", Character.toString(source.peek())).withContext(source);
                     }
                 }
-                if (!source.isEOF()) source.skip();
+                if (args.isEmpty() && source.peekEquals(')')) source.skip();
                 try {
                     resolveMethod(instructionSet, type, token, args, compileData.isAllowPrivate());
                     if (_instructionSet != null) break;

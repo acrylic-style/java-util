@@ -22,5 +22,6 @@ public class ExpressionTest {
         Object obj = instructionSet.execute(RuntimeData.builder().addVariable("counter", new PerformanceCounter(PerformanceCounter.Unit.MILLISECONDS)).build());
         assert "100".equals(obj) : "expected 100 but got " + obj;
         System.out.println(ExpressionParser.compile("\"\".intern().concat(\"test\").substring(1, 1).substring(1, 1).length", CompileData.builder().build()));
+        System.out.println(ExpressionParser.compile("s.concat(s.concat(s))", CompileData.builder().addVariable("s", String.class).build()));
     }
 }
