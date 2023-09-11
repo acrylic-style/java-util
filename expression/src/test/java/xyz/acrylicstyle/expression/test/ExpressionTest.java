@@ -12,7 +12,7 @@ import xyz.acrylicstyle.util.expression.instruction.InstructionSet;
 public class ExpressionTest {
     @Test
     public void test() throws InvalidArgumentException {
-        String source = "\"a100\".substring(1)";
+        String source = "\"a100\".substring(\"a\".length)";
         System.out.println("Source: " + source);
         InstructionSet instructionSet = ExpressionParser.compile(source, CompileData.builder().addVariable("counter", PerformanceCounter.class).build());
         System.out.println("Instructions:");

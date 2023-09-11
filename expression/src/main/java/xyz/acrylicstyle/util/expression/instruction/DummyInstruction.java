@@ -7,7 +7,7 @@ import java.util.Deque;
 
 public abstract class DummyInstruction extends Instruction {
     @Override
-    public Object execute(@NotNull RuntimeData runtimeData, @NotNull Deque<Object> stack) {
+    public final Object execute(@NotNull RuntimeData runtimeData, @NotNull Deque<Object> stack) {
         throw NoReturn.INSTANCE;
     }
 

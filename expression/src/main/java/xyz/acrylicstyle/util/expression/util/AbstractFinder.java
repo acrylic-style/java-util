@@ -70,8 +70,12 @@ public class AbstractFinder<T extends Executable> {
             if (isValid(newMethod)) {
                 Class<?>[] newParams = newMethod.getParameterTypes();
                 if (newParams.length == this.args.length) {
-                    PrimitiveWrapperMap.replacePrimitivesWithWrappers(newParams);
-                    if (isAssignable(newParams, this.args)) {
+                    boolean assignable = isAssignable(newParams, this.args);
+                    if (!assignable) {
+                        PrimitiveWrapperMap.replacePrimitivesWithWrappers(newParams);
+                        assignable = isAssignable(newParams, this.args);
+                    }
+                    if (assignable) {
                         if (oldMethod == null) {
                             oldMethod = newMethod;
                             oldParams = newParams;
@@ -147,7 +151,7 @@ public class AbstractFinder<T extends Executable> {
             throw new NoSuchMethodException("Ambiguous methods are found");
         }
         if (oldMethod == null) {
-            throw new NoSuchMethodException("Method is not found");
+            throw new NoSuchMethodException("No such method " + name + Arrays.toString(args));
         }
         return oldMethod;
     }
