@@ -7,6 +7,7 @@ import xyz.acrylicstyle.util.expression.RuntimeData;
 
 import java.nio.ByteBuffer;
 import java.util.Deque;
+import java.util.Objects;
 
 /**
  * Returns: {@link String}
@@ -35,15 +36,16 @@ public class InstStoreString extends Instruction {
 
     @Override
     public Object execute(@NotNull RuntimeData runtimeData, @NotNull Deque<Object> stack) {
-        if (string == null) {
-            throw new AssertionError("string was not loaded");
-        }
-        return string;
+        return getString();
     }
 
     @Override
     public byte getId() {
         return Opcodes.STORE_STRING;
+    }
+
+    public @NotNull String getString() {
+        return Objects.requireNonNull(string, "string was not loaded");
     }
 
     @Override

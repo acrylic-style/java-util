@@ -6,10 +6,7 @@ import xyz.acrylicstyle.util.expression.Opcodes;
 import xyz.acrylicstyle.util.expression.RuntimeData;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -22,6 +19,18 @@ public final class InstructionSet {
 
     public void add(@NotNull Instruction instruction) {
         list.add(instruction);
+    }
+
+    public int size() {
+        return list.size();
+    }
+
+    public @NotNull Instruction getAt(int index) {
+        return Objects.requireNonNull(list.get(index));
+    }
+
+    public @NotNull Instruction removeAt(int index) {
+        return list.remove(index);
     }
 
     public @Nullable Instruction lastOrNull() {

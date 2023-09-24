@@ -5,16 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import xyz.acrylicstyle.util.InvalidArgumentException;
 import xyz.acrylicstyle.util.StringReader;
-import xyz.acrylicstyle.util.expression.instruction.DummyInstTypeInfo;
-import xyz.acrylicstyle.util.expression.instruction.InstGetField;
-import xyz.acrylicstyle.util.expression.instruction.InstInvokeVirtual;
-import xyz.acrylicstyle.util.expression.instruction.InstLoadVariable;
-import xyz.acrylicstyle.util.expression.instruction.InstStoreDouble;
-import xyz.acrylicstyle.util.expression.instruction.InstStoreFloat;
-import xyz.acrylicstyle.util.expression.instruction.InstStoreInt;
-import xyz.acrylicstyle.util.expression.instruction.InstStoreLong;
-import xyz.acrylicstyle.util.expression.instruction.InstStoreString;
-import xyz.acrylicstyle.util.expression.instruction.InstructionSet;
+import xyz.acrylicstyle.util.expression.instruction.*;
 import xyz.acrylicstyle.util.expression.util.AbstractFinder;
 
 import java.lang.reflect.Field;
@@ -88,7 +79,30 @@ public class ExpressionParser {
                 }
                 if (args.isEmpty() && source.peekEquals(')')) source.skip();
                 try {
-                    resolveMethod(instructionSet, type, token, args, compileData.isAllowPrivate());
+                    if (token.equals("?as")) {
+                        // variable?.as(type_name) -> casts the variable to type_name
+                        if (args.size() != 1 || !args.get(0).equals(String.class)) {
+                            throw new InvalidArgumentException("Invalid argument provided for \"?as\"")
+                                    .withContext(source, methodIndex - source.index(), source.index() - methodIndex);
+                        }
+                        Instruction inst = instructionSet.getAt(instructionSet.size() - 2);
+                        if (!(inst instanceof InstStoreString)) {
+                            throw new InvalidArgumentException("Argument for \"?as\" must be constant")
+                                    .withContext(source, methodIndex - source.index(), source.index() - methodIndex);
+                        }
+                        String typeName = ((InstStoreString) inst).getString();
+                        try {
+                            instructionSet.removeAt(instructionSet.size() - 1);
+                            instructionSet.removeAt(instructionSet.size() - 1);
+                            instructionSet.add(new DummyInstTypeInfo(Class.forName(typeName)));
+                        } catch (ClassNotFoundException e) {
+                            throw new InvalidArgumentException("Cannot resolve type " + typeName)
+                                    .withContext(source, methodIndex - source.index(), source.index() - methodIndex)
+                                    .withCause(e);
+                        }
+                    } else {
+                        resolveMethod(instructionSet, type, token, args, compileData.isAllowPrivate());
+                    }
                     if (_instructionSet != null) break;
                     continue;
                 } catch (NoSuchMethodException e) {
