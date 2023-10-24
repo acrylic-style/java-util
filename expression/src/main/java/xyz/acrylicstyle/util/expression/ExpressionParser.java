@@ -92,8 +92,9 @@ public class ExpressionParser {
                         }
                         String typeName = ((InstStoreString) inst).getString();
                         try {
-                            instructionSet.removeAt(instructionSet.size() - 1);
-                            instructionSet.removeAt(instructionSet.size() - 1);
+                            instructionSet.removeAt(instructionSet.size() - 1); // remove TypeInfo
+                            instructionSet.removeAt(instructionSet.size() - 1); // remove StoreString
+                            instructionSet.removeAt(instructionSet.size() - 1); // remove TypeInfo
                             instructionSet.add(new DummyInstTypeInfo(Class.forName(typeName)));
                         } catch (ClassNotFoundException e) {
                             throw new InvalidArgumentException("Cannot resolve type " + typeName)
@@ -142,6 +143,9 @@ public class ExpressionParser {
                 return;
             } catch (NumberFormatException ignored) {}
             try {
+                if (token.endsWith("D") || token.endsWith("d")) {
+                    throw new NumberFormatException();
+                }
                 if (token.endsWith("F") || token.endsWith("f")) {
                     token = token.substring(0, token.length() - 1);
                 }

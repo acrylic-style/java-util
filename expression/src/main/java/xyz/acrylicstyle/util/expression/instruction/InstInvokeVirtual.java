@@ -8,11 +8,11 @@ import xyz.acrylicstyle.util.expression.util.ReflectionUtil;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
@@ -66,24 +66,36 @@ public class InstInvokeVirtual extends Instruction {
             MethodType type = MethodType.fromMethodDescriptorString(desc, InstInvokeVirtual.class.getClassLoader());
             List<Object> args = new ArrayList<>();
             for (int i = 0; i < type.parameterCount(); i++) {
+                if (i == type.parameterCount() - 1 &&
+                        type.parameterType(i).isArray() &&
+                        stack.peek() != null &&
+                        (!stack.peek().getClass().isArray() || stack.peek().getClass().getComponentType() != type.parameterType(i).getComponentType())) {
+                    // try to detect vararg
+                    args.add(Array.newInstance(type.parameterType(i).getComponentType(), 0));
+                    continue;
+                }
                 args.add(stack.removeLast());
             }
-            Collections.reverse(args);
+//            Collections.reverse(args);
             Object instance = stack.removeLast();
             if (runtimeData.isAllowPrivate()) {
                 Method method = clazz.getDeclaredMethod(name, type.parameterArray());
                 if (!Modifier.isPublic(method.getModifiers())) {
                     method.setAccessible(true);
                 }
-                return method.invoke(instance, args.toArray());
+                if (Modifier.isStatic(method.getModifiers())) {
+                    return method.invoke(null, args.toArray());
+                } else {
+                    return method.invoke(instance, args.toArray());
+                }
             } else {
-                return MethodHandles.publicLookup()
+                return MethodHandles.lookup()
                         .findVirtual(clazz, name, type)
                         .bindTo(instance)
                         .invokeWithArguments(args.toArray());
             }
         } catch (Throwable e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(clazz + "." + name + desc + "\nStack: " + stack, e);
         }
     }
 
