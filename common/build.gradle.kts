@@ -1,3 +1,3 @@
 dependencies {
-    compileOnlyApi("org.jetbrains:annotations:23.1.0")
+    compileOnlyApi("org.jetbrains:annotations:26.0.1")
 }
