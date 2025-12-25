@@ -18,11 +18,13 @@ import java.lang.annotation.Target;
 public @interface FieldGetter {
     /**
      * The field name to get. If left empty, it will find automatically.
+     * @return the field name
      */
     String value() default "";
 
     /**
-     * the target class to get field from. If left default, it will find automatically.
+     * The target class to get field from. If left default, it will find automatically.
+     * @return the target class
      */
     Class<?> target() default Object.class;
 }

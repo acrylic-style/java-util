@@ -6,6 +6,9 @@ import java.util.function.Function;
 
 public interface ValueDecoder {
     /**
+     * @param label Label
+     * @param function Function to retrieve value
+     * @param <R> Type of retrieved value
      * @return retrieved value
      */
     default <R> R pushPop(@NotNull String label, @NotNull Function<ValueDecoder, R> function) {

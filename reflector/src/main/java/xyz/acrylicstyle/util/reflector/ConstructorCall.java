@@ -14,6 +14,7 @@ public @interface ConstructorCall {
     /**
      * Target class to call constructor. Object.class is the default value and it will use target class defined at
      * ReflectorHandler. If it was other than Object.class, then the constructor will be called in specified class.
+     * @return target class
      */
     Class<?> value() default Object.class;
 }

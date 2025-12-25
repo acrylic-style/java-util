@@ -44,6 +44,7 @@ public class Reflector {
      * @param clazz the class
      * @param targetClassName the target class to find
      * @param instance the instance of target class
+     * @param <T> the class type
      * @return reflector if found, null if target class could not be found
      */
     @Contract(pure = true)

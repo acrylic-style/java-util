@@ -17,6 +17,7 @@ import java.lang.annotation.Target;
 public @interface FieldSetter {
     /**
      * The field name to get. If left empty, it will find automatically.
+     * @return the field name
      */
     String value() default "";
 

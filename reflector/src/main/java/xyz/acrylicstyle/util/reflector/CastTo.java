@@ -21,6 +21,7 @@ public @interface CastTo {
     /**
      * Marks method to create instance of specified class. Target class is required to have constructor with exact
      * 1 parameter count with Object.
+     * @return true if method should create instance, false otherwise
      */
     boolean createInstance() default false;
 }

@@ -14,6 +14,7 @@ public @interface ReflectorOption {
      * Static prefix to use. For example: if value is <i>static$</i>, then the methods prefixed with <i>static$</i>
      * will call static method on original class.
      * @see Static
+     * @return static prefix
      */
     @NotNull
     String staticPrefix() default ";"; // using illegal character effectively prevents from calling static method
@@ -22,6 +23,7 @@ public @interface ReflectorOption {
 
     /**
      * Whether to suppress error message (that is not thrown).
+     * @return whether to suppress error message
      */
     YesNo suppressMessage() default YesNo.DEFAULT;
 

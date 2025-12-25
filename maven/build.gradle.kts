@@ -1,4 +1,15 @@
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(17))
+java {
+    toolchain {
+        setSourceCompatibility(17)
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+tasks {
+    javadoc {
+        options.source = "17"
+    }
+}
 
 dependencies {
     val mavenResolverVersion = "2.0.0"
