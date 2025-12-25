@@ -2,6 +2,7 @@ plugins {
     java
     `maven-publish`
     `java-library`
+    signing
 }
 
 group = "xyz.acrylicstyle.java-util"
@@ -24,6 +25,7 @@ subprojects {
         plugin("java")
         plugin("maven-publish")
         plugin("java-library")
+        plugin("signing")
     }
 
     java {
@@ -39,16 +41,6 @@ subprojects {
 
     publishing {
         repositories {
-            maven {
-                name = "repo"
-                credentials(PasswordCredentials::class)
-                url = uri(
-                    if (project.version.toString().endsWith("SNAPSHOT"))
-                        project.findProperty("deploySnapshotURL") ?: System.getProperty("deploySnapshotURL", "https://repo.acrylicstyle.xyz/repository/maven-snapshots/")
-                    else
-                        project.findProperty("deployReleasesURL") ?: System.getProperty("deployReleasesURL", "https://repo.acrylicstyle.xyz/repository/maven-releases/")
-                )
-            }
             maven {
                 name = "azisaba"
                 credentials(PasswordCredentials::class)
@@ -102,6 +94,25 @@ subprojects {
     dependencies {
         testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.0")
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.0")
+    }
+}
+
+allprojects {
+    signing {
+        val signingKey: String? by project
+        val signingPassword: String? by project
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications)
+    }
+
+    tasks {
+        register("publishToCentral") {
+            if (project.version.toString().endsWith("SNAPSHOT")) {
+                dependsOn("publishAggregationToCentralPortalSnapshots")
+            } else {
+                dependsOn("publishAggregationToCentralPortal")
+            }
+        }
     }
 }
 
