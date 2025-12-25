@@ -42,11 +42,6 @@ subprojects {
         withSourcesJar()
     }
 
-    val javaComponent = components["java"] as AdhocComponentWithVariants
-    javaComponent.withVariantsFromConfiguration(configurations["sourcesElements"]) {
-        skip()
-    }
-
     publishing {
         repositories {
             maven {
@@ -68,6 +63,7 @@ subprojects {
                 from(components["java"])
 
                 pom {
+                    name = project.name
                     description = project.description
                     url = "https://github.com/acrylic-style/java-util"
 
