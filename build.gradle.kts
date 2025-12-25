@@ -22,6 +22,7 @@ java {
 subprojects {
     group = parent!!.group
     version = parent!!.version
+    description = "Provides the (probably) useful methods for Java. (this is placeholder)"
 
     repositories {
         // mavenLocal()
