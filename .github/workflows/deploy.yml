@@ -21,15 +21,10 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Prepare gradle.properties
-        run: |
-          mkdir -p $HOME/.gradle
-          echo "azisabaUsername=${{ secrets.AZISABA_USERNAME }}" >> $HOME/.gradle/gradle.properties
-          echo "azisabaPassword=${{ secrets.AZISABA_PASSWORD }}" >> $HOME/.gradle/gradle.properties
       - name: Deploy
         env:
           ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_signingKey }}
           ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_signingPassword }}
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
-        run: ./gradlew clean test publishToCentral publish
+        run: ./gradlew clean test publishToCentral
