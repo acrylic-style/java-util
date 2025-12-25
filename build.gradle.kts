@@ -7,9 +7,16 @@ plugins {
 
 group = "xyz.acrylicstyle.java-util"
 version = "2.1.1"
+description = "Provides the (probably) useful methods for Java."
 
 repositories {
     mavenCentral()
+}
+
+java {
+    toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+    withJavadocJar()
+    withSourcesJar()
 }
 
 subprojects {
@@ -30,7 +37,7 @@ subprojects {
 
     java {
         toolchain.languageVersion.set(JavaLanguageVersion.of(8))
-        //withJavadocJar()
+        withJavadocJar()
         withSourcesJar()
     }
 
@@ -58,6 +65,31 @@ subprojects {
         publications {
             create<MavenPublication>("mavenJava") {
                 from(components["java"])
+
+                pom {
+                    description = project.description
+                    url = "https://github.com/acrylic-style/java-util"
+
+                    scm {
+                        connection = "scm:git:git://github.com/acrylic-style/java-util.git"
+                        developerConnection = "scm:git:ssh://github.com:acrylic-style/java-util.git"
+                        url = "https://github.com/acrylic-style/java-util"
+                    }
+
+                    licenses {
+                        license {
+                            name = "MIT License"
+                            url = "https://github.com/acrylic-style/java-util/blob/main/LICENSE"
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            name = "acrylic-style"
+                            email = "me@acrylicstyle.xyz"
+                        }
+                    }
+                }
             }
         }
     }
