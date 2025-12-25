@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "xyz.acrylicstyle.java-util"
-version = "2.1.0"
+version = "2.1.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -104,20 +104,18 @@ allprojects {
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign(publishing.publications)
     }
-
-    tasks {
-        register("publishToCentral") {
-            if (project.version.toString().endsWith("SNAPSHOT")) {
-                dependsOn("publishAggregationToCentralPortalSnapshots")
-            } else {
-                dependsOn("publishAggregationToCentralPortal")
-            }
-        }
-    }
 }
 
 tasks {
     test {
         useJUnitPlatform()
+    }
+
+    register("publishToCentral") {
+        if (project.version.toString().endsWith("SNAPSHOT")) {
+            dependsOn("publishAggregationToCentralPortalSnapshots")
+        } else {
+            dependsOn("publishAggregationToCentralPortal")
+        }
     }
 }
